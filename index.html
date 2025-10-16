@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Traslados de Taxi - Inter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-inter-primary { background-color: #005BAA; }
+        .bg-inter-accent-light { background-color: #5CE1E6; }
+        .bg-inter-accent-yellow { background-color: #FDD000; }
+        .text-inter-primary { color: #005BAA; }
+        .text-inter-accent-light { color: #5CE1E6; }
+        .text-inter-accent-yellow { color: #FDD000; }
+        .border-inter-primary { border-color: #005BAA; }
+        .border-inter-accent-light { border-color: #5CE1E6; }
+        .focus\:ring-inter-primary:focus { --tw-ring-color: #005BAA; }
+        #transferTableBody tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 min-h-screen flex flex-col items-center">
+    <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
+        <header class="text-center mb-6 bg-inter-primary rounded-t-xl py-6 relative overflow-hidden">
+            <h1 class="text-4xl font-extrabold text-white mb-2 relative z-10">
+                Control de Traslados de Taxi
+            </h1>
+            <p class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-extrabold text-white opacity-10 whitespace-nowrap select-none pointer-events-none z-0">
+                Inter Tu mundo, nuestro compromiso.
+            </p>
+            <p class="text-md text-white mt-2 relative z-10">Registro y gestión de solicitudes de traslados de taxi</p>
+        </header>
+
+        <section id="registerSection" class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Registrar Nuevo Traslado</h2>
+            <form id="transferForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <div>
+                    <label for="requesterName" class="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre del Solicitante
+                    </label>
+                    <input type="text" id="requesterName" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                           placeholder="Ej. Juan Pérez">
+                </div>
+                <div>
+                    <label for="department" class="block text-sm font-medium text-gray-700 mb-1">
+                        Departamento/Área
+                    </label>
+                    <select id="department" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                        <option value="" disabled selected>Selecciona un Departamento</option>
+                        <option value="Administracion">Administración</option>
+                        <option value="Area Comercial">Área Comercial</option>
+                        <option value="Area tecnica">Área Técnica</option>
+                        <option value="Obras">Obras</option>
+                        <option value="RRHH y Seguridad Laboral">RRHH y Seguridad Laboral</option>
+                        <option value="Sistemas">Sistemas</option>
+                        <option value="MSO">MSO</option>
+                        <option value="Gerencia Senior">Gerencia Senior</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="originPlace" class="block text-sm font-medium text-gray-700 mb-1">
+                        Lugar de Origen
+                    </label>
+                    <input type="text" id="originPlace" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                           placeholder="Ej. Sede Principal, Cliente X, Aeropuerto">
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label for="returnAddress" class="block text-sm font-medium text-gray-700 mb-1">
+                        Dirección de Vuelta (Opcional, si aplica)
+                    </label>
+                    <input type="text" id="returnAddress"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                           placeholder="Ej. Domicilio particular, Otro cliente, N/A">
+                </div>
+                <div>
+                    <label for="transferDate" class="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha del Traslado
+                    </label>
+                    <input type="date" id="transferDate" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                </div>
+                <div>
+                    <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">
+                        Costo del Traslado (USD $)
+                    </label>
+                    <input type="number" id="cost" step="0.01" min="0" value="0.00" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                </div>
+                <div>
+                    <label for="authorizerName" class="block text-sm font-medium text-gray-700 mb-1">
+                        Quién Autoriza
+                    </label>
+                    <select id="authorizerName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                        <option value="" disabled selected>Selecciona Autorizador</option>
+                        <option value="Jorge Basualdo">Jorge Basualdo</option>
+                        <option value="Lais Troncoso">Lais Troncoso</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">
+                        Empresa de Traslado
+                    </label>
+                    <select id="companyName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                        <option value="" disabled selected>Selecciona Empresa</option>
+                        <option value="Yummy">Yummy</option>
+                        <option value="Andrew">Andrew</option>
+                        <option value="Oscar">Oscar</option>
+                        <option value="Neomar">Neomar</option>
+                        <option value="Jose">Jose</option>
+                    </select>
+                </div>
+                <div class="col-span-1 md:col-span-3 flex justify-end space-x-4">
+                    <button type="button" id="cancelEditBtn"
+                            class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                        Cancelar Edición
+                    </button>
+                    <button type="submit" id="submitButton"
+                            class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                        Registrar Traslado
+                    </button>
+                </div>
+            </form>
+            <div id="messageBox" class="mt-4 p-3 rounded-md text-sm hidden"></div>
+        </section>
+
+        <section class="mb-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Resumen de Gastos de Traslados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-700">Gastos Diarios</h3>
+                    <p id="dailyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-700">Gastos Semanales</h3>
+                    <p id="weeklyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-700">Gastos Mensuales</h3>
+                    <p id="monthlyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-700">Gastos Anuales</h3>
+                    <p id="annualTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Historial de Traslados</h2>
+
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row items-center gap-4">
+                <label for="filterRequester" class="text-sm font-medium text-gray-700 whitespace-nowrap">
+                    Filtrar por Solicitante:
+                </label>
+                <input type="text" id="filterRequester"
+                       class="w-full md:w-auto flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                       placeholder="Nombre del solicitante">
+                <button id="clearFilterBtn"
+                        class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    Limpiar Filtro
+                </button>
+                <button id="exportCsvBtn"
+                        class="bg-inter-accent-light hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    Exportar a Excel (CSV)
+                </button>
+                <button id="importExcelBtn"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    Importar de Excel
+                </button>
+                <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx">
+                <button id="deleteSelectedBtn"
+                        class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    Eliminar Seleccionados
+                </button>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg shadow-md">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">
+                                <input type="checkbox" id="selectAllCheckboxes" class="form-checkbox h-4 w-4 text-inter-primary rounded">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Solicitante</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Dirección Vuelta</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Quién Autoriza</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo ($)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Acciones</th> </tr>
+                    </thead>
+                    <tbody id="transferTableBody" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <p id="noTransfersMessage" class="text-center text-gray-500 mt-4 hidden">No hay traslados registrados aún.</p>
+        </section>
+        
+        <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Análisis de Gastos Mensual y Anual</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                    <h3 id="chartTitle" class="text-xl font-bold text-inter-primary mb-4 text-center">Control de Gastos Mensual por Año</h3>
+                    <div class="w-full max-w-lg h-64">
+                        <canvas id="annualExpensesChart"></canvas>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                    <h3 id="companyExpensesChartTitle" class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Empresa de Traslado</h3>
+                    <div class="w-full max-w-lg h-64">
+                        <canvas id="companyExpensesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Pagos a Proveedores de Traslados</h2>
+            <div class="overflow-x-auto rounded-lg shadow-md">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual Total ($)</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo Unitario Promedio ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <p id="noPaymentsMessage" class="text-center text-gray-500 mt-4 hidden">No hay datos de pagos para este mes.</p>
+        </section>
+
+        <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+            <h2 class="text-2xl font-bold text-inter-primary mb-4">Análisis de Gasto Mensual por Departamento</h2>
+            <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Total de Traslados por Departamento (Mensual)</h3>
+                <div class="w-full max-w-lg h-64">
+                    <canvas id="departmentExpensesChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+        const transferForm = document.getElementById('transferForm');
+        const requesterNameInput = document.getElementById('requesterName');
+        const departmentInput = document.getElementById('department');
+        const originPlaceInput = document.getElementById('originPlace');
+        const returnAddressInput = document.getElementById('returnAddress');
+        const transferDateInput = document.getElementById('transferDate');
+        const costInput = document.getElementById('cost');
+        const authorizerNameInput = document.getElementById('authorizerName');
+        const companyNameInput = document.getElementById('companyName');
+        const messageBox = document.getElementById('messageBox');
+        const transferTableBody = document.getElementById('transferTableBody');
+        const paymentsTableBody = document.getElementById('paymentsTableBody');
+        const dailyTotalSpan = document.getElementById('dailyTotal');
+        const weeklyTotalSpan = document.getElementById('weeklyTotal');
+        const monthlyTotalSpan = document.getElementById('monthlyTotal');
+        const annualTotalSpan = document.getElementById('annualTotal');
+        const noTransfersMessage = document.getElementById('noTransfersMessage');
+        const noPaymentsMessage = document.getElementById('noPaymentsMessage');
+        const submitButton = document.getElementById('submitButton'); // Nuevo: Botón de submit
+        const cancelEditBtn = document.getElementById('cancelEditBtn'); // Nuevo: Botón de cancelar edición
+        const registerSection = document.getElementById('registerSection'); // Nuevo: Sección del formulario
+
+        const annualExpensesChartCtx = document.getElementById('annualExpensesChart').getContext('2d');
+        const companyExpensesChartCtx = document.getElementById('companyExpensesChart').getContext('2d');
+        const departmentExpensesChartCtx = document.getElementById('departmentExpensesChart').getContext('2d');
+        const chartTitleElement = document.getElementById('chartTitle');
+        const companyExpensesChartTitle = document.getElementById('companyExpensesChartTitle');
+        let annualExpensesChart;
+        let companyExpensesChart;
+        let departmentExpensesChart;
+
+        const annualBudgetTarget = 12000;
+
+        const filterRequesterInput = document.getElementById('filterRequester');
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const importExcelBtn = document.getElementById('importExcelBtn');
+        const fileInput = document.getElementById('fileInput');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
+
+        let transfers = [];
+        let editingIndex = -1; // -1 significa modo 'agregar', cualquier otro valor es el índice del traslado a editar
+
+        function showMessage(message, type = 'info', box = messageBox) {
+            box.textContent = message;
+            box.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700');
+            if (type === 'error') {
+                box.classList.add('bg-red-100', 'text-red-700');
+            } else if (type === 'success') {
+                box.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                box.classList.add('bg-yellow-100', 'text-yellow-700');
+            }
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.add('hidden');
+            }, 5000);
+        }
+
+        function normalizeDateToStartOfDay(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function loadTransfers() {
+            try {
+                const storedTransfers = localStorage.getItem('taxiTransfersInter');
+                if (storedTransfers) {
+                    transfers = JSON.parse(storedTransfers).map(transfer => {
+                        let dateObj = new Date(transfer.dateTime);
+                        dateObj = normalizeDateToStartOfDay(dateObj);
+                        
+                        if (isNaN(dateObj.getTime())) {
+                            console.warn("Invalid date found in stored data, using current date as fallback:", transfer.dateTime);
+                            dateObj = normalizeDateToStartOfDay(new Date());
+                        }
+                        return {
+                            returnAddress: transfer.returnAddress || '',
+                            ...transfer,
+                            dateTime: dateObj
+                        };
+                    });
+                }
+                transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+            } catch (e) {
+                console.error("Error al cargar datos de localStorage:", e);
+                showMessage("Error al cargar datos guardados. Los datos podrían estar corruptos o el formato inválido. Iniciando con datos vacíos.", "error");
+                transfers = [];
+            }
+        }
+
+        function saveTransfers() {
+            try {
+                const transfersToStore = transfers.map(t => ({
+                    ...t,
+                    // Asegura que la fecha se guarde como YYYY-MM-DD
+                    dateTime: t.dateTime.toISOString().slice(0, 10) 
+                }));
+                localStorage.setItem('taxiTransfersInter', JSON.stringify(transfersToStore));
+            } catch (e) {
+                console.error("Error al guardar datos en localStorage:", e);
+                showMessage("Error al guardar datos. El almacenamiento podría estar lleno.", "error");
+            }
+        }
+
+        function renderTransfers() {
+            transferTableBody.innerHTML = '';
+            selectAllCheckboxes.checked = false;
+
+            const filterText = filterRequesterInput.value.trim().toLowerCase();
+            let displayTransfers = [...transfers];
+            if (filterText) {
+                displayTransfers = displayTransfers.filter(transfer =>
+                    transfer.requesterName.toLowerCase().includes(filterText)
+                );
+            }
+
+            const requesterCounts = {};
+            transfers.forEach(transfer => {
+                const name = transfer.requesterName.toLowerCase();
+                requesterCounts[name] = (requesterCounts[name] || 0) + 1;
+            });
+            let maxCount = 0;
+            if (Object.keys(requesterCounts).length > 0) {
+                maxCount = Math.max(...Object.values(requesterCounts));
+            }
+
+            const topRequesters = Object.keys(requesterCounts).filter(name => requesterCounts[name] === maxCount && maxCount > 0);
+            const sortedTransfers = displayTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+            if (sortedTransfers.length === 0) {
+                noTransfersMessage.classList.remove('hidden');
+            } else {
+                noTransfersMessage.classList.add('hidden');
+                sortedTransfers.forEach((transfer) => {
+                    const row = document.createElement('tr');
+                    const originalIndex = transfers.indexOf(transfer);
+                    if (originalIndex === -1) return;
+
+                    const isTopRequester = topRequesters.includes(transfer.requesterName.toLowerCase());
+                    const requesterClass = isTopRequester ? 'font-bold text-inter-accent-yellow' : '';
+
+                    const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
+                        year: 'numeric', month: '2-digit', day: '2-digit'
+                    });
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-index="${originalIndex}">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formattedDate}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${requesterClass}">${transfer.requesterName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.department || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.originPlace}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnAddress || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.authorizerName || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.companyName || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">$${transfer.cost.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="startEditTransfer(${originalIndex})" 
+                                class="text-inter-primary hover:text-blue-700 font-bold text-xs py-1 px-2 rounded-md border border-inter-primary hover:border-blue-700 transition duration-150">
+                                Editar
+                            </button>
+                        </td>
+                    `;
+                    transferTableBody.appendChild(row);
+                });
+            }
+        }
+        
+        /**
+         * NUEVA FUNCIÓN: Carga los datos de un traslado en el formulario para su edición.
+         * @param {number} index - El índice del traslado en el array 'transfers'.
+         */
+        function startEditTransfer(index) {
+            const transfer = transfers[index];
+            if (!transfer) {
+                showMessage("Error: Traslado no encontrado.", "error");
+                return;
+            }
+
+            // 1. Cargar datos en el formulario
+            requesterNameInput.value = transfer.requesterName;
+            departmentInput.value = transfer.department;
+            originPlaceInput.value = transfer.originPlace;
+            returnAddressInput.value = transfer.returnAddress;
+            // La fecha se carga como YYYY-MM-DD
+            transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
+            costInput.value = transfer.cost.toFixed(2);
+            authorizerNameInput.value = transfer.authorizerName;
+            companyNameInput.value = transfer.companyName;
+
+            // 2. Establecer el modo edición
+            editingIndex = index;
+            submitButton.textContent = 'Guardar Cambios';
+            cancelEditBtn.classList.remove('hidden');
+
+            // 3. Desplazarse al formulario
+            registerSection.scrollIntoView({ behavior: 'smooth' });
+            showMessage(`Modo Edición: Editando traslado de ${transfer.requesterName}.`, "info");
+        }
+
+        /**
+         * NUEVA FUNCIÓN: Cancela el modo edición y reinicia el formulario.
+         */
+        function cancelEdit() {
+            editingIndex = -1;
+            transferForm.reset();
+            submitButton.textContent = 'Registrar Traslado';
+            cancelEditBtn.classList.add('hidden');
+            // Re-inicializar la fecha con el día actual
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            showMessage("Modo de registro restaurado.", "success");
+        }
+
+        cancelEditBtn.addEventListener('click', cancelEdit);
+
+
+        function updateSummaries() {
+            const now = new Date();
+            const todayStart = normalizeDateToStartOfDay(now);
+            const dailyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() === todayStart.getTime());
+            const dailyTotal = dailyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            dailyTotalSpan.textContent = `$${dailyTotal.toFixed(2)}`;
+            
+            const dayOfWeek = (now.getDay() + 6) % 7;
+            const startOfWeek = normalizeDateToStartOfDay(now);
+            startOfWeek.setDate(now.getDate() - dayOfWeek);
+            const weeklyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfWeek.getTime());
+            const weeklyTotal = weeklyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            weeklyTotalSpan.textContent = `$${weeklyTotal.toFixed(2)}`;
+
+            const startOfMonth = normalizeDateToStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+            const monthlyTotal = monthlyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            monthlyTotalSpan.textContent = `$${monthlyTotal.toFixed(2)}`;
+
+            const startOfYear = normalizeDateToStartOfDay(new Date(now.getFullYear(), 0, 1));
+            const annualTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime());
+            const annualTotal = annualTransfers.reduce((sum, t) => sum + t.cost, 0);
+            annualTotalSpan.textContent = `$${annualTotal.toFixed(2)}`;
+
+            updateMonthlyExpensesChart(annualTotal);
+            updateCompanyExpensesChart();
+            renderPaymentsTable();
+            updateDepartmentExpensesChart();
+        }
+
+        function updateMonthlyExpensesChart(annualTotal) {
+            const currentYear = new Date().getFullYear();
+            const monthlyData = new Array(12).fill(0);
+            const monthLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
+                    const month = transfer.dateTime.getMonth();
+                    monthlyData[month] += transfer.cost;
+                }
+            });
+            let maxDataValue = 0;
+            if (monthlyData.length > 0) {
+                maxDataValue = Math.max(...monthlyData);
+            }
+            const suggestedYMax = Math.max(maxDataValue * 1.1, annualBudgetTarget / 12 * 1.1, 100);
+            const chartStatus = annualTotal <= annualBudgetTarget ? 'Positivo' : 'Negativo';
+            chartTitleElement.textContent = `Control de Gastos Mensual por Año (${currentYear}): ${chartStatus}`;
+            chartTitleElement.classList.remove('text-inter-primary', 'text-red-700', 'text-green-700');
+            chartTitleElement.classList.add(annualTotal <= annualBudgetTarget ? 'text-green-700' : 'text-red-700');
+
+            const monthlyBudgetLine = new Array(12).fill(annualBudgetTarget / 12);
+            if (annualExpensesChart) { annualExpensesChart.destroy(); }
+            annualExpensesChart = new Chart(annualExpensesChartCtx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Gasto Mensual ($)',
+                        data: monthlyData,
+                        borderColor: '#005BAA',
+                        backgroundColor: 'rgba(0, 91, 170, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            formatter: (value) => value > 0 ? `$${value.toFixed(0)}` : '',
+                            color: '#005BAA',
+                            font: { weight: 'bold', size: 10 }
+                        }
+                    }, {
+                        label: 'Presupuesto Mensual Promedio ($)',
+                        data: monthlyBudgetLine,
+                        borderColor: '#FDD000',
+                        borderDash: [5, 5],
+                        backgroundColor: 'transparent',
+                        pointRadius: 0,
+                        datalabels: { display: false }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true, position: 'bottom', labels: { font: { family: 'Inter', size: 12 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            },
+                            suggestedMax: suggestedYMax
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Mes', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCompanyExpensesChart() {
+            const currentYear = new Date().getFullYear();
+            const companyExpenses = {};
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
+                    const company = transfer.companyName || 'Desconocido';
+                    companyExpenses[company] = (companyExpenses[company] || 0) + transfer.cost;
+                }
+            });
+            const companyLabels = Object.keys(companyExpenses);
+            const companyData = Object.values(companyExpenses);
+
+            if (companyExpensesChart) { companyExpensesChart.destroy(); }
+            companyExpensesChart = new Chart(companyExpensesChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: companyLabels,
+                    datasets: [{
+                        label: 'Gasto Anual por Empresa ($)',
+                        data: companyData,
+                        backgroundColor: '#5CE1E6',
+                        borderColor: '#005BAA',
+                        borderWidth: 1,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#000000',
+                            font: { weight: 'bold' }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Empresa de Traslado', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDepartmentExpensesChart() {
+            const now = new Date();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+
+            const departmentExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                const department = transfer.department || 'Desconocido';
+                departmentExpenses[department] = (departmentExpenses[department] || 0) + transfer.cost;
+            });
+            
+            const departmentLabels = Object.keys(departmentExpenses);
+            const departmentData = Object.values(departmentExpenses);
+
+            if (departmentExpensesChart) { departmentExpensesChart.destroy(); }
+            departmentExpensesChart = new Chart(departmentExpensesChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: departmentLabels,
+                    datasets: [{
+                        label: 'Gasto Mensual ($)',
+                        data: departmentData,
+                        backgroundColor: [
+                            '#005BAA', '#5CE1E6', '#FDD000', '#FF6384', '#36A2EB', '#FF9F40', '#4BC0C0', '#9966FF'
+                        ],
+                        borderColor: '#005BAA',
+                        borderWidth: 1,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#000000',
+                            font: { weight: 'bold' }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Departamento', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderPaymentsTable() {
+            paymentsTableBody.innerHTML = '';
+            const now = new Date();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+
+            const companyStats = {};
+            monthlyTransfers.forEach(transfer => {
+                const company = transfer.companyName || 'Desconocido';
+                if (!companyStats[company]) {
+                    companyStats[company] = { totalCost: 0, count: 0 };
+                }
+                companyStats[company].totalCost += transfer.cost;
+                companyStats[company].count += 1;
+            });
+            
+            const companyNames = Object.keys(companyStats).sort();
+            if (companyNames.length === 0) {
+                noPaymentsMessage.classList.remove('hidden');
+            } else {
+                noPaymentsMessage.classList.add('hidden');
+                companyNames.forEach(company => {
+                    const stats = companyStats[company];
+                    const unitCost = stats.totalCost / stats.count;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${company}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${stats.totalCost.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${unitCost.toFixed(2)}</td>
+                    `;
+                    paymentsTableBody.appendChild(row);
+                });
+            }
+        }
+
+        transferForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const dateValue = new Date(transferDateInput.value); 
+            const transferData = {
+                dateTime: normalizeDateToStartOfDay(dateValue), 
+                requesterName: requesterNameInput.value,
+                department: departmentInput.value,
+                originPlace: originPlaceInput.value,
+                returnAddress: returnAddressInput.value,
+                cost: parseFloat(costInput.value),
+                authorizerName: authorizerNameInput.value,
+                companyName: companyNameInput.value
+            };
+
+            if (editingIndex > -1) {
+                // Modo Edición: Actualizar el traslado existente
+                transfers[editingIndex] = transferData;
+                showMessage("¡Traslado actualizado con éxito!", "success");
+                cancelEdit(); // Volver al modo registro
+            } else {
+                // Modo Registro: Añadir un nuevo traslado
+                transfers.push(transferData);
+                showMessage("¡Traslado registrado con éxito!", "success");
+                transferForm.reset();
+                // Re-inicializar la fecha con el día actual
+                transferDateInput.value = new Date().toISOString().slice(0, 10);
+            }
+
+            transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+            saveTransfers();
+            renderTransfers();
+            updateSummaries();
+        });
+
+        filterRequesterInput.addEventListener('input', renderTransfers);
+        clearFilterBtn.addEventListener('click', () => {
+            filterRequesterInput.value = '';
+            renderTransfers();
+        });
+
+        // Lógica de importación (sin cambios)
+        importExcelBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) { return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = e.target.result;
+                let processedData;
+                
+                if (file.name.endsWith('.csv')) {
+                    processedData = new TextDecoder("utf-8").decode(new Uint8Array(fileData));
+                    importCsv(processedData);
+                    return;
+                } else {
+                    processedData = fileData;
+                }
+
+                const workbook = XLSX.read(processedData, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: true});
+                const headerMap = {
+                    'Fecha': 'date',
+                    'Solicitante': 'requesterName',
+                    'Departamento': 'department',
+                    'Lugar de Origen': 'originPlace',
+                    'Dirección de Vuelta': 'returnAddress',
+                    'Quién Autoriza': 'authorizerName',
+                    'Empresa de Traslado': 'companyName',
+                    'Costo ($)': 'cost'
+                };
+                
+                let headers;
+                if (rawData && rawData.length > 0) {
+                    headers = rawData[0].map(h => h.trim());
+                }
+                
+                const importedTransfers = [];
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row || row.length === 0) continue;
+
+                    const transfer = {};
+                    headers.forEach((header, index) => {
+                        const newKey = headerMap[header] || header;
+                        transfer[newKey] = row[index];
+                    });
+                    if (transfer.companyName && String(transfer.companyName).toLowerCase().includes('total')) {
+                        continue;
+                    }
+
+                    let transferDate;
+                    if (typeof transfer.date === 'number') {
+                        transferDate = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false})[i][headers.indexOf('Fecha')];
+                        transferDate = new Date(transferDate);
+                    } else {
+                        transferDate = new Date(transfer.date);
+                    }
+                    
+                    const cleanCost = String(transfer.cost).replace(',', '.');
+                    const costValue = parseFloat(cleanCost);
+                    
+                    if (isNaN(costValue) || isNaN(transferDate.getTime())) continue;
+
+                    importedTransfers.push({
+                        dateTime: normalizeDateToStartOfDay(transferDate), 
+                        requesterName: transfer.requesterName,
+                        department: transfer.department,
+                        originPlace: transfer.originPlace,
+                        returnAddress: transfer.returnAddress || '',
+                        authorizerName: transfer.authorizerName,
+                        companyName: transfer.companyName,
+                        cost: costValue
+                    });
+                }
+                
+                transfers = importedTransfers; 
+                saveTransfers();
+                renderTransfers();
+                updateSummaries();
+                showMessage(`Se importaron ${importedTransfers.length} traslados con éxito.`, "success");
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        function importCsv(csvText) {
+            const newTransfers = [];
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length <= 1) {
+                showMessage("No se encontraron datos válidos en el archivo.", "error");
+                return;
+            }
+
+            const headerLine = lines[0];
+            const dataLines = lines.slice(1);
+            const headers = headerLine.split(';').map(h => h.trim());
+            
+            const columnIndices = {
+                date: headers.indexOf('Fecha'),
+                requesterName: headers.indexOf('Solicitante'),
+                department: headers.indexOf('Departamento'),
+                originPlace: headers.indexOf('Lugar de Origen'),
+                returnAddress: headers.indexOf('Dirección de Vuelta'),
+                authorizerName: headers.indexOf('Quién Autoriza'),
+                companyName: headers.indexOf('Empresa de Traslado'),
+                cost: headers.indexOf('Costo ($)')
+            };
+            
+            for (const line of dataLines) {
+                const values = line.split(';');
+                const dateStr = values[columnIndices.date];
+                
+                if (!dateStr) continue;
+
+                const transferDate = new Date(dateStr.replace(/(\d{2})[-/](\d{2})[-/](\d{4})/, '$3-$2-$1')); 
+                
+                const costValue = parseFloat(values[columnIndices.cost].replace(',', '.'));
+                
+                if (isNaN(transferDate.getTime()) || isNaN(costValue)) continue;
+                
+                newTransfers.push({
+                    dateTime: normalizeDateToStartOfDay(transferDate), 
+                    requesterName: values[columnIndices.requesterName],
+                    department: values[columnIndices.department],
+                    originPlace: values[columnIndices.originPlace],
+                    returnAddress: values[columnIndices.returnAddress] || '',
+                    authorizerName: values[columnIndices.authorizerName],
+                    companyName: values[columnIndices.companyName],
+                    cost: costValue
+                });
+            }
+        
+            if (newTransfers.length > 0) {
+                transfers = [...transfers, ...newTransfers]; 
+                saveTransfers();
+                renderTransfers();
+                updateSummaries();
+                showMessage(`Se importaron ${newTransfers.length} traslados con éxito.`, "success");
+            } else {
+                showMessage("No se encontraron datos válidos para importar en el archivo.", "error");
+            }
+        }
+        
+        exportCsvBtn.addEventListener('click', () => {
+            if (transfers.length === 0) {
+                showMessage("No hay datos para exportar.", "error");
+                return;
+            }
+        
+            const dataToExport = transfers.map(t => ({
+                'Fecha': t.dateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                'Solicitante': t.requesterName,
+                'Departamento': t.department,
+                'Lugar de Origen': t.originPlace,
+                'Dirección de Vuelta': t.returnAddress,
+                'Quién Autoriza': t.authorizerName,
+                'Empresa de Traslado': t.companyName,
+                'Costo ($)': t.cost
+            }));
+
+            const now = new Date();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+            const departmentExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                const department = transfer.department || 'Desconocido';
+                departmentExpenses[department] = (departmentExpenses[department] || 0) + transfer.cost;
+            });
+
+            const departmentSummaryData = Object.entries(departmentExpenses).map(([department, cost]) => ({
+                'Departamento': department,
+                'Gasto Mensual Total ($)': cost
+            }));
+            
+            const mainWorksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const summaryWorksheet = XLSX.utils.json_to_sheet(departmentSummaryData);
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, mainWorksheet, 'Historial');
+            XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen por Departamento');
+            XLSX.writeFile(workbook, 'taxi_transfers_inter_export.xlsx');
+        });
+
+        selectAllCheckboxes.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+
+        deleteSelectedBtn.addEventListener('click', () => {
+            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                .map(cb => parseInt(cb.dataset.index, 10))
+                .sort((a, b) => b - a);
+            if (selectedIndices.length > 0) {
+                if (confirm(`¿Estás seguro de que quieres eliminar ${selectedIndices.length} traslados seleccionados?`)) {
+                    selectedIndices.forEach(index => {
+                        transfers.splice(index, 1);
+                    });
+                    saveTransfers();
+                    renderTransfers();
+                    updateSummaries();
+                    showMessage("Traslados eliminados con éxito.", "success");
+                }
+            } else {
+                showMessage("Por favor, selecciona al menos un traslado para eliminar.", "info");
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTransfers();
+            renderTransfers();
+            updateSummaries();
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
+        });
+
+        // Hacer la función startEditTransfer accesible globalmente (necesario para el onclick en HTML)
+        window.startEditTransfer = startEditTransfer;
+    </script>
+</body>
+</html>
