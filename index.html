@@ -11,6 +11,42 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
+            authDomain: "gestion-de-traslados.firebaseapp.com",
+            projectId: "gestion-de-traslados",
+            storageBucket: "gestion-de-traslados.firebasestorage.app",
+            messagingSenderId: "547255399573",
+            appId: "1:547255399573:web:c636870e286428fb81979c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Hacer Firestore disponible globalmente
+        window.firebaseApp = app;
+        window.firestore = {
+            db,
+            collection,
+            addDoc,
+            getDocs,
+            updateDoc,
+            deleteDoc,
+            doc,
+            onSnapshot,
+            query,
+            orderBy
+        };
+    </script>
 
     <style>
         body {
@@ -28,40 +64,13 @@
         #transferTableBody tr:nth-child(even) {
             background-color: #f8f8f8;
         }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            display: none;
-        }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #005BAA;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
     </style>
 </head>
 <body class="bg-gray-100 p-4 min-h-screen flex flex-col items-center">
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <span class="ml-3 text-inter-primary font-semibold">Cargando datos...</span>
-    </div>
-
     <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
         <header class="text-center mb-6 bg-inter-primary rounded-t-xl py-6 relative overflow-hidden">
             <h1 class="text-4xl font-extrabold text-white mb-2 relative z-10">
@@ -71,8 +80,9 @@
                 Inter Tu mundo, nuestro compromiso.
             </p>
             <p class="text-md text-white mt-2 relative z-10">Registro y gestión de solicitudes de traslados de taxi</p>
-            <div id="connectionStatus" class="absolute top-4 right-4 text-sm bg-green-500 px-2 py-1 rounded hidden text-white">
-                Conectado a Firebase
+            <div id="connectionStatus" class="absolute top-4 right-4 flex items-center">
+                <span class="text-white text-sm mr-2">Conectado</span>
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             </div>
         </header>
 
@@ -296,385 +306,705 @@
         </section>
     </div>
 
-    <!-- Firebase SDK al final del body -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
-            authDomain: "gestion-de-traslados.firebaseapp.com",
-            databaseURL: "https://gestion-de-traslados-default-rtdb.firebaseio.com",
-            projectId: "gestion-de-traslados",
-            storageBucket: "gestion-de-traslados.firebasestorage.app",
-            messagingSenderId: "547255399573",
-            appId: "1:547255399573:web:c636870e286428fb81979c"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Hacer disponible la base de datos globalmente
-        window.firebaseDatabase = database;
-        window.firebaseRef = ref;
-        window.firebaseSet = set;
-        window.firebaseGet = get;
-        window.firebasePush = push;
-        window.firebaseUpdate = update;
-        window.firebaseRemove = remove;
-
-        console.log('Firebase inicializado correctamente');
-    </script>
-
-    <!-- Código principal de la aplicación -->
     <script>
-        // Esperar a que todo esté cargado
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM completamente cargado, iniciando aplicación...');
-            initializeApplication();
-        });
+        Chart.register(ChartDataLabels);
+        const transferForm = document.getElementById('transferForm');
+        const requesterNameInput = document.getElementById('requesterName');
+        const departmentInput = document.getElementById('department');
+        const originPlaceInput = document.getElementById('originPlace');
+        const returnAddressInput = document.getElementById('returnAddress');
+        const transferDateInput = document.getElementById('transferDate');
+        const costInput = document.getElementById('cost');
+        const authorizerNameInput = document.getElementById('authorizerName');
+        const companyNameInput = document.getElementById('companyName');
+        const messageBox = document.getElementById('messageBox');
+        const transferTableBody = document.getElementById('transferTableBody');
+        const paymentsTableBody = document.getElementById('paymentsTableBody');
+        const dailyTotalSpan = document.getElementById('dailyTotal');
+        const weeklyTotalSpan = document.getElementById('weeklyTotal');
+        const monthlyTotalSpan = document.getElementById('monthlyTotal');
+        const annualTotalSpan = document.getElementById('annualTotal');
+        const noTransfersMessage = document.getElementById('noTransfersMessage');
+        const noPaymentsMessage = document.getElementById('noPaymentsMessage');
+        const submitButton = document.getElementById('submitButton');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const registerSection = document.getElementById('registerSection');
+        const connectionStatus = document.getElementById('connectionStatus');
 
-        async function initializeApplication() {
+        const annualExpensesChartCtx = document.getElementById('annualExpensesChart').getContext('2d');
+        const companyExpensesChartCtx = document.getElementById('companyExpensesChart').getContext('2d');
+        const departmentExpensesChartCtx = document.getElementById('departmentExpensesChart').getContext('2d');
+        const chartTitleElement = document.getElementById('chartTitle');
+        const companyExpensesChartTitle = document.getElementById('companyExpensesChartTitle');
+        let annualExpensesChart;
+        let companyExpensesChart;
+        let departmentExpensesChart;
+
+        const annualBudgetTarget = 12000;
+
+        const filterRequesterInput = document.getElementById('filterRequester');
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const importExcelBtn = document.getElementById('importExcelBtn');
+        const fileInput = document.getElementById('fileInput');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
+
+        let transfers = [];
+        let editingId = null; // Ahora usamos el ID de Firestore en lugar del índice
+        let unsubscribeTransfers = null;
+
+        function showMessage(message, type = 'info', box = messageBox) {
+            box.textContent = message;
+            box.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700');
+            if (type === 'error') {
+                box.classList.add('bg-red-100', 'text-red-700');
+            } else if (type === 'success') {
+                box.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                box.classList.add('bg-yellow-100', 'text-yellow-700');
+            }
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.add('hidden');
+            }, 5000);
+        }
+
+        function normalizeDateToStartOfDay(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        // Función para cargar traslados desde Firestore
+        async function loadTransfers() {
             try {
-                console.log('Inicializando aplicación...');
+                showMessage("Cargando datos...", "info");
                 
-                // 1. Inicializar variables y elementos DOM
-                initializeVariables();
+                const q = window.firestore.query(
+                    window.firestore.collection(window.firestore.db, 'transfers'),
+                    window.firestore.orderBy('dateTime', 'asc')
+                );
                 
-                // 2. Esperar a que Firebase esté listo
-                await waitForFirebase();
-                console.log('Firebase listo');
+                // Suscribirse a cambios en tiempo real
+                unsubscribeTransfers = window.firestore.onSnapshot(q, (querySnapshot) => {
+                    transfers = [];
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        transfers.push({
+                            id: doc.id,
+                            ...data,
+                            dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
+                        });
+                    });
+                    
+                    renderTransfers();
+                    updateSummaries();
+                    updateConnectionStatus(true);
+                }, (error) => {
+                    console.error("Error en tiempo real:", error);
+                    updateConnectionStatus(false);
+                    showMessage("Error de conexión con la base de datos", "error");
+                });
+
+            } catch (e) {
+                console.error("Error al cargar datos de Firestore:", e);
+                showMessage("Error al cargar datos. Verifica tu conexión a internet.", "error");
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusText = connectionStatus.querySelector('span');
+            const statusDot = connectionStatus.querySelector('div');
+            
+            if (connected) {
+                statusText.textContent = 'Conectado';
+                statusDot.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
+            } else {
+                statusText.textContent = 'Desconectado';
+                statusDot.className = 'w-3 h-3 bg-red-500 rounded-full';
+            }
+        }
+
+        // Función para guardar un traslado en Firestore
+        async function saveTransfer(transferData) {
+            try {
+                // Convertir fecha a string ISO para Firestore
+                const dataToSave = {
+                    ...transferData,
+                    dateTime: transferData.dateTime.toISOString()
+                };
                 
-                // 3. Configurar event listeners
-                setupEventListeners();
-                console.log('Event listeners configurados');
-                
-                // 4. Cargar datos desde Firebase
-                await loadAllDataFromFirebase();
-                console.log('Datos cargados desde Firebase');
-                
-                // 5. Configurar fecha por defecto
-                if (window.transferDateInput) {
-                    window.transferDateInput.value = new Date().toISOString().slice(0, 10);
+                if (editingId) {
+                    // Actualizar documento existente
+                    const docRef = window.firestore.doc(window.firestore.db, 'transfers', editingId);
+                    await window.firestore.updateDoc(docRef, dataToSave);
+                    showMessage("¡Traslado actualizado con éxito!", "success");
+                } else {
+                    // Crear nuevo documento
+                    await window.firestore.addDoc(window.firestore.collection(window.firestore.db, 'transfers'), dataToSave);
+                    showMessage("¡Traslado registrado con éxito!", "success");
                 }
                 
-                console.log('Aplicación inicializada correctamente');
+                return true;
+            } catch (e) {
+                console.error("Error al guardar en Firestore:", e);
+                showMessage("Error al guardar los datos. Verifica tu conexión.", "error");
+                return false;
+            }
+        }
+
+        // Función para eliminar traslados de Firestore
+        async function deleteTransfers(ids) {
+            try {
+                const deletePromises = ids.map(id => {
+                    const docRef = window.firestore.doc(window.firestore.db, 'transfers', id);
+                    return window.firestore.deleteDoc(docRef);
+                });
                 
-            } catch (error) {
-                console.error('Error en la inicialización:', error);
-                showMessage('Error al inicializar la aplicación: ' + error.message, 'error');
+                await Promise.all(deletePromises);
+                showMessage("Traslados eliminados con éxito.", "success");
+                return true;
+            } catch (e) {
+                console.error("Error al eliminar de Firestore:", e);
+                showMessage("Error al eliminar los datos. Verifica tu conexión.", "error");
+                return false;
             }
         }
 
-        // Inicializar todas las variables globales
-        function initializeVariables() {
-            console.log('Inicializando variables...');
-            
-            // Elementos del formulario
-            window.transferForm = document.getElementById('transferForm');
-            window.requesterNameInput = document.getElementById('requesterName');
-            window.departmentInput = document.getElementById('department');
-            window.originPlaceInput = document.getElementById('originPlace');
-            window.returnAddressInput = document.getElementById('returnAddress');
-            window.transferDateInput = document.getElementById('transferDate');
-            window.costInput = document.getElementById('cost');
-            window.authorizerNameInput = document.getElementById('authorizerName');
-            window.companyNameInput = document.getElementById('companyName');
-            window.messageBox = document.getElementById('messageBox');
-            window.submitButton = document.getElementById('submitButton');
-            window.cancelEditBtn = document.getElementById('cancelEditBtn');
-            window.registerSection = document.getElementById('registerSection');
-            
-            // Elementos de tablas
-            window.transferTableBody = document.getElementById('transferTableBody');
-            window.paymentsTableBody = document.getElementById('paymentsTableBody');
-            window.noTransfersMessage = document.getElementById('noTransfersMessage');
-            window.noPaymentsMessage = document.getElementById('noPaymentsMessage');
-            
-            // Elementos de resumen
-            window.dailyTotalSpan = document.getElementById('dailyTotal');
-            window.weeklyTotalSpan = document.getElementById('weeklyTotal');
-            window.monthlyTotalSpan = document.getElementById('monthlyTotal');
-            window.annualTotalSpan = document.getElementById('annualTotal');
-            
-            // Elementos de filtros y botones
-            window.filterRequesterInput = document.getElementById('filterRequester');
-            window.clearFilterBtn = document.getElementById('clearFilterBtn');
-            window.exportCsvBtn = document.getElementById('exportCsvBtn');
-            window.importExcelBtn = document.getElementById('importExcelBtn');
-            window.fileInput = document.getElementById('fileInput');
-            window.deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            window.selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
-            
-            // Elementos de gráficos
-            window.chartTitleElement = document.getElementById('chartTitle');
-            window.companyExpensesChartTitle = document.getElementById('companyExpensesChartTitle');
-            
-            // Contextos de gráficos
-            const annualExpensesCanvas = document.getElementById('annualExpensesChart');
-            const companyExpensesCanvas = document.getElementById('companyExpensesChart');
-            const departmentExpensesCanvas = document.getElementById('departmentExpensesChart');
-            
-            if (annualExpensesCanvas) window.annualExpensesChartCtx = annualExpensesCanvas.getContext('2d');
-            if (companyExpensesCanvas) window.companyExpensesChartCtx = companyExpensesCanvas.getContext('2d');
-            if (departmentExpensesCanvas) window.departmentExpensesChartCtx = departmentExpensesCanvas.getContext('2d');
-            
-            // Estado de la aplicación
-            window.transfers = [];
-            window.editingIndex = -1;
-            window.annualBudgetTarget = 12000;
-            
-            // Gráficos
-            window.annualExpensesChart = null;
-            window.companyExpensesChart = null;
-            window.departmentExpensesChart = null;
+        function renderTransfers() {
+            transferTableBody.innerHTML = '';
+            selectAllCheckboxes.checked = false;
 
-            console.log('Variables inicializadas correctamente');
-        }
+            const filterText = filterRequesterInput.value.trim().toLowerCase();
+            let displayTransfers = [...transfers];
+            if (filterText) {
+                displayTransfers = displayTransfers.filter(transfer =>
+                    transfer.requesterName.toLowerCase().includes(filterText)
+                );
+            }
 
-        // Configurar todos los event listeners
-        function setupEventListeners() {
-            console.log('Configurando event listeners...');
-            
-            // Formulario principal
-            if (window.transferForm) {
-                window.transferForm.addEventListener('submit', handleFormSubmit);
+            const requesterCounts = {};
+            transfers.forEach(transfer => {
+                const name = transfer.requesterName.toLowerCase();
+                requesterCounts[name] = (requesterCounts[name] || 0) + 1;
+            });
+            let maxCount = 0;
+            if (Object.keys(requesterCounts).length > 0) {
+                maxCount = Math.max(...Object.values(requesterCounts));
             }
-            
-            // Botón cancelar edición
-            if (window.cancelEditBtn) {
-                window.cancelEditBtn.addEventListener('click', cancelEdit);
-            }
-            
-            // Filtros
-            if (window.filterRequesterInput) {
-                window.filterRequesterInput.addEventListener('input', renderTransfers);
-            }
-            
-            if (window.clearFilterBtn) {
-                window.clearFilterBtn.addEventListener('click', () => {
-                    if (window.filterRequesterInput) {
-                        window.filterRequesterInput.value = '';
-                        renderTransfers();
-                    }
-                });
-            }
-            
-            // Botones de importación/exportación
-            if (window.importExcelBtn) {
-                window.importExcelBtn.addEventListener('click', () => {
-                    if (window.fileInput) window.fileInput.click();
-                });
-            }
-            
-            if (window.fileInput) {
-                window.fileInput.addEventListener('change', handleFileImport);
-            }
-            
-            if (window.exportCsvBtn) {
-                window.exportCsvBtn.addEventListener('click', exportToExcel);
-            }
-            
-            // Eliminación múltiple
-            if (window.selectAllCheckboxes) {
-                window.selectAllCheckboxes.addEventListener('change', (e) => {
-                    const isChecked = e.target.checked;
-                    document.querySelectorAll('.row-checkbox').forEach(checkbox => {
-                        checkbox.checked = isChecked;
+
+            const topRequesters = Object.keys(requesterCounts).filter(name => requesterCounts[name] === maxCount && maxCount > 0);
+            const sortedTransfers = displayTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+            if (sortedTransfers.length === 0) {
+                noTransfersMessage.classList.remove('hidden');
+            } else {
+                noTransfersMessage.classList.add('hidden');
+                sortedTransfers.forEach((transfer) => {
+                    const row = document.createElement('tr');
+                    const isTopRequester = topRequesters.includes(transfer.requesterName.toLowerCase());
+                    const requesterClass = isTopRequester ? 'font-bold text-inter-accent-yellow' : '';
+
+                    const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
+                        year: 'numeric', month: '2-digit', day: '2-digit'
                     });
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-id="${transfer.id}">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formattedDate}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${requesterClass}">${transfer.requesterName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.department || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.originPlace}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnAddress || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.authorizerName || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.companyName || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">$${transfer.cost.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="startEditTransfer('${transfer.id}')" 
+                                class="text-inter-primary hover:text-blue-700 font-bold text-xs py-1 px-2 rounded-md border border-inter-primary hover:border-blue-700 transition duration-150">
+                                Editar
+                            </button>
+                        </td>
+                    `;
+                    transferTableBody.appendChild(row);
                 });
             }
-            
-            if (window.deleteSelectedBtn) {
-                window.deleteSelectedBtn.addEventListener('click', deleteSelectedTransfers);
+        }
+        
+        function startEditTransfer(id) {
+            const transfer = transfers.find(t => t.id === id);
+            if (!transfer) {
+                showMessage("Error: Traslado no encontrado.", "error");
+                return;
             }
-            
-            console.log('Event listeners configurados correctamente');
+
+            // Cargar datos en el formulario
+            requesterNameInput.value = transfer.requesterName;
+            departmentInput.value = transfer.department;
+            originPlaceInput.value = transfer.originPlace;
+            returnAddressInput.value = transfer.returnAddress;
+            transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
+            costInput.value = transfer.cost.toFixed(2);
+            authorizerNameInput.value = transfer.authorizerName;
+            companyNameInput.value = transfer.companyName;
+
+            // Establecer el modo edición
+            editingId = id;
+            submitButton.textContent = 'Guardar Cambios';
+            cancelEditBtn.classList.remove('hidden');
+
+            // Desplazarse al formulario
+            registerSection.scrollIntoView({ behavior: 'smooth' });
+            showMessage(`Modo Edición: Editando traslado de ${transfer.requesterName}.`, "info");
         }
 
-        // FUNCIONES PRINCIPALES DE LA APLICACIÓN
+        function cancelEdit() {
+            editingId = null;
+            transferForm.reset();
+            submitButton.textContent = 'Registrar Traslado';
+            cancelEditBtn.classList.add('hidden');
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            showMessage("Modo de registro restaurado.", "success");
+        }
 
-        async function waitForFirebase() {
-            return new Promise((resolve) => {
-                const checkFirebase = () => {
-                    if (window.firebaseDatabase) {
-                        const connectionStatus = document.getElementById('connectionStatus');
-                        if (connectionStatus) {
-                            connectionStatus.classList.remove('hidden');
+        cancelEditBtn.addEventListener('click', cancelEdit);
+
+        // El resto de las funciones (updateSummaries, updateMonthlyExpensesChart, etc.) se mantienen igual
+        function updateSummaries() {
+            const now = new Date();
+            const todayStart = normalizeDateToStartOfDay(now);
+            const dailyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() === todayStart.getTime());
+            const dailyTotal = dailyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            dailyTotalSpan.textContent = `$${dailyTotal.toFixed(2)}`;
+            
+            const dayOfWeek = (now.getDay() + 6) % 7;
+            const startOfWeek = normalizeDateToStartOfDay(now);
+            startOfWeek.setDate(now.getDate() - dayOfWeek);
+            const weeklyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfWeek.getTime());
+            const weeklyTotal = weeklyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            weeklyTotalSpan.textContent = `$${weeklyTotal.toFixed(2)}`;
+
+            const startOfMonth = normalizeDateToStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+            const monthlyTotal = monthlyTransfers.reduce((sum, t) => sum + t.cost, 0);
+            monthlyTotalSpan.textContent = `$${monthlyTotal.toFixed(2)}`;
+
+            const startOfYear = normalizeDateToStartOfDay(new Date(now.getFullYear(), 0, 1));
+            const annualTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime());
+            const annualTotal = annualTransfers.reduce((sum, t) => sum + t.cost, 0);
+            annualTotalSpan.textContent = `$${annualTotal.toFixed(2)}`;
+
+            updateMonthlyExpensesChart(annualTotal);
+            updateCompanyExpensesChart();
+            renderPaymentsTable();
+            updateDepartmentExpensesChart();
+        }
+
+        function updateMonthlyExpensesChart(annualTotal) {
+            const currentYear = new Date().getFullYear();
+            const monthlyData = new Array(12).fill(0);
+            const monthLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
+                    const month = transfer.dateTime.getMonth();
+                    monthlyData[month] += transfer.cost;
+                }
+            });
+            let maxDataValue = 0;
+            if (monthlyData.length > 0) {
+                maxDataValue = Math.max(...monthlyData);
+            }
+            const suggestedYMax = Math.max(maxDataValue * 1.1, annualBudgetTarget / 12 * 1.1, 100);
+            const chartStatus = annualTotal <= annualBudgetTarget ? 'Positivo' : 'Negativo';
+            chartTitleElement.textContent = `Control de Gastos Mensual por Año (${currentYear}): ${chartStatus}`;
+            chartTitleElement.classList.remove('text-inter-primary', 'text-red-700', 'text-green-700');
+            chartTitleElement.classList.add(annualTotal <= annualBudgetTarget ? 'text-green-700' : 'text-red-700');
+
+            const monthlyBudgetLine = new Array(12).fill(annualBudgetTarget / 12);
+            if (annualExpensesChart) { annualExpensesChart.destroy(); }
+            annualExpensesChart = new Chart(annualExpensesChartCtx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Gasto Mensual ($)',
+                        data: monthlyData,
+                        borderColor: '#005BAA',
+                        backgroundColor: 'rgba(0, 91, 170, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            formatter: (value) => value > 0 ? `$${value.toFixed(0)}` : '',
+                            color: '#005BAA',
+                            font: { weight: 'bold', size: 10 }
                         }
-                        resolve();
-                    } else {
-                        setTimeout(checkFirebase, 100);
+                    }, {
+                        label: 'Presupuesto Mensual Promedio ($)',
+                        data: monthlyBudgetLine,
+                        borderColor: '#FDD000',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0,
+                        datalabels: {
+                            display: false
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: suggestedYMax,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        }
                     }
-                };
-                checkFirebase();
+                }
             });
         }
 
-        function setLoadingState(loading) {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                loadingOverlay.style.display = loading ? 'flex' : 'none';
+        function updateCompanyExpensesChart() {
+            const currentYear = new Date().getFullYear();
+            const companyTotals = {};
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
+                    const company = transfer.companyName || 'Sin Empresa';
+                    companyTotals[company] = (companyTotals[company] || 0) + transfer.cost;
+                }
+            });
+            const companies = Object.keys(companyTotals);
+            const totals = Object.values(companyTotals);
+            const totalAnnualExpense = totals.reduce((sum, val) => sum + val, 0);
+            const chartStatus = totalAnnualExpense <= annualBudgetTarget ? 'Positivo' : 'Negativo';
+            companyExpensesChartTitle.textContent = `Gasto Anual por Empresa de Traslado (${currentYear}): ${chartStatus}`;
+            companyExpensesChartTitle.classList.remove('text-inter-primary', 'text-red-700', 'text-green-700');
+            companyExpensesChartTitle.classList.add(totalAnnualExpense <= annualBudgetTarget ? 'text-green-700' : 'text-red-700');
+
+            if (companyExpensesChart) { companyExpensesChart.destroy(); }
+            companyExpensesChart = new Chart(companyExpensesChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: companies,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: [
+                            '#005BAA', '#5CE1E6', '#FDD000', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const percentage = ((value / totalAnnualExpense) * 100).toFixed(1);
+                                    return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                const percentage = ((value / totalAnnualExpense) * 100).toFixed(1);
+                                return percentage > 5 ? `${percentage}%` : '';
+                            },
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPaymentsTable() {
+            paymentsTableBody.innerHTML = '';
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const companyMonthlyTotals = {};
+            const companyTransferCounts = {};
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && 
+                    transfer.dateTime.getMonth() === currentMonth && 
+                    transfer.dateTime.getFullYear() === currentYear) {
+                    const company = transfer.companyName || 'Sin Empresa';
+                    companyMonthlyTotals[company] = (companyMonthlyTotals[company] || 0) + transfer.cost;
+                    companyTransferCounts[company] = (companyTransferCounts[company] || 0) + 1;
+                }
+            });
+            const companies = Object.keys(companyMonthlyTotals);
+            if (companies.length === 0) {
+                noPaymentsMessage.classList.remove('hidden');
+            } else {
+                noPaymentsMessage.classList.add('hidden');
+                companies.forEach(company => {
+                    const total = companyMonthlyTotals[company];
+                    const count = companyTransferCounts[company];
+                    const average = count > 0 ? total / count : 0;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${company}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${total.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${average.toFixed(2)}</td>
+                    `;
+                    paymentsTableBody.appendChild(row);
+                });
             }
         }
 
-        async function saveToFirebase(collection, data) {
-            try {
-                const dbRef = window.firebaseRef(window.firebaseDatabase, collection);
-                await window.firebaseSet(dbRef, data);
-                return true;
-            } catch (error) {
-                console.error('Error guardando en Firebase:', error);
-                showMessage('Error al guardar los datos: ' + error.message, "error");
-                return false;
-            }
+        function updateDepartmentExpensesChart() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const departmentTotals = {};
+            transfers.forEach(transfer => {
+                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && 
+                    transfer.dateTime.getMonth() === currentMonth && 
+                    transfer.dateTime.getFullYear() === currentYear) {
+                    const department = transfer.department || 'Sin Departamento';
+                    departmentTotals[department] = (departmentTotals[department] || 0) + transfer.cost;
+                }
+            });
+            const departments = Object.keys(departmentTotals);
+            const totals = Object.values(departmentTotals);
+            if (departmentExpensesChart) { departmentExpensesChart.destroy(); }
+            departmentExpensesChart = new Chart(departmentExpensesChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: departments,
+                    datasets: [{
+                        label: 'Gasto Mensual por Departamento ($)',
+                        data: totals,
+                        backgroundColor: '#005BAA',
+                        borderColor: '#004080',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Gasto: $${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(0)}`,
+                            color: '#005BAA',
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        async function loadFromFirebase(collection) {
+        // Event Listeners
+        transferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = submitButton;
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+            document.body.classList.add('loading');
+
             try {
-                const dbRef = window.firebaseRef(window.firebaseDatabase, collection);
-                const snapshot = await window.firebaseGet(dbRef);
-                if (snapshot.exists()) {
-                    return snapshot.val();
-                } else {
-                    return [];
+                const transferData = {
+                    requesterName: requesterNameInput.value.trim(),
+                    department: departmentInput.value,
+                    originPlace: originPlaceInput.value.trim(),
+                    returnAddress: returnAddressInput.value.trim(),
+                    dateTime: normalizeDateToStartOfDay(new Date(transferDateInput.value)),
+                    cost: parseFloat(costInput.value),
+                    authorizerName: authorizerNameInput.value,
+                    companyName: companyNameInput.value
+                };
+
+                const success = await saveTransfer(transferData);
+                if (success) {
+                    transferForm.reset();
+                    transferDateInput.value = new Date().toISOString().slice(0, 10);
+                    if (editingId) {
+                        cancelEdit();
+                    }
                 }
             } catch (error) {
-                console.error('Error cargando desde Firebase:', error);
-                showMessage('Error al cargar los datos: ' + error.message, "error");
-                return [];
+                console.error("Error al procesar el formulario:", error);
+                showMessage("Error al procesar la solicitud.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                document.body.classList.remove('loading');
             }
-        }
+        });
 
-        async function loadAllDataFromFirebase() {
+        filterRequesterInput.addEventListener('input', renderTransfers);
+        clearFilterBtn.addEventListener('click', () => {
+            filterRequesterInput.value = '';
+            renderTransfers();
+        });
+
+        exportCsvBtn.addEventListener('click', () => {
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Fecha,Solicitante,Departamento,Origen,Dirección Vuelta,Autorizador,Empresa,Costo\n"
+                + transfers.map(t => 
+                    `"${t.dateTime.toLocaleDateString('es-ES')}","${t.requesterName}","${t.department}","${t.originPlace}","${t.returnAddress || 'N/A'}","${t.authorizerName}","${t.companyName}",${t.cost.toFixed(2)}`
+                ).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `traslados_taxi_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessage("Archivo CSV exportado con éxito.", "success");
+        });
+
+        importExcelBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
             try {
-                setLoadingState(true);
-                
-                const transfersData = await loadFromFirebase('transfers');
-                window.transfers = Array.isArray(transfersData) ? transfersData : [];
-                
-                // Convertir fechas string a objetos Date
-                window.transfers = window.transfers.map(transfer => {
-                    try {
-                        let dateObj = new Date(transfer.dateTime);
-                        dateObj.setHours(0, 0, 0, 0);
-                        
-                        if (isNaN(dateObj.getTime())) {
-                            dateObj = new Date();
-                            dateObj.setHours(0, 0, 0, 0);
-                        }
-                        return {
-                            ...transfer,
-                            dateTime: dateObj
-                        };
-                    } catch (error) {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        return {
-                            ...transfer,
-                            dateTime: today
-                        };
-                    }
-                });
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                window.transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-                renderTransfers();
-                updateSummaries();
-                showMessage('Datos cargados correctamente', 'success');
+                // Saltar la fila de encabezado y procesar datos
+                const importedTransfers = [];
+                for (let i = 1; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    if (row.length >= 8) {
+                        const [dateStr, requesterName, department, originPlace, returnAddress, authorizerName, companyName, cost] = row;
+                        
+                        // Parsear fecha (asumiendo formato DD/MM/YYYY)
+                        let dateTime;
+                        if (dateStr.includes('/')) {
+                            const [day, month, year] = dateStr.split('/');
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
+                        } else {
+                            dateTime = normalizeDateToStartOfDay(new Date(dateStr));
+                        }
+
+                        if (!isNaN(dateTime.getTime())) {
+                            importedTransfers.push({
+                                requesterName: requesterName?.toString() || '',
+                                department: department?.toString() || '',
+                                originPlace: originPlace?.toString() || '',
+                                returnAddress: returnAddress?.toString() || '',
+                                dateTime: dateTime,
+                                cost: parseFloat(cost) || 0,
+                                authorizerName: authorizerName?.toString() || '',
+                                companyName: companyName?.toString() || ''
+                            });
+                        }
+                    }
+                }
+
+                // Guardar todos los traslados importados
+                let successCount = 0;
+                for (const transfer of importedTransfers) {
+                    const success = await saveTransfer(transfer);
+                    if (success) successCount++;
+                }
+
+                showMessage(`Importación completada: ${successCount}/${importedTransfers.length} traslados importados.`, "success");
+                fileInput.value = '';
 
             } catch (error) {
-                console.error('Error cargando datos:', error);
-                showMessage('Error al cargar los datos: ' + error.message, "error");
-            } finally {
-                setLoadingState(false);
+                console.error("Error al importar archivo:", error);
+                showMessage("Error al importar el archivo. Verifica el formato.", "error");
             }
-        }
+        });
 
-        async function saveTransfers() {
-            try {
-                const transfersToStore = window.transfers.map(t => ({
-                    ...t,
-                    dateTime: t.dateTime.toISOString().slice(0, 10)
-                }));
-                
-                const success = await saveToFirebase('transfers', transfersToStore);
-                return success;
-            } catch (e) {
-                console.error("Error al guardar datos en Firebase:", e);
-                showMessage("Error al guardar datos.", "error");
-                return false;
-            }
-        }
-
-        function showMessage(message, type = 'info') {
-            if (!window.messageBox) {
-                console.log(`[${type.toUpperCase()}] ${message}`);
+        deleteSelectedBtn.addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showMessage("Por favor, selecciona al menos un traslado para eliminar.", "error");
                 return;
             }
-            
-            try {
-                window.messageBox.textContent = message;
-                window.messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700');
-                
-                if (type === 'error') {
-                    window.messageBox.classList.add('bg-red-100', 'text-red-700');
-                } else if (type === 'success') {
-                    window.messageBox.classList.add('bg-green-100', 'text-green-700');
-                } else {
-                    window.messageBox.classList.add('bg-yellow-100', 'text-yellow-700');
-                }
-                
-                window.messageBox.classList.remove('hidden');
-                setTimeout(() => {
-                    if (window.messageBox) {
-                        window.messageBox.classList.add('hidden');
-                    }
-                }, 5000);
-            } catch (error) {
-                console.warn('Error mostrando mensaje:', error);
+
+            if (!confirm(`¿Estás seguro de que deseas eliminar ${checkboxes.length} traslado(s)? Esta acción no se puede deshacer.`)) {
+                return;
             }
-        }
 
-        // ... (el resto de las funciones se mantienen igual pero usando window.variable)
-
-        // Hacer funciones globales necesarias
-        window.startEditTransfer = function(index) {
-            try {
-                const transfer = window.transfers[index];
-                if (!transfer) {
-                    showMessage("Error: Traslado no encontrado.", "error");
-                    return;
-                }
-
-                if (window.requesterNameInput) window.requesterNameInput.value = transfer.requesterName;
-                if (window.departmentInput) window.departmentInput.value = transfer.department;
-                if (window.originPlaceInput) window.originPlaceInput.value = transfer.originPlace;
-                if (window.returnAddressInput) window.returnAddressInput.value = transfer.returnAddress;
-                if (window.transferDateInput) window.transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
-                if (window.costInput) window.costInput.value = transfer.cost.toFixed(2);
-                if (window.authorizerNameInput) window.authorizerNameInput.value = transfer.authorizerName;
-                if (window.companyNameInput) window.companyNameInput.value = transfer.companyName;
-
-                window.editingIndex = index;
-                if (window.submitButton) window.submitButton.textContent = 'Guardar Cambios';
-                if (window.cancelEditBtn) window.cancelEditBtn.classList.remove('hidden');
-
-                if (window.registerSection) {
-                    window.registerSection.scrollIntoView({ behavior: 'smooth' });
-                }
-                showMessage(`Modo Edición: Editando traslado de ${transfer.requesterName}.`, "info");
-            } catch (error) {
-                console.error('Error iniciando edición:', error);
-                showMessage('Error al iniciar la edición', 'error');
+            const idsToDelete = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+            const success = await deleteTransfers(idsToDelete);
+            if (success) {
+                selectAllCheckboxes.checked = false;
             }
-        };
+        });
 
-        // Las demás funciones (renderTransfers, updateSummaries, etc.) se mantienen igual
-        // pero usando las variables globales window.*
+        selectAllCheckboxes.addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+        });
 
+        // Inicialización
+        transferDateInput.value = new Date().toISOString().slice(0, 10);
+        loadTransfers();
+
+        // Limpiar suscripción al cerrar la página
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribeTransfers) {
+                unsubscribeTransfers();
+            }
+        });
     </script>
 </body>
 </html>
