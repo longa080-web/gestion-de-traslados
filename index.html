@@ -12,6 +12,37 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
+            authDomain: "gestion-de-traslados.firebaseapp.com",
+            databaseURL: "https://gestion-de-traslados-default-rtdb.firebaseio.com",
+            projectId: "gestion-de-traslados",
+            storageBucket: "gestion-de-traslados.firebasestorage.app",
+            messagingSenderId: "547255399573",
+            appId: "1:547255399573:web:c636870e286428fb81979c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Hacer disponible la base de datos globalmente
+        window.firebaseDatabase = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseGet = get;
+        window.firebasePush = push;
+        window.firebaseUpdate = update;
+        window.firebaseRemove = remove;
+    </script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -28,6 +59,7 @@
         #transferTableBody tr:nth-child(even) {
             background-color: #f8f8f8;
         }
+        .loading { opacity: 0.6; pointer-events: none; }
     </style>
 </head>
 <body class="bg-gray-100 p-4 min-h-screen flex flex-col items-center">
@@ -40,6 +72,9 @@
                 Inter Tu mundo, nuestro compromiso.
             </p>
             <p class="text-md text-white mt-2 relative z-10">Registro y gestión de solicitudes de traslados de taxi</p>
+            <div id="connectionStatus" class="absolute top-4 right-4 text-sm bg-green-500 px-2 py-1 rounded hidden text-white">
+                Conectado a Firebase
+            </div>
         </header>
 
         <section id="registerSection" class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
@@ -282,9 +317,10 @@
         const annualTotalSpan = document.getElementById('annualTotal');
         const noTransfersMessage = document.getElementById('noTransfersMessage');
         const noPaymentsMessage = document.getElementById('noPaymentsMessage');
-        const submitButton = document.getElementById('submitButton'); // Nuevo: Botón de submit
-        const cancelEditBtn = document.getElementById('cancelEditBtn'); // Nuevo: Botón de cancelar edición
-        const registerSection = document.getElementById('registerSection'); // Nuevo: Sección del formulario
+        const submitButton = document.getElementById('submitButton');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const registerSection = document.getElementById('registerSection');
+        const connectionStatus = document.getElementById('connectionStatus');
 
         const annualExpensesChartCtx = document.getElementById('annualExpensesChart').getContext('2d');
         const companyExpensesChartCtx = document.getElementById('companyExpensesChart').getContext('2d');
@@ -306,7 +342,122 @@
         const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
 
         let transfers = [];
-        let editingIndex = -1; // -1 significa modo 'agregar', cualquier otro valor es el índice del traslado a editar
+        let editingIndex = -1;
+        let editingId = null; // Nuevo: ID único para edición en Firebase
+
+        // FUNCIONES DE FIREBASE - NUEVAS
+
+        // Función para esperar a que Firebase esté listo
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkFirebase = () => {
+                    if (window.firebaseDatabase) {
+                        connectionStatus.classList.remove('hidden');
+                        resolve();
+                    } else {
+                        setTimeout(checkFirebase, 100);
+                    }
+                };
+                checkFirebase();
+            });
+        }
+
+        // Guardar datos en Firebase
+        async function saveToFirebase(collection, data) {
+            try {
+                const dbRef = firebaseRef(firebaseDatabase, collection);
+                await firebaseSet(dbRef, data);
+                return true;
+            } catch (error) {
+                console.error('Error guardando en Firebase:', error);
+                showMessage('Error al guardar los datos: ' + error.message, "error");
+                return false;
+            }
+        }
+
+        // Cargar datos desde Firebase
+        async function loadFromFirebase(collection) {
+            try {
+                const dbRef = firebaseRef(firebaseDatabase, collection);
+                const snapshot = await firebaseGet(dbRef);
+                if (snapshot.exists()) {
+                    return snapshot.val();
+                } else {
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error cargando desde Firebase:', error);
+                showMessage('Error al cargar los datos: ' + error.message, "error");
+                return [];
+            }
+        }
+
+        // Cargar todos los datos desde Firebase
+        async function loadAllDataFromFirebase() {
+            try {
+                setLoadingState(true);
+                
+                const transfersData = await loadFromFirebase('transfers');
+                
+                // Convertir datos de Firebase a formato de aplicación
+                transfers = Array.isArray(transfersData) ? transfersData : [];
+                
+                // Convertir fechas string a objetos Date
+                transfers = transfers.map(transfer => {
+                    let dateObj = new Date(transfer.dateTime);
+                    dateObj = normalizeDateToStartOfDay(dateObj);
+                    
+                    if (isNaN(dateObj.getTime())) {
+                        console.warn("Invalid date found in stored data, using current date as fallback:", transfer.dateTime);
+                        dateObj = normalizeDateToStartOfDay(new Date());
+                    }
+                    return {
+                        ...transfer,
+                        dateTime: dateObj
+                    };
+                });
+
+                transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+                renderTransfers();
+                updateSummaries();
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showMessage('Error al cargar los datos: ' + error.message, "error");
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // Función para mostrar estado de carga
+        function setLoadingState(loading) {
+            const mainElement = document.querySelector('main');
+            if (loading) {
+                mainElement.classList.add('loading');
+            } else {
+                mainElement.classList.remove('loading');
+            }
+        }
+
+        // Guardar traslados en Firebase
+        async function saveTransfers() {
+            try {
+                // Convertir fechas a string para almacenamiento
+                const transfersToStore = transfers.map(t => ({
+                    ...t,
+                    dateTime: t.dateTime.toISOString().slice(0, 10)
+                }));
+                
+                const success = await saveToFirebase('transfers', transfersToStore);
+                return success;
+            } catch (e) {
+                console.error("Error al guardar datos en Firebase:", e);
+                showMessage("Error al guardar datos.", "error");
+                return false;
+            }
+        }
+
+        // FUNCIONES EXISTENTES MODIFICADAS
 
         function showMessage(message, type = 'info', box = messageBox) {
             box.textContent = message;
@@ -328,47 +479,6 @@
             const d = new Date(date);
             d.setHours(0, 0, 0, 0);
             return d;
-        }
-
-        function loadTransfers() {
-            try {
-                const storedTransfers = localStorage.getItem('taxiTransfersInter');
-                if (storedTransfers) {
-                    transfers = JSON.parse(storedTransfers).map(transfer => {
-                        let dateObj = new Date(transfer.dateTime);
-                        dateObj = normalizeDateToStartOfDay(dateObj);
-                        
-                        if (isNaN(dateObj.getTime())) {
-                            console.warn("Invalid date found in stored data, using current date as fallback:", transfer.dateTime);
-                            dateObj = normalizeDateToStartOfDay(new Date());
-                        }
-                        return {
-                            returnAddress: transfer.returnAddress || '',
-                            ...transfer,
-                            dateTime: dateObj
-                        };
-                    });
-                }
-                transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-            } catch (e) {
-                console.error("Error al cargar datos de localStorage:", e);
-                showMessage("Error al cargar datos guardados. Los datos podrían estar corruptos o el formato inválido. Iniciando con datos vacíos.", "error");
-                transfers = [];
-            }
-        }
-
-        function saveTransfers() {
-            try {
-                const transfersToStore = transfers.map(t => ({
-                    ...t,
-                    // Asegura que la fecha se guarde como YYYY-MM-DD
-                    dateTime: t.dateTime.toISOString().slice(0, 10) 
-                }));
-                localStorage.setItem('taxiTransfersInter', JSON.stringify(transfersToStore));
-            } catch (e) {
-                console.error("Error al guardar datos en localStorage:", e);
-                showMessage("Error al guardar datos. El almacenamiento podría estar lleno.", "error");
-            }
         }
 
         function renderTransfers() {
@@ -400,7 +510,7 @@
                 noTransfersMessage.classList.remove('hidden');
             } else {
                 noTransfersMessage.classList.add('hidden');
-                sortedTransfers.forEach((transfer) => {
+                sortedTransfers.forEach((transfer, displayIndex) => {
                     const row = document.createElement('tr');
                     const originalIndex = transfers.indexOf(transfer);
                     if (originalIndex === -1) return;
@@ -436,10 +546,6 @@
             }
         }
         
-        /**
-         * NUEVA FUNCIÓN: Carga los datos de un traslado en el formulario para su edición.
-         * @param {number} index - El índice del traslado en el array 'transfers'.
-         */
         function startEditTransfer(index) {
             const transfer = transfers[index];
             if (!transfer) {
@@ -447,43 +553,255 @@
                 return;
             }
 
-            // 1. Cargar datos en el formulario
             requesterNameInput.value = transfer.requesterName;
             departmentInput.value = transfer.department;
             originPlaceInput.value = transfer.originPlace;
             returnAddressInput.value = transfer.returnAddress;
-            // La fecha se carga como YYYY-MM-DD
             transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
             costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
 
-            // 2. Establecer el modo edición
             editingIndex = index;
             submitButton.textContent = 'Guardar Cambios';
             cancelEditBtn.classList.remove('hidden');
 
-            // 3. Desplazarse al formulario
             registerSection.scrollIntoView({ behavior: 'smooth' });
             showMessage(`Modo Edición: Editando traslado de ${transfer.requesterName}.`, "info");
         }
 
-        /**
-         * NUEVA FUNCIÓN: Cancela el modo edición y reinicia el formulario.
-         */
         function cancelEdit() {
             editingIndex = -1;
+            editingId = null;
             transferForm.reset();
             submitButton.textContent = 'Registrar Traslado';
             cancelEditBtn.classList.add('hidden');
-            // Re-inicializar la fecha con el día actual
             transferDateInput.value = new Date().toISOString().slice(0, 10);
             showMessage("Modo de registro restaurado.", "success");
         }
 
         cancelEditBtn.addEventListener('click', cancelEdit);
 
+        // MODIFICAR EL EVENTO SUBMIT PARA USAR FIREBASE
+        transferForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setLoadingState(true);
+            
+            const dateValue = new Date(transferDateInput.value); 
+            const transferData = {
+                dateTime: normalizeDateToStartOfDay(dateValue), 
+                requesterName: requesterNameInput.value,
+                department: departmentInput.value,
+                originPlace: originPlaceInput.value,
+                returnAddress: returnAddressInput.value,
+                cost: parseFloat(costInput.value),
+                authorizerName: authorizerNameInput.value,
+                companyName: companyNameInput.value
+            };
 
+            if (editingIndex > -1) {
+                // Modo Edición: Actualizar el traslado existente
+                transfers[editingIndex] = transferData;
+                const success = await saveTransfers();
+                if (success) {
+                    showMessage("¡Traslado actualizado con éxito!", "success");
+                    cancelEdit();
+                }
+            } else {
+                // Modo Registro: Añadir un nuevo traslado
+                transfers.push(transferData);
+                const success = await saveTransfers();
+                if (success) {
+                    showMessage("¡Traslado registrado con éxito!", "success");
+                    transferForm.reset();
+                    transferDateInput.value = new Date().toISOString().slice(0, 10);
+                }
+            }
+
+            transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+            renderTransfers();
+            updateSummaries();
+            setLoadingState(false);
+        });
+
+        // MODIFICAR FUNCIONES DE ELIMINACIÓN PARA USAR FIREBASE
+        deleteSelectedBtn.addEventListener('click', async () => {
+            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                .map(cb => parseInt(cb.dataset.index, 10))
+                .sort((a, b) => b - a);
+            if (selectedIndices.length > 0) {
+                if (confirm(`¿Estás seguro de que quieres eliminar ${selectedIndices.length} traslados seleccionados?`)) {
+                    setLoadingState(true);
+                    selectedIndices.forEach(index => {
+                        transfers.splice(index, 1);
+                    });
+                    const success = await saveTransfers();
+                    if (success) {
+                        renderTransfers();
+                        updateSummaries();
+                        showMessage("Traslados eliminados con éxito.", "success");
+                    }
+                    setLoadingState(false);
+                }
+            } else {
+                showMessage("Por favor, selecciona al menos un traslado para eliminar.", "info");
+            }
+        });
+
+        // MODIFICAR FUNCIÓN DE IMPORTACIÓN PARA USAR FIREBASE
+        function importCsv(csvText) {
+            const newTransfers = [];
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length <= 1) {
+                showMessage("No se encontraron datos válidos en el archivo.", "error");
+                return;
+            }
+
+            const headerLine = lines[0];
+            const dataLines = lines.slice(1);
+            const headers = headerLine.split(';').map(h => h.trim());
+            
+            const columnIndices = {
+                date: headers.indexOf('Fecha'),
+                requesterName: headers.indexOf('Solicitante'),
+                department: headers.indexOf('Departamento'),
+                originPlace: headers.indexOf('Lugar de Origen'),
+                returnAddress: headers.indexOf('Dirección de Vuelta'),
+                authorizerName: headers.indexOf('Quién Autoriza'),
+                companyName: headers.indexOf('Empresa de Traslado'),
+                cost: headers.indexOf('Costo ($)')
+            };
+            
+            for (const line of dataLines) {
+                const values = line.split(';');
+                const dateStr = values[columnIndices.date];
+                
+                if (!dateStr) continue;
+
+                const transferDate = new Date(dateStr.replace(/(\d{2})[-/](\d{2})[-/](\d{4})/, '$3-$2-$1')); 
+                
+                const costValue = parseFloat(values[columnIndices.cost].replace(',', '.'));
+                
+                if (isNaN(transferDate.getTime()) || isNaN(costValue)) continue;
+                
+                newTransfers.push({
+                    dateTime: normalizeDateToStartOfDay(transferDate), 
+                    requesterName: values[columnIndices.requesterName],
+                    department: values[columnIndices.department],
+                    originPlace: values[columnIndices.originPlace],
+                    returnAddress: values[columnIndices.returnAddress] || '',
+                    authorizerName: values[columnIndices.authorizerName],
+                    companyName: values[columnIndices.companyName],
+                    cost: costValue
+                });
+            }
+        
+            if (newTransfers.length > 0) {
+                transfers = [...transfers, ...newTransfers]; 
+                saveTransfers().then(success => {
+                    if (success) {
+                        renderTransfers();
+                        updateSummaries();
+                        showMessage(`Se importaron ${newTransfers.length} traslados con éxito.`, "success");
+                    }
+                });
+            } else {
+                showMessage("No se encontraron datos válidos para importar en el archivo.", "error");
+            }
+        }
+
+        // MODIFICAR EVENT LISTENER DE IMPORTACIÓN
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) { return; }
+            
+            setLoadingState(true);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const fileData = e.target.result;
+                let processedData;
+                
+                if (file.name.endsWith('.csv')) {
+                    processedData = new TextDecoder("utf-8").decode(new Uint8Array(fileData));
+                    importCsv(processedData);
+                    setLoadingState(false);
+                    return;
+                } else {
+                    processedData = fileData;
+                }
+
+                const workbook = XLSX.read(processedData, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: true});
+                const headerMap = {
+                    'Fecha': 'date',
+                    'Solicitante': 'requesterName',
+                    'Departamento': 'department',
+                    'Lugar de Origen': 'originPlace',
+                    'Dirección de Vuelta': 'returnAddress',
+                    'Quién Autoriza': 'authorizerName',
+                    'Empresa de Traslado': 'companyName',
+                    'Costo ($)': 'cost'
+                };
+                
+                let headers;
+                if (rawData && rawData.length > 0) {
+                    headers = rawData[0].map(h => h.trim());
+                }
+                
+                const importedTransfers = [];
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row || row.length === 0) continue;
+
+                    const transfer = {};
+                    headers.forEach((header, index) => {
+                        const newKey = headerMap[header] || header;
+                        transfer[newKey] = row[index];
+                    });
+                    if (transfer.companyName && String(transfer.companyName).toLowerCase().includes('total')) {
+                        continue;
+                    }
+
+                    let transferDate;
+                    if (typeof transfer.date === 'number') {
+                        transferDate = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false})[i][headers.indexOf('Fecha')];
+                        transferDate = new Date(transferDate);
+                    } else {
+                        transferDate = new Date(transfer.date);
+                    }
+                    
+                    const cleanCost = String(transfer.cost).replace(',', '.');
+                    const costValue = parseFloat(cleanCost);
+                    
+                    if (isNaN(costValue) || isNaN(transferDate.getTime())) continue;
+
+                    importedTransfers.push({
+                        dateTime: normalizeDateToStartOfDay(transferDate), 
+                        requesterName: transfer.requesterName,
+                        department: transfer.department,
+                        originPlace: transfer.originPlace,
+                        returnAddress: transfer.returnAddress || '',
+                        authorizerName: transfer.authorizerName,
+                        companyName: transfer.companyName,
+                        cost: costValue
+                    });
+                }
+                
+                transfers = importedTransfers; 
+                const success = await saveTransfers();
+                if (success) {
+                    renderTransfers();
+                    updateSummaries();
+                    showMessage(`Se importaron ${importedTransfers.length} traslados con éxito.`, "success");
+                }
+                setLoadingState(false);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // EL RESTO DE LAS FUNCIONES PERMANECEN IGUAL
         function updateSummaries() {
             const now = new Date();
             const todayStart = normalizeDateToStartOfDay(now);
@@ -777,192 +1095,17 @@
             }
         }
 
-        transferForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            
-            const dateValue = new Date(transferDateInput.value); 
-            const transferData = {
-                dateTime: normalizeDateToStartOfDay(dateValue), 
-                requesterName: requesterNameInput.value,
-                department: departmentInput.value,
-                originPlace: originPlaceInput.value,
-                returnAddress: returnAddressInput.value,
-                cost: parseFloat(costInput.value),
-                authorizerName: authorizerNameInput.value,
-                companyName: companyNameInput.value
-            };
-
-            if (editingIndex > -1) {
-                // Modo Edición: Actualizar el traslado existente
-                transfers[editingIndex] = transferData;
-                showMessage("¡Traslado actualizado con éxito!", "success");
-                cancelEdit(); // Volver al modo registro
-            } else {
-                // Modo Registro: Añadir un nuevo traslado
-                transfers.push(transferData);
-                showMessage("¡Traslado registrado con éxito!", "success");
-                transferForm.reset();
-                // Re-inicializar la fecha con el día actual
-                transferDateInput.value = new Date().toISOString().slice(0, 10);
-            }
-
-            transfers.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-            saveTransfers();
-            renderTransfers();
-            updateSummaries();
-        });
-
+        // EVENT LISTENERS QUE PERMANECEN IGUALES
         filterRequesterInput.addEventListener('input', renderTransfers);
         clearFilterBtn.addEventListener('click', () => {
             filterRequesterInput.value = '';
             renderTransfers();
         });
 
-        // Lógica de importación (sin cambios)
         importExcelBtn.addEventListener('click', () => {
             fileInput.click();
         });
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) { return; }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = e.target.result;
-                let processedData;
-                
-                if (file.name.endsWith('.csv')) {
-                    processedData = new TextDecoder("utf-8").decode(new Uint8Array(fileData));
-                    importCsv(processedData);
-                    return;
-                } else {
-                    processedData = fileData;
-                }
 
-                const workbook = XLSX.read(processedData, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: true});
-                const headerMap = {
-                    'Fecha': 'date',
-                    'Solicitante': 'requesterName',
-                    'Departamento': 'department',
-                    'Lugar de Origen': 'originPlace',
-                    'Dirección de Vuelta': 'returnAddress',
-                    'Quién Autoriza': 'authorizerName',
-                    'Empresa de Traslado': 'companyName',
-                    'Costo ($)': 'cost'
-                };
-                
-                let headers;
-                if (rawData && rawData.length > 0) {
-                    headers = rawData[0].map(h => h.trim());
-                }
-                
-                const importedTransfers = [];
-                for (let i = 1; i < rawData.length; i++) {
-                    const row = rawData[i];
-                    if (!row || row.length === 0) continue;
-
-                    const transfer = {};
-                    headers.forEach((header, index) => {
-                        const newKey = headerMap[header] || header;
-                        transfer[newKey] = row[index];
-                    });
-                    if (transfer.companyName && String(transfer.companyName).toLowerCase().includes('total')) {
-                        continue;
-                    }
-
-                    let transferDate;
-                    if (typeof transfer.date === 'number') {
-                        transferDate = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false})[i][headers.indexOf('Fecha')];
-                        transferDate = new Date(transferDate);
-                    } else {
-                        transferDate = new Date(transfer.date);
-                    }
-                    
-                    const cleanCost = String(transfer.cost).replace(',', '.');
-                    const costValue = parseFloat(cleanCost);
-                    
-                    if (isNaN(costValue) || isNaN(transferDate.getTime())) continue;
-
-                    importedTransfers.push({
-                        dateTime: normalizeDateToStartOfDay(transferDate), 
-                        requesterName: transfer.requesterName,
-                        department: transfer.department,
-                        originPlace: transfer.originPlace,
-                        returnAddress: transfer.returnAddress || '',
-                        authorizerName: transfer.authorizerName,
-                        companyName: transfer.companyName,
-                        cost: costValue
-                    });
-                }
-                
-                transfers = importedTransfers; 
-                saveTransfers();
-                renderTransfers();
-                updateSummaries();
-                showMessage(`Se importaron ${importedTransfers.length} traslados con éxito.`, "success");
-            };
-            reader.readAsArrayBuffer(file);
-        });
-        function importCsv(csvText) {
-            const newTransfers = [];
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length <= 1) {
-                showMessage("No se encontraron datos válidos en el archivo.", "error");
-                return;
-            }
-
-            const headerLine = lines[0];
-            const dataLines = lines.slice(1);
-            const headers = headerLine.split(';').map(h => h.trim());
-            
-            const columnIndices = {
-                date: headers.indexOf('Fecha'),
-                requesterName: headers.indexOf('Solicitante'),
-                department: headers.indexOf('Departamento'),
-                originPlace: headers.indexOf('Lugar de Origen'),
-                returnAddress: headers.indexOf('Dirección de Vuelta'),
-                authorizerName: headers.indexOf('Quién Autoriza'),
-                companyName: headers.indexOf('Empresa de Traslado'),
-                cost: headers.indexOf('Costo ($)')
-            };
-            
-            for (const line of dataLines) {
-                const values = line.split(';');
-                const dateStr = values[columnIndices.date];
-                
-                if (!dateStr) continue;
-
-                const transferDate = new Date(dateStr.replace(/(\d{2})[-/](\d{2})[-/](\d{4})/, '$3-$2-$1')); 
-                
-                const costValue = parseFloat(values[columnIndices.cost].replace(',', '.'));
-                
-                if (isNaN(transferDate.getTime()) || isNaN(costValue)) continue;
-                
-                newTransfers.push({
-                    dateTime: normalizeDateToStartOfDay(transferDate), 
-                    requesterName: values[columnIndices.requesterName],
-                    department: values[columnIndices.department],
-                    originPlace: values[columnIndices.originPlace],
-                    returnAddress: values[columnIndices.returnAddress] || '',
-                    authorizerName: values[columnIndices.authorizerName],
-                    companyName: values[columnIndices.companyName],
-                    cost: costValue
-                });
-            }
-        
-            if (newTransfers.length > 0) {
-                transfers = [...transfers, ...newTransfers]; 
-                saveTransfers();
-                renderTransfers();
-                updateSummaries();
-                showMessage(`Se importaron ${newTransfers.length} traslados con éxito.`, "success");
-            } else {
-                showMessage("No se encontraron datos válidos para importar en el archivo.", "error");
-            }
-        }
-        
         exportCsvBtn.addEventListener('click', () => {
             if (transfers.length === 0) {
                 showMessage("No hay datos para exportar.", "error");
@@ -1010,33 +1153,16 @@
             });
         });
 
-        deleteSelectedBtn.addEventListener('click', () => {
-            const selectedIndices = Array.from(document.querySelectorAll('.row-checkbox:checked'))
-                .map(cb => parseInt(cb.dataset.index, 10))
-                .sort((a, b) => b - a);
-            if (selectedIndices.length > 0) {
-                if (confirm(`¿Estás seguro de que quieres eliminar ${selectedIndices.length} traslados seleccionados?`)) {
-                    selectedIndices.forEach(index => {
-                        transfers.splice(index, 1);
-                    });
-                    saveTransfers();
-                    renderTransfers();
-                    updateSummaries();
-                    showMessage("Traslados eliminados con éxito.", "success");
-                }
-            } else {
-                showMessage("Por favor, selecciona al menos un traslado para eliminar.", "info");
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTransfers();
+        // INICIALIZACIÓN MODIFICADA
+        document.addEventListener('DOMContentLoaded', async () => {
+            await waitForFirebase();
+            await loadAllDataFromFirebase();
             renderTransfers();
             updateSummaries();
             transferDateInput.value = new Date().toISOString().slice(0, 10);
         });
 
-        // Hacer la función startEditTransfer accesible globalmente (necesario para el onclick en HTML)
+        // Hacer la función startEditTransfer accesible globalmente
         window.startEditTransfer = startEditTransfer;
     </script>
 </body>
