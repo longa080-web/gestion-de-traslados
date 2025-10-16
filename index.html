@@ -7,46 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS desde CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js y dependencias -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
-            authDomain: "gestion-de-traslados.firebaseapp.com",
-            projectId: "gestion-de-traslados",
-            storageBucket: "gestion-de-traslados.firebasestorage.app",
-            messagingSenderId: "547255399573",
-            appId: "1:547255399573:web:c636870e286428fb81979c"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Hacer Firestore disponible globalmente
-        window.firebaseApp = app;
-        window.firestore = {
-            db,
-            collection,
-            addDoc,
-            getDocs,
-            updateDoc,
-            deleteDoc,
-            doc,
-            onSnapshot,
-            query,
-            orderBy
-        };
-    </script>
+    <!-- Firebase SDK (versión CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
         body {
@@ -307,6 +279,20 @@
     </div>
 
     <script>
+        // Inicializar Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
+            authDomain: "gestion-de-traslados.firebaseapp.com",
+            projectId: "gestion-de-traslados",
+            storageBucket: "gestion-de-traslados.firebasestorage.app",
+            messagingSenderId: "547255399573",
+            appId: "1:547255399573:web:c636870e286428fb81979c"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         Chart.register(ChartDataLabels);
         const transferForm = document.getElementById('transferForm');
         const requesterNameInput = document.getElementById('requesterName');
@@ -351,7 +337,7 @@
         const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
 
         let transfers = [];
-        let editingId = null; // Ahora usamos el ID de Firestore en lugar del índice
+        let editingId = null;
         let unsubscribeTransfers = null;
 
         function showMessage(message, type = 'info', box = messageBox) {
@@ -377,35 +363,35 @@
         }
 
         // Función para cargar traslados desde Firestore
-        async function loadTransfers() {
+        function loadTransfers() {
             try {
-                showMessage("Cargando datos...", "info");
+                showMessage("Conectando a la base de datos...", "info");
                 
-                const q = window.firestore.query(
-                    window.firestore.collection(window.firestore.db, 'transfers'),
-                    window.firestore.orderBy('dateTime', 'asc')
-                );
+                // Usar Firestore directamente
+                const transfersRef = db.collection('transfers');
                 
                 // Suscribirse a cambios en tiempo real
-                unsubscribeTransfers = window.firestore.onSnapshot(q, (querySnapshot) => {
-                    transfers = [];
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        transfers.push({
-                            id: doc.id,
-                            ...data,
-                            dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
+                unsubscribeTransfers = transfersRef.orderBy('dateTime', 'asc')
+                    .onSnapshot((querySnapshot) => {
+                        transfers = [];
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            transfers.push({
+                                id: doc.id,
+                                ...data,
+                                dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
+                            });
                         });
+                        
+                        renderTransfers();
+                        updateSummaries();
+                        updateConnectionStatus(true);
+                        showMessage("Datos cargados correctamente", "success");
+                    }, (error) => {
+                        console.error("Error en tiempo real:", error);
+                        updateConnectionStatus(false);
+                        showMessage("Error de conexión con la base de datos", "error");
                     });
-                    
-                    renderTransfers();
-                    updateSummaries();
-                    updateConnectionStatus(true);
-                }, (error) => {
-                    console.error("Error en tiempo real:", error);
-                    updateConnectionStatus(false);
-                    showMessage("Error de conexión con la base de datos", "error");
-                });
 
             } catch (e) {
                 console.error("Error al cargar datos de Firestore:", e);
@@ -438,12 +424,11 @@
                 
                 if (editingId) {
                     // Actualizar documento existente
-                    const docRef = window.firestore.doc(window.firestore.db, 'transfers', editingId);
-                    await window.firestore.updateDoc(docRef, dataToSave);
+                    await db.collection('transfers').doc(editingId).update(dataToSave);
                     showMessage("¡Traslado actualizado con éxito!", "success");
                 } else {
                     // Crear nuevo documento
-                    await window.firestore.addDoc(window.firestore.collection(window.firestore.db, 'transfers'), dataToSave);
+                    await db.collection('transfers').add(dataToSave);
                     showMessage("¡Traslado registrado con éxito!", "success");
                 }
                 
@@ -459,8 +444,7 @@
         async function deleteTransfers(ids) {
             try {
                 const deletePromises = ids.map(id => {
-                    const docRef = window.firestore.doc(window.firestore.db, 'transfers', id);
-                    return window.firestore.deleteDoc(docRef);
+                    return db.collection('transfers').doc(id).delete();
                 });
                 
                 await Promise.all(deletePromises);
@@ -573,7 +557,6 @@
 
         cancelEditBtn.addEventListener('click', cancelEdit);
 
-        // El resto de las funciones (updateSummaries, updateMonthlyExpensesChart, etc.) se mantienen igual
         function updateSummaries() {
             const now = new Date();
             const todayStart = normalizeDateToStartOfDay(now);
@@ -996,8 +979,10 @@
         });
 
         // Inicialización
-        transferDateInput.value = new Date().toISOString().slice(0, 10);
-        loadTransfers();
+        document.addEventListener('DOMContentLoaded', () => {
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            loadTransfers();
+        });
 
         // Limpiar suscripción al cerrar la página
         window.addEventListener('beforeunload', () => {
@@ -1005,6 +990,9 @@
                 unsubscribeTransfers();
             }
         });
+
+        // Hacer la función accesible globalmente
+        window.startEditTransfer = startEditTransfer;
     </script>
 </body>
 </html>
