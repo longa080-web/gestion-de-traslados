@@ -20,6 +20,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
+    <!-- jsPDF para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -66,26 +70,18 @@
             </div>
         </header>
 
-        <!-- Navegación por pestañas -->
-        <div class="mb-8">
-            <div class="flex flex-wrap border-b border-gray-200">
-                <button class="tab-button px-6 py-3 text-lg font-medium text-gray-700 hover:text-inter-primary hover:bg-gray-100 rounded-t-lg active" data-tab="registro">
-                    Registro de Traslados
-                </button>
-                <button class="tab-button px-6 py-3 text-lg font-medium text-gray-700 hover:text-inter-primary hover:bg-gray-100 rounded-t-lg" data-tab="historial">
-                    Historial
-                </button>
-                <button class="tab-button px-6 py-3 text-lg font-medium text-gray-700 hover:text-inter-primary hover:bg-gray-100 rounded-t-lg" data-tab="analisis">
-                    Análisis
-                </button>
-                <button class="tab-button px-6 py-3 text-lg font-medium text-gray-700 hover:text-inter-primary hover:bg-gray-100 rounded-t-lg" data-tab="distribucion">
-                    Reportes de Distribución
-                </button>
-            </div>
+        <!-- Pestañas de navegación -->
+        <div class="mb-6 flex space-x-2 border-b border-gray-200">
+            <button id="tabDashboard" class="tab-button active px-4 py-2 rounded-t-lg bg-inter-primary text-white font-semibold">
+                Dashboard
+            </button>
+            <button id="tabReports" class="tab-button px-4 py-2 rounded-t-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300">
+                Reportes Financieros
+            </button>
         </div>
 
-        <!-- Pestaña 1: Registro de Traslados -->
-        <section id="registro-tab" class="tab-content active">
+        <!-- Contenido del Dashboard (pestaña principal) -->
+        <div id="dashboardContent">
             <section id="registerSection" class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
                 <h2 class="text-2xl font-bold text-inter-primary mb-4">Registrar Nuevo Traslado</h2>
                 <form id="transferForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -115,19 +111,50 @@
                             <option value="Gerencia Senior">Gerencia Senior</option>
                         </select>
                     </div>
-                    <div>
+                    <div id="msoDepartmentsContainer" class="hidden col-span-1 md:col-span-3">
+                        <label for="msoDepartment" class="block text-sm font-medium text-gray-700 mb-1">
+                            Departamento MSO (Observaciones)
+                        </label>
+                        <select id="msoDepartment"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="" disabled selected>Selecciona departamento MSO</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Presidencia">Presidencia</option>
+                            <option value="Interconexiones">Interconexiones</option>
+                            <option value="Importaciones">Importaciones</option>
+                            <option value="RRHH MSO">RRHH MSO</option>
+                            <option value="Documentacion de obras">Documentación de Obras</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
                         <label for="originPlace" class="block text-sm font-medium text-gray-700 mb-1">
-                            Lugar de Origen
+                            Lugar de Origen - Punto de Partida
                         </label>
                         <input type="text" id="originPlace" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
                                placeholder="Ej. Sede Principal, Cliente X, Aeropuerto">
                     </div>
                     <div class="col-span-1 md:col-span-2">
+                        <label for="destinationPlace" class="block text-sm font-medium text-gray-700 mb-1">
+                            Lugar de Origen - Punto de Llegada
+                        </label>
+                        <input type="text" id="destinationPlace" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               placeholder="Ej. Oficina Central, Hotel, Terminal">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
                         <label for="returnAddress" class="block text-sm font-medium text-gray-700 mb-1">
-                            Dirección de Vuelta (Opcional, si aplica)
+                            Dirección de Vuelta - Punto de Partida
                         </label>
                         <input type="text" id="returnAddress"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               placeholder="Ej. Domicilio particular, Otro cliente, N/A">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="returnDestination" class="block text-sm font-medium text-gray-700 mb-1">
+                            Dirección de Vuelta - Destino Final
+                        </label>
+                        <input type="text" id="returnDestination"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
                                placeholder="Ej. Domicilio particular, Otro cliente, N/A">
                     </div>
@@ -153,7 +180,6 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
                             <option value="" disabled selected>Selecciona Autorizador</option>
                             <option value="Jorge Basualdo">Jorge Basualdo</option>
-                            <option value="Lais Troncoso">Lais Troncoso</option>
                         </select>
                     </div>
                     <div>
@@ -205,10 +231,7 @@
                     </div>
                 </div>
             </section>
-        </section>
 
-        <!-- Pestaña 2: Historial -->
-        <section id="historial-tab" class="tab-content hidden">
             <section class="p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
                 <h2 class="text-2xl font-bold text-inter-primary mb-4">Historial de Traslados</h2>
 
@@ -225,7 +248,7 @@
                     </button>
                     <button id="exportCsvBtn"
                             class="bg-inter-accent-light hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        Exportar a Excel (CSV)
+                        Exportar a Excel
                     </button>
                     <button id="importExcelBtn"
                             class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
@@ -248,8 +271,11 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Fecha</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Solicitante</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Dirección Vuelta</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Depto. MSO</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen Partida</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen Destino</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Vuelta Partida</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Vuelta Destino</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Quién Autoriza</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo ($)</th>
@@ -262,163 +288,205 @@
                 </div>
                 <p id="noTransfersMessage" class="text-center text-gray-500 mt-4 hidden">No hay traslados registrados aún.</p>
             </section>
-        </section>
-
-        <!-- Pestaña 3: Análisis -->
-        <section id="analisis-tab" class="tab-content hidden">
-            <section class="p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Análisis de Gastos Mensual y Anual</h2>
+            
+            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-2xl font-bold text-inter-primary mb-4">Gastos por Empresa de Traslado</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 id="chartTitle" class="text-xl font-bold text-inter-primary mb-4 text-center">Control de Gastos Mensual por Año</h3>
+                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Mensual por Empresa</h3>
                         <div class="w-full max-w-lg h-64">
-                            <canvas id="annualExpensesChart"></canvas>
+                            <canvas id="monthlyCompanyChart"></canvas>
                         </div>
                     </div>
                     <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 id="companyExpensesChartTitle" class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Empresa de Traslado</h3>
+                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Empresa</h3>
                         <div class="w-full max-w-lg h-64">
-                            <canvas id="companyExpensesChart"></canvas>
+                            <canvas id="annualCompanyChart"></canvas>
                         </div>
                     </div>
                 </div>
             </section>
             
             <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Pagos a Proveedores de Traslados</h2>
+                <h2 class="text-2xl font-bold text-inter-primary mb-4">Gastos por Departamento</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Mensual por Departamento</h3>
+                        <div class="w-full max-w-lg h-64">
+                            <canvas id="monthlyDepartmentChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Departamento</h3>
+                        <div class="w-full max-w-lg h-64">
+                            <canvas id="annualDepartmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-2xl font-bold text-inter-primary mb-4">Estadísticas de Traslados por Departamento</h2>
                 <div class="overflow-x-auto rounded-lg shadow-md">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-blue-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual Total ($)</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo Unitario Promedio ($)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Mensuales</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual ($)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Anuales</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Anual ($)</th>
                             </tr>
                         </thead>
-                        <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
+                        <tbody id="departmentStatsTableBody" class="bg-white divide-y divide-gray-200">
                         </tbody>
                     </table>
                 </div>
-                <p id="noPaymentsMessage" class="text-center text-gray-500 mt-4 hidden">No hay datos de pagos para este mes.</p>
+                <p id="noStatsMessage" class="text-center text-gray-500 mt-4 hidden">No hay datos de estadísticas disponibles.</p>
             </section>
+        </div>
 
-            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Análisis de Gasto Mensual por Departamento</h2>
-                <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                    <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Total de Traslados por Departamento (Mensual)</h3>
-                    <div class="w-full max-w-lg h-64">
-                        <canvas id="departmentExpensesChart"></canvas>
+        <!-- Contenido de Reportes Financieros (nueva pestaña) -->
+        <div id="reportsContent" class="hidden">
+            <section class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
+                <h2 class="text-2xl font-bold text-inter-primary mb-4">Reportes Financieros de Traslados</h2>
+                <div class="mb-6 flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="reportMonth" class="block text-sm font-medium text-gray-700 mb-1">
+                            Seleccionar Mes
+                        </label>
+                        <select id="reportMonth" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
                     </div>
-                </div>
-            </section>
-        </section>
-
-        <!-- Pestaña 4: Reportes de Distribución -->
-        <section id="distribucion-tab" class="tab-content hidden">
-            <section class="p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Distribución de Gastos por Departamento y Proveedor</h2>
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-3">Seleccionar Mes y Año</h3>
-                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                        <div>
-                            <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
-                                <option value="0">Enero</option>
-                                <option value="1">Febrero</option>
-                                <option value="2">Marzo</option>
-                                <option value="3">Abril</option>
-                                <option value="4">Mayo</option>
-                                <option value="5">Junio</option>
-                                <option value="6">Julio</option>
-                                <option value="7">Agosto</option>
-                                <option value="8">Septiembre</option>
-                                <option value="9">Octubre</option>
-                                <option value="10">Noviembre</option>
-                                <option value="11">Diciembre</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
-                                <!-- Se llenará dinámicamente -->
-                            </select>
-                        </div>
-                        <button id="updateDistributionBtn" class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
-                            Actualizar Reporte
-                        </button>
-                        <button id="exportDistributionBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
-                            Exportar a PDF
+                    <div class="flex-1">
+                        <label for="reportYear" class="block text-sm font-medium text-gray-700 mb-1">
+                            Seleccionar Año
+                        </label>
+                        <select id="reportYear" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="generateReportBtn" class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                            Generar Reporte
                         </button>
                     </div>
                 </div>
 
+                <!-- Botones de exportación -->
+                <div class="mb-6 flex flex-wrap gap-4">
+                    <button id="exportReportExcelBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                        Exportar a Excel
+                    </button>
+                    <button id="exportReportPDFBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                        Exportar a PDF
+                    </button>
+                </div>
+
+                <!-- Reporte: Departamentos que utilizan servicio de traslado -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO</h3>
+                    <h3 class="text-xl font-bold text-inter-primary mb-4">DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO</h3>
                     <div class="overflow-x-auto rounded-lg shadow-md">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-blue-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider w-1/2">EMPRESA</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider w-1/2">IMPORTE ($)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 40%;">DEPARTAMENTOS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">UN CCS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">IMPORTE</th>
                                 </tr>
                             </thead>
-                            <tbody id="providerTableBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Se llenará dinámicamente -->
+                            <tbody id="departmentsReportTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Datos se cargarán aquí -->
                             </tbody>
-                            <tfoot class="bg-gray-50">
+                            <tfoot class="bg-gray-100">
                                 <tr>
-                                    <td class="px-6 py-4 text-left text-sm font-bold text-gray-900">TOTAL PROVEEDORES</td>
-                                    <td class="px-6 py-4 text-left text-sm font-bold text-gray-900" id="totalProviders">$0.00</td>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900">TOTAL CCS</td>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900"></td>
+                                    <td id="totalCCS" class="px-6 py-3 text-left text-sm font-bold text-gray-900">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900">MSO</td>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900">MSO</td>
+                                    <td id="totalMSO" class="px-6 py-3 text-left text-sm font-bold text-gray-900">$0.00</td>
+                                </tr>
+                                <tr class="bg-inter-accent-light">
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900">TOTAL, CCS + MSO</td>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900"></td>
+                                    <td id="totalCCSMSO" class="px-6 py-3 text-left text-sm font-bold text-gray-900">$0.00</td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
 
+                <!-- Reporte: Empresas proveedoras de servicio CCS y MSO -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO</h3>
+                    <h3 class="text-xl font-bold text-inter-primary mb-4">EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO</h3>
                     <div class="overflow-x-auto rounded-lg shadow-md">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-blue-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider w-1/4">UNIDAD</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider w-1/2">DEPARTAMENTOS</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider w-1/4">IMPORTE ($)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 50%;">EMPRESA</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 50%;">IMPORTE</th>
                                 </tr>
                             </thead>
-                            <tbody id="departmentTableBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Se llenará dinámicamente -->
+                            <tbody id="companiesReportTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Datos se cargarán aquí -->
                             </tbody>
+                            <tfoot class="bg-inter-accent-light">
+                                <tr>
+                                    <td class="px-6 py-3 text-left text-sm font-bold text-gray-900">TOTAL, CCS + MSO</td>
+                                    <td id="totalCompanies" class="px-6 py-3 text-left text-sm font-bold text-gray-900">$0.00</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">TOTAL, CCS + MSO</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white p-4 rounded-lg shadow-md text-center">
-                            <h4 class="text-lg font-medium text-gray-700">UN CCS</h4>
-                            <p id="totalCCS" class="text-2xl font-bold text-inter-primary mt-2">$0.00</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-md text-center">
-                            <h4 class="text-lg font-medium text-gray-700">MSO</h4>
-                            <p id="totalMSO" class="text-2xl font-bold text-inter-primary mt-2">$0.00</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-md text-center">
-                            <h4 class="text-lg font-medium text-gray-700">TOTAL GENERAL</h4>
-                            <p id="totalGeneral" class="text-2xl font-bold text-inter-primary mt-2">$0.00</p>
-                        </div>
+                <!-- Resumen por unidad -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-inter-primary mb-4">RESUMEN POR UNIDAD</h3>
+                    <div class="overflow-x-auto rounded-lg shadow-md">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-blue-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 50%;">UNIDAD</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 50%;">IMPORTE</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">CCS</td>
+                                    <td id="unitCCS" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">MSO</td>
+                                    <td id="unitMSO" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$0.00</td>
+                                </tr>
+                                <tr class="bg-inter-accent-light">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTAL</td>
+                                    <td id="unitTotal" class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <div class="mt-8 p-4 bg-gray-50 rounded-lg">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-2">Notas:</h4>
-                    <ul class="list-disc pl-5 text-gray-600">
-                        <li>UN CCS incluye: Administración, Área Comercial, Área Técnica, Obras, RRHH y Seguridad Laboral, Gerencia Senior</li>
-                        <li>MSO incluye: Todos los sub departamentos que engloban MSO</li>
-                        <li>Los importes se calculan en base a los traslados registrados para el mes seleccionado</li>
-                    </ul>
-                </div>
             </section>
-        </section>
+        </div>
     </div>
 
     <script>
@@ -436,40 +504,71 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Inicializar jsPDF
+        const { jsPDF } = window.jspdf;
+        
         Chart.register(ChartDataLabels);
+        
+        // Elementos del Dashboard
         const transferForm = document.getElementById('transferForm');
         const requesterNameInput = document.getElementById('requesterName');
         const departmentInput = document.getElementById('department');
+        const msoDepartmentsContainer = document.getElementById('msoDepartmentsContainer');
+        const msoDepartmentInput = document.getElementById('msoDepartment');
         const originPlaceInput = document.getElementById('originPlace');
+        const destinationPlaceInput = document.getElementById('destinationPlace');
         const returnAddressInput = document.getElementById('returnAddress');
+        const returnDestinationInput = document.getElementById('returnDestination');
         const transferDateInput = document.getElementById('transferDate');
         const costInput = document.getElementById('cost');
         const authorizerNameInput = document.getElementById('authorizerName');
         const companyNameInput = document.getElementById('companyName');
         const messageBox = document.getElementById('messageBox');
         const transferTableBody = document.getElementById('transferTableBody');
-        const paymentsTableBody = document.getElementById('paymentsTableBody');
+        const departmentStatsTableBody = document.getElementById('departmentStatsTableBody');
         const dailyTotalSpan = document.getElementById('dailyTotal');
         const weeklyTotalSpan = document.getElementById('weeklyTotal');
         const monthlyTotalSpan = document.getElementById('monthlyTotal');
         const annualTotalSpan = document.getElementById('annualTotal');
         const noTransfersMessage = document.getElementById('noTransfersMessage');
-        const noPaymentsMessage = document.getElementById('noPaymentsMessage');
+        const noStatsMessage = document.getElementById('noStatsMessage');
         const submitButton = document.getElementById('submitButton');
         const cancelEditBtn = document.getElementById('cancelEditBtn');
         const registerSection = document.getElementById('registerSection');
         const connectionStatus = document.getElementById('connectionStatus');
 
-        const annualExpensesChartCtx = document.getElementById('annualExpensesChart').getContext('2d');
-        const companyExpensesChartCtx = document.getElementById('companyExpensesChart').getContext('2d');
-        const departmentExpensesChartCtx = document.getElementById('departmentExpensesChart').getContext('2d');
-        const chartTitleElement = document.getElementById('chartTitle');
-        const companyExpensesChartTitle = document.getElementById('companyExpensesChartTitle');
-        let annualExpensesChart;
-        let companyExpensesChart;
-        let departmentExpensesChart;
+        // Elementos de pestañas
+        const tabDashboard = document.getElementById('tabDashboard');
+        const tabReports = document.getElementById('tabReports');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const reportsContent = document.getElementById('reportsContent');
 
-        const annualBudgetTarget = 12000;
+        // Elementos de reportes
+        const reportMonthSelect = document.getElementById('reportMonth');
+        const reportYearSelect = document.getElementById('reportYear');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const exportReportExcelBtn = document.getElementById('exportReportExcelBtn');
+        const exportReportPDFBtn = document.getElementById('exportReportPDFBtn');
+        const departmentsReportTableBody = document.getElementById('departmentsReportTableBody');
+        const companiesReportTableBody = document.getElementById('companiesReportTableBody');
+        const totalCCS = document.getElementById('totalCCS');
+        const totalMSO = document.getElementById('totalMSO');
+        const totalCCSMSO = document.getElementById('totalCCSMSO');
+        const totalCompanies = document.getElementById('totalCompanies');
+        const unitCCS = document.getElementById('unitCCS');
+        const unitMSO = document.getElementById('unitMSO');
+        const unitTotal = document.getElementById('unitTotal');
+
+        // Gráficos
+        const monthlyCompanyChartCtx = document.getElementById('monthlyCompanyChart').getContext('2d');
+        const annualCompanyChartCtx = document.getElementById('annualCompanyChart').getContext('2d');
+        const monthlyDepartmentChartCtx = document.getElementById('monthlyDepartmentChart').getContext('2d');
+        const annualDepartmentChartCtx = document.getElementById('annualDepartmentChart').getContext('2d');
+        
+        let monthlyCompanyChart;
+        let annualCompanyChart;
+        let monthlyDepartmentChart;
+        let annualDepartmentChart;
 
         const filterRequesterInput = document.getElementById('filterRequester');
         const clearFilterBtn = document.getElementById('clearFilterBtn');
@@ -479,51 +578,29 @@
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
 
-        // Elementos para la nueva pestaña de distribución
-        const monthSelect = document.getElementById('monthSelect');
-        const yearSelect = document.getElementById('yearSelect');
-        const updateDistributionBtn = document.getElementById('updateDistributionBtn');
-        const exportDistributionBtn = document.getElementById('exportDistributionBtn');
-        const providerTableBody = document.getElementById('providerTableBody');
-        const departmentTableBody = document.getElementById('departmentTableBody');
-        const totalProviders = document.getElementById('totalProviders');
-        const totalCCS = document.getElementById('totalCCS');
-        const totalMSO = document.getElementById('totalMSO');
-        const totalGeneral = document.getElementById('totalGeneral');
-
         let transfers = [];
         let editingId = null;
         let unsubscribeTransfers = null;
 
-        // Funciones para manejar pestañas
-        function initializeTabs() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const tabId = button.getAttribute('data-tab');
-                    
-                    // Remover clase active de todos los botones
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    // Agregar clase active al botón clickeado
-                    button.classList.add('active');
-                    
-                    // Ocultar todos los contenidos
-                    tabContents.forEach(content => {
-                        content.classList.remove('active');
-                        content.classList.add('hidden');
-                    });
-                    
-                    // Mostrar el contenido correspondiente
-                    const tabContent = document.getElementById(`${tabId}-tab`);
-                    if (tabContent) {
-                        tabContent.classList.remove('hidden');
-                        tabContent.classList.add('active');
-                    }
-                });
-            });
-        }
+        // Lista de departamentos para reportes (según el formato Word)
+        const reportDepartments = [
+            { name: "ADMINISTRACION", code: "Administracion" },
+            { name: "AREA COMERCIAL", code: "Area Comercial" },
+            { name: "AREA TECNICA", code: "Area tecnica" },
+            { name: "DPTO DE OBRAS", code: "Obras" },
+            { name: "RRHH y Seguridad Laboral", code: "RRHH y Seguridad Laboral" },
+            { name: "G. SENIOR", code: "Gerencia Senior" },
+            { name: "MSO", code: "MSO" }
+        ];
+
+        // Lista de empresas para reportes
+        const reportCompanies = [
+            { name: "YUMMY", code: "Yummy" },
+            { name: "ANDREW", code: "Andrew" },
+            { name: "NEOMAR", code: "Neomar" },
+            { name: "OSCAR", code: "Oscar" },
+            { name: "JOSE", code: "Jose" }
+        ];
 
         function showMessage(message, type = 'info', box = messageBox) {
             box.textContent = message;
@@ -546,6 +623,18 @@
             d.setHours(0, 0, 0, 0);
             return d;
         }
+
+        // Manejar cambio en departamento MSO
+        departmentInput.addEventListener('change', function() {
+            if (this.value === 'MSO') {
+                msoDepartmentsContainer.classList.remove('hidden');
+                msoDepartmentInput.required = true;
+            } else {
+                msoDepartmentsContainer.classList.add('hidden');
+                msoDepartmentInput.required = false;
+                msoDepartmentInput.value = '';
+            }
+        });
 
         // Función para cargar traslados desde Firestore
         function loadTransfers() {
@@ -573,8 +662,8 @@
                         updateConnectionStatus(true);
                         showMessage("Datos cargados correctamente", "success");
                         
-                        // Actualizar reporte de distribución
-                        updateDistributionReport();
+                        // Generar reporte del mes actual por defecto
+                        generateReport();
                     }, (error) => {
                         console.error("Error en tiempo real:", error);
                         updateConnectionStatus(false);
@@ -690,8 +779,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formattedDate}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${requesterClass}">${transfer.requesterName}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.department || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.originPlace}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.msoDepartment || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.originPlace || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.destinationPlace || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnAddress || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnDestination || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.authorizerName || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.companyName || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">$${transfer.cost.toFixed(2)}</td>
@@ -717,8 +809,20 @@
             // Cargar datos en el formulario
             requesterNameInput.value = transfer.requesterName;
             departmentInput.value = transfer.department;
-            originPlaceInput.value = transfer.originPlace;
-            returnAddressInput.value = transfer.returnAddress;
+            
+            if (transfer.department === 'MSO') {
+                msoDepartmentsContainer.classList.remove('hidden');
+                msoDepartmentInput.value = transfer.msoDepartment || '';
+                msoDepartmentInput.required = true;
+            } else {
+                msoDepartmentsContainer.classList.add('hidden');
+                msoDepartmentInput.required = false;
+            }
+            
+            originPlaceInput.value = transfer.originPlace || '';
+            destinationPlaceInput.value = transfer.destinationPlace || '';
+            returnAddressInput.value = transfer.returnAddress || '';
+            returnDestinationInput.value = transfer.returnDestination || '';
             transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
             costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
@@ -739,6 +843,8 @@
             transferForm.reset();
             submitButton.textContent = 'Registrar Traslado';
             cancelEditBtn.classList.add('hidden');
+            msoDepartmentsContainer.classList.add('hidden');
+            msoDepartmentInput.required = false;
             transferDateInput.value = new Date().toISOString().slice(0, 10);
             showMessage("Modo de registro restaurado.", "success");
         }
@@ -769,251 +875,310 @@
             const annualTotal = annualTransfers.reduce((sum, t) => sum + t.cost, 0);
             annualTotalSpan.textContent = `$${annualTotal.toFixed(2)}`;
 
-            updateMonthlyExpensesChart(annualTotal);
-            updateCompanyExpensesChart();
-            renderPaymentsTable();
-            updateDepartmentExpensesChart();
+            updateCompanyCharts();
+            updateDepartmentCharts();
+            renderDepartmentStats();
         }
 
-        function updateMonthlyExpensesChart(annualTotal) {
-            const currentYear = new Date().getFullYear();
-            const monthlyData = new Array(12).fill(0);
-            const monthLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            transfers.forEach(transfer => {
-                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
-                    const month = transfer.dateTime.getMonth();
-                    monthlyData[month] += transfer.cost;
-                }
-            });
-            let maxDataValue = 0;
-            if (monthlyData.length > 0) {
-                maxDataValue = Math.max(...monthlyData);
-            }
-            const suggestedYMax = Math.max(maxDataValue * 1.1, annualBudgetTarget / 12 * 1.1, 100);
-            const chartStatus = annualTotal <= annualBudgetTarget ? 'Positivo' : 'Negativo';
-            chartTitleElement.textContent = `Control de Gastos Mensual por Año (${currentYear}): ${chartStatus}`;
-            chartTitleElement.classList.remove('text-inter-primary', 'text-red-700', 'text-green-700');
-            chartTitleElement.classList.add(annualTotal <= annualBudgetTarget ? 'text-green-700' : 'text-red-700');
+        function updateCompanyCharts() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
+            const startOfYear = normalizeDateToStartOfDay(new Date(currentYear, 0, 1));
 
-            const monthlyBudgetLine = new Array(12).fill(annualBudgetTarget / 12);
-            if (annualExpensesChart) { annualExpensesChart.destroy(); }
-            annualExpensesChart = new Chart(annualExpensesChartCtx, {
-                type: 'line',
-                data: {
-                    labels: monthLabels,
-                    datasets: [{
-                        label: 'Gasto Mensual ($)',
-                        data: monthlyData,
-                        borderColor: '#005BAA',
-                        backgroundColor: 'rgba(0, 91, 170, 0.2)',
-                        fill: true,
-                        tension: 0.3,
-                        datalabels: {
-                            align: 'end',
-                            anchor: 'end',
-                            formatter: (value) => value > 0 ? `$${value.toFixed(0)}` : '',
-                            color: '#005BAA',
-                            font: { weight: 'bold', size: 10 }
-                        }
-                    }, {
-                        label: 'Presupuesto Mensual Promedio ($)',
-                        data: monthlyBudgetLine,
-                        borderColor: '#FDD000',
-                        borderDash: [5, 5],
-                        fill: false,
-                        tension: 0,
-                        datalabels: {
-                            display: false
-                        }
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: suggestedYMax,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toFixed(0);
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
-                                }
-                            }
-                        }
-                    }
-                }
+            // Datos mensuales
+            const monthlyTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime()
+            );
+            const monthlyCompanyExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                const company = transfer.companyName || 'Desconocido';
+                monthlyCompanyExpenses[company] = (monthlyCompanyExpenses[company] || 0) + transfer.cost;
             });
-        }
 
-        function updateCompanyExpensesChart() {
-            const currentYear = new Date().getFullYear();
-            const companyTotals = {};
-            transfers.forEach(transfer => {
-                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && transfer.dateTime.getFullYear() === currentYear) {
-                    const company = transfer.companyName || 'Sin Empresa';
-                    companyTotals[company] = (companyTotals[company] || 0) + transfer.cost;
-                }
+            // Datos anuales
+            const annualTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime()
+            );
+            const annualCompanyExpenses = {};
+            annualTransfers.forEach(transfer => {
+                const company = transfer.companyName || 'Desconocido';
+                annualCompanyExpenses[company] = (annualCompanyExpenses[company] || 0) + transfer.cost;
             });
-            const companies = Object.keys(companyTotals);
-            const totals = Object.values(companyTotals);
-            const totalAnnualExpense = totals.reduce((sum, val) => sum + val, 0);
-            const chartStatus = totalAnnualExpense <= annualBudgetTarget ? 'Positivo' : 'Negativo';
-            companyExpensesChartTitle.textContent = `Gasto Anual por Empresa de Traslado (${currentYear}): ${chartStatus}`;
-            companyExpensesChartTitle.classList.remove('text-inter-primary', 'text-red-700', 'text-green-700');
-            companyExpensesChartTitle.classList.add(totalAnnualExpense <= annualBudgetTarget ? 'text-green-700' : 'text-red-700');
 
-            if (companyExpensesChart) { companyExpensesChart.destroy(); }
-            companyExpensesChart = new Chart(companyExpensesChartCtx, {
-                type: 'pie',
-                data: {
-                    labels: companies,
-                    datasets: [{
-                        data: totals,
-                        backgroundColor: [
-                            '#005BAA', '#5CE1E6', '#FDD000', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const percentage = ((value / totalAnnualExpense) * 100).toFixed(1);
-                                    return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
-                                }
-                            }
-                        },
-                        datalabels: {
-                            formatter: (value, ctx) => {
-                                const percentage = ((value / totalAnnualExpense) * 100).toFixed(1);
-                                return percentage > 5 ? `${percentage}%` : '';
-                            },
-                            color: '#fff',
-                            font: {
-                                weight: 'bold',
-                                size: 11
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderPaymentsTable() {
-            paymentsTableBody.innerHTML = '';
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            const companyMonthlyTotals = {};
-            const companyTransferCounts = {};
-            transfers.forEach(transfer => {
-                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && 
-                    transfer.dateTime.getMonth() === currentMonth && 
-                    transfer.dateTime.getFullYear() === currentYear) {
-                    const company = transfer.companyName || 'Sin Empresa';
-                    companyMonthlyTotals[company] = (companyMonthlyTotals[company] || 0) + transfer.cost;
-                    companyTransferCounts[company] = (companyTransferCounts[company] || 0) + 1;
-                }
-            });
-            const companies = Object.keys(companyMonthlyTotals);
-            if (companies.length === 0) {
-                noPaymentsMessage.classList.remove('hidden');
-            } else {
-                noPaymentsMessage.classList.add('hidden');
-                companies.forEach(company => {
-                    const total = companyMonthlyTotals[company];
-                    const count = companyTransferCounts[company];
-                    const average = count > 0 ? total / count : 0;
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${company}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${total.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${average.toFixed(2)}</td>
-                    `;
-                    paymentsTableBody.appendChild(row);
-                });
-            }
-        }
-
-        function updateDepartmentExpensesChart() {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            const departmentTotals = {};
-            transfers.forEach(transfer => {
-                if (transfer.dateTime && !isNaN(transfer.dateTime.getTime()) && 
-                    transfer.dateTime.getMonth() === currentMonth && 
-                    transfer.dateTime.getFullYear() === currentYear) {
-                    const department = transfer.department || 'Sin Departamento';
-                    departmentTotals[department] = (departmentTotals[department] || 0) + transfer.cost;
-                }
-            });
-            const departments = Object.keys(departmentTotals);
-            const totals = Object.values(departmentTotals);
-            if (departmentExpensesChart) { departmentExpensesChart.destroy(); }
-            departmentExpensesChart = new Chart(departmentExpensesChartCtx, {
+            // Gráfico mensual
+            const monthlyCompanyLabels = Object.keys(monthlyCompanyExpenses);
+            const monthlyCompanyData = Object.values(monthlyCompanyExpenses);
+            
+            if (monthlyCompanyChart) { monthlyCompanyChart.destroy(); }
+            monthlyCompanyChart = new Chart(monthlyCompanyChartCtx, {
                 type: 'bar',
                 data: {
-                    labels: departments,
+                    labels: monthlyCompanyLabels,
                     datasets: [{
-                        label: 'Gasto Mensual por Departamento ($)',
-                        data: totals,
-                        backgroundColor: '#005BAA',
-                        borderColor: '#004080',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toFixed(0);
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Gasto: $${context.raw.toFixed(2)}`;
-                                }
-                            }
-                        },
+                        label: 'Gasto Mensual ($)',
+                        data: monthlyCompanyData,
+                        backgroundColor: '#5CE1E6',
+                        borderColor: '#005BAA',
+                        borderWidth: 1,
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            formatter: (value) => `$${value.toFixed(0)}`,
-                            color: '#005BAA',
-                            font: {
-                                weight: 'bold',
-                                size: 10
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#000000',
+                            font: { weight: 'bold', size: 10 }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `$${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Empresa de Traslado', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico anual
+            const annualCompanyLabels = Object.keys(annualCompanyExpenses);
+            const annualCompanyData = Object.values(annualCompanyExpenses);
+            
+            if (annualCompanyChart) { annualCompanyChart.destroy(); }
+            annualCompanyChart = new Chart(annualCompanyChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: annualCompanyLabels,
+                    datasets: [{
+                        label: 'Gasto Anual ($)',
+                        data: annualCompanyData,
+                        backgroundColor: '#005BAA',
+                        borderColor: '#003366',
+                        borderWidth: 1,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#FFFFFF',
+                            font: { weight: 'bold', size: 10 }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `$${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Empresa de Traslado', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDepartmentCharts() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
+            const startOfYear = normalizeDateToStartOfDay(new Date(currentYear, 0, 1));
+
+            // Datos mensuales
+            const monthlyTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime()
+            );
+            const monthlyDepartmentExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                }
+                monthlyDepartmentExpenses[department] = (monthlyDepartmentExpenses[department] || 0) + transfer.cost;
+            });
+
+            // Datos anuales
+            const annualTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime()
+            );
+            const annualDepartmentExpenses = {};
+            annualTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                }
+                annualDepartmentExpenses[department] = (annualDepartmentExpenses[department] || 0) + transfer.cost;
+            });
+
+            // Gráfico mensual
+            const monthlyDepartmentLabels = Object.keys(monthlyDepartmentExpenses);
+            const monthlyDepartmentData = Object.values(monthlyDepartmentExpenses);
+            
+            if (monthlyDepartmentChart) { monthlyDepartmentChart.destroy(); }
+            monthlyDepartmentChart = new Chart(monthlyDepartmentChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthlyDepartmentLabels,
+                    datasets: [{
+                        label: 'Gasto Mensual ($)',
+                        data: monthlyDepartmentData,
+                        backgroundColor: [
+                            '#005BAA', '#5CE1E6', '#FDD000', '#FF6384', '#36A2EB', 
+                            '#FF9F40', '#4BC0C0', '#9966FF', '#C9CBCF', '#FF99C8'
+                        ],
+                        borderColor: '#005BAA',
+                        borderWidth: 1,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#000000',
+                            font: { weight: 'bold', size: 9 }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `$${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Departamento', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { 
+                                font: { family: 'Inter', size: 10 },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico anual
+            const annualDepartmentLabels = Object.keys(annualDepartmentExpenses);
+            const annualDepartmentData = Object.values(annualDepartmentExpenses);
+            
+            if (annualDepartmentChart) { annualDepartmentChart.destroy(); }
+            annualDepartmentChart = new Chart(annualDepartmentChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: annualDepartmentLabels,
+                    datasets: [{
+                        label: 'Gasto Anual ($)',
+                        data: annualDepartmentData,
+                        backgroundColor: [
+                            '#005BAA', '#5CE1E6', '#FDD000', '#FF6384', '#36A2EB', 
+                            '#FF9F40', '#4BC0C0', '#9966FF', '#C9CBCF', '#FF99C8'
+                        ],
+                        borderColor: '#005BAA',
+                        borderWidth: 1,
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => `$${value.toFixed(2)}`,
+                            color: '#000000',
+                            font: { weight: 'bold', size: 9 }
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `$${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true, text: 'Costo (USD $)', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: {
+                                callback: function (value) { return `$${value.toFixed(0)}`; },
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true, text: 'Departamento', font: { family: 'Inter', size: 14, weight: 'bold' }, color: '#005BAA'
+                            },
+                            ticks: { 
+                                font: { family: 'Inter', size: 10 },
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     }
@@ -1021,155 +1186,442 @@
             });
         }
 
-        // Funciones para la nueva pestaña de distribución
-        function initializeYearSelect() {
-            const currentYear = new Date().getFullYear();
-            yearSelect.innerHTML = '';
+        function renderDepartmentStats() {
+            departmentStatsTableBody.innerHTML = '';
             
-            // Agregar años desde 2020 hasta el año actual + 2
-            for (let year = 2020; year <= currentYear + 2; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                if (year === currentYear) {
-                    option.selected = true;
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
+            const startOfYear = normalizeDateToStartOfDay(new Date(currentYear, 0, 1));
+
+            const monthlyTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime()
+            );
+            const annualTransfers = transfers.filter(t => 
+                normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime()
+            );
+
+            const departmentStats = {};
+
+            // Procesar datos mensuales
+            monthlyTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
                 }
-                yearSelect.appendChild(option);
-            }
+                
+                if (!departmentStats[department]) {
+                    departmentStats[department] = {
+                        monthlyCount: 0,
+                        monthlyCost: 0,
+                        annualCount: 0,
+                        annualCost: 0
+                    };
+                }
+                departmentStats[department].monthlyCount++;
+                departmentStats[department].monthlyCost += transfer.cost;
+            });
+
+            // Procesar datos anuales
+            annualTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                }
+                
+                if (!departmentStats[department]) {
+                    departmentStats[department] = {
+                        monthlyCount: 0,
+                        monthlyCost: 0,
+                        annualCount: 0,
+                        annualCost: 0
+                    };
+                }
+                departmentStats[department].annualCount++;
+                departmentStats[department].annualCost += transfer.cost;
+            });
+
+            const departments = Object.keys(departmentStats).sort();
             
-            // Establecer mes actual por defecto
-            const currentMonth = new Date().getMonth();
-            monthSelect.value = currentMonth;
+            if (departments.length === 0) {
+                noStatsMessage.classList.remove('hidden');
+            } else {
+                noStatsMessage.classList.add('hidden');
+                departments.forEach(department => {
+                    const stats = departmentStats[department];
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${department}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${stats.monthlyCount}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${stats.monthlyCost.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${stats.annualCount}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${stats.annualCost.toFixed(2)}</td>
+                    `;
+                    departmentStatsTableBody.appendChild(row);
+                });
+            }
         }
 
-        function updateDistributionReport() {
-            const selectedMonth = parseInt(monthSelect.value);
-            const selectedYear = parseInt(yearSelect.value);
+        // Función para generar reporte financiero
+        function generateReport() {
+            const month = parseInt(reportMonthSelect.value);
+            const year = parseInt(reportYearSelect.value);
             
             // Filtrar traslados por mes y año seleccionados
             const filteredTransfers = transfers.filter(transfer => {
-                if (!transfer.dateTime || isNaN(transfer.dateTime.getTime())) return false;
-                return transfer.dateTime.getMonth() === selectedMonth && 
-                       transfer.dateTime.getFullYear() === selectedYear;
+                const transferDate = transfer.dateTime;
+                return transferDate.getMonth() === month && transferDate.getFullYear() === year;
             });
             
-            // Calcular gastos por proveedor
-            const providerTotals = {};
-            filteredTransfers.forEach(transfer => {
-                const provider = transfer.companyName || 'Sin Proveedor';
-                providerTotals[provider] = (providerTotals[provider] || 0) + transfer.cost;
-            });
-            
-            // Ordenar proveedores según el formato del documento
-            const orderedProviders = [
-                { name: 'Yummy', total: providerTotals['Yummy'] || 0 },
-                { name: 'Andrew', total: providerTotals['Andrew'] || 0 },
-                { name: 'Neomar', total: providerTotals['Neomar'] || 0 },
-                { name: 'Oscar', total: providerTotals['Oscar'] || 0 },
-                { name: 'Jose', total: providerTotals['Jose'] || 0 }
-            ];
-            
-            // Renderizar tabla de proveedores
-            providerTableBody.innerHTML = '';
-            let totalProvidersSum = 0;
-            
-            orderedProviders.forEach(provider => {
-                totalProvidersSum += provider.total;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${provider.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${provider.total.toFixed(2)}</td>
-                `;
-                providerTableBody.appendChild(row);
-            });
-            
-            totalProviders.textContent = `$${totalProvidersSum.toFixed(2)}`;
-            
-            // Calcular gastos por departamento
+            // Calcular totales por departamento
             const departmentTotals = {};
-            const departmentStructure = {
-                'UN CCS': [
-                    'Administracion',
-                    'Area Comercial', 
-                    'Area tecnica',
-                    'Obras',
-                    'RRHH y Seguridad Laboral',
-                    'Gerencia Senior'
-                ],
-                'MSO': ['MSO']
-            };
+            let totalCCSAmount = 0;
+            let totalMSOAmount = 0;
             
-            // Inicializar todos los departamentos con 0
-            Object.values(departmentStructure).forEach(deptList => {
-                deptList.forEach(dept => {
-                    departmentTotals[dept] = 0;
-                });
+            reportDepartments.forEach(dept => {
+                departmentTotals[dept.code] = 0;
             });
             
-            // Sumar gastos reales
             filteredTransfers.forEach(transfer => {
-                const dept = transfer.department || 'Sin Departamento';
-                if (departmentTotals.hasOwnProperty(dept)) {
-                    departmentTotals[dept] += transfer.cost;
-                } else if (dept.includes('MSO') || dept === 'MSO') {
-                    departmentTotals['MSO'] += transfer.cost;
+                const department = transfer.department;
+                const cost = transfer.cost || 0;
+                
+                if (department && departmentTotals.hasOwnProperty(department)) {
+                    departmentTotals[department] += cost;
+                    
+                    // Sumar a CCS o MSO según corresponda
+                    if (department === 'MSO') {
+                        totalMSOAmount += cost;
+                    } else {
+                        totalCCSAmount += cost;
+                    }
                 }
             });
             
-            // Renderizar tabla de departamentos
-            departmentTableBody.innerHTML = '';
-            let totalCCSSum = 0;
-            let totalMSOSum = 0;
-            
-            // Departamento de UN CCS
-            const ccsDepartments = departmentStructure['UN CCS'];
-            ccsDepartments.forEach((dept, index) => {
-                const deptName = getDepartmentDisplayName(dept);
-                const deptTotal = departmentTotals[dept] || 0;
-                totalCCSSum += deptTotal;
-                
+            // Actualizar tabla de departamentos
+            departmentsReportTableBody.innerHTML = '';
+            reportDepartments.forEach(dept => {
+                const amount = departmentTotals[dept.code] || 0;
+                const isMSO = dept.code === 'MSO';
                 const row = document.createElement('tr');
+                
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${index === 0 ? 'UN CCS' : ''}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${deptName}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${deptTotal.toFixed(2)}</td>
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">${dept.name}</td>
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">${isMSO ? 'MSO' : 'UN CCS'}</td>
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">$${amount.toFixed(2)}</td>
                 `;
-                departmentTableBody.appendChild(row);
+                departmentsReportTableBody.appendChild(row);
             });
             
-            // Departamento MSO
-            const msoTotal = departmentTotals['MSO'] || 0;
-            totalMSOSum = msoTotal;
-            const msoRow = document.createElement('tr');
-            msoRow.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">MSO</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">MSO</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${msoTotal.toFixed(2)}</td>
-            `;
-            departmentTableBody.appendChild(msoRow);
+            // Actualizar totales de departamentos
+            totalCCS.textContent = `$${totalCCSAmount.toFixed(2)}`;
+            totalMSO.textContent = `$${totalMSOAmount.toFixed(2)}`;
+            const totalCCSMSOTotal = totalCCSAmount + totalMSOAmount;
+            totalCCSMSO.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
             
-            // Actualizar totales
-            totalCCS.textContent = `$${totalCCSSum.toFixed(2)}`;
-            totalMSO.textContent = `$${totalMSOSum.toFixed(2)}`;
-            totalGeneral.textContent = `$${(totalCCSSum + totalMSOSum).toFixed(2)}`;
-        }
-        
-        function getDepartmentDisplayName(dept) {
-            const displayNames = {
-                'Administracion': 'ADMINISTRACION',
-                'Area Comercial': 'AREA COMERCIAL',
-                'Area tecnica': 'AREA TECNICA',
-                'Obras': 'DPTO DE OBRAS',
-                'RRHH y Seguridad Laboral': 'RRHH y Seguridad Laboral',
-                'Gerencia Senior': 'G. SENIOR',
-                'MSO': 'MSO'
-            };
-            return displayNames[dept] || dept;
+            // Calcular totales por empresa
+            const companyTotals = {};
+            let totalCompaniesAmount = 0;
+            
+            reportCompanies.forEach(company => {
+                companyTotals[company.code] = 0;
+            });
+            
+            filteredTransfers.forEach(transfer => {
+                const company = transfer.companyName;
+                const cost = transfer.cost || 0;
+                
+                if (company && companyTotals.hasOwnProperty(company)) {
+                    companyTotals[company] += cost;
+                    totalCompaniesAmount += cost;
+                }
+            });
+            
+            // Actualizar tabla de empresas
+            companiesReportTableBody.innerHTML = '';
+            reportCompanies.forEach(company => {
+                const amount = companyTotals[company.code] || 0;
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">${company.name}</td>
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">$${amount.toFixed(2)}</td>
+                `;
+                companiesReportTableBody.appendChild(row);
+            });
+            
+            // Actualizar totales de empresas
+            totalCompanies.textContent = `$${totalCompaniesAmount.toFixed(2)}`;
+            
+            // Actualizar resumen por unidad
+            unitCCS.textContent = `$${totalCCSAmount.toFixed(2)}`;
+            unitMSO.textContent = `$${totalMSOAmount.toFixed(2)}`;
+            unitTotal.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
         }
 
-        // Event Listeners
+        // Función para exportar reporte a Excel
+        function exportReportToExcel() {
+            const month = parseInt(reportMonthSelect.value);
+            const year = parseInt(reportYearSelect.value);
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            // Crear workbook
+            const workbook = XLSX.utils.book_new();
+            
+            // Hoja 1: Departamentos
+            const departmentsData = [
+                ['MES:', `${monthNames[month]} ${year}`],
+                [],
+                ['DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO'],
+                ['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']
+            ];
+            
+            // Agregar filas de departamentos
+            reportDepartments.forEach(dept => {
+                const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
+                const isMSO = dept.code === 'MSO';
+                departmentsData.push([dept.name, isMSO ? 'MSO' : 'UN CCS', amount]);
+            });
+            
+            // Agregar totales
+            departmentsData.push(['TOTAL CCS', '', parseFloat(totalCCS.textContent.replace('$', '')) || 0]);
+            departmentsData.push(['MSO', 'MSO', parseFloat(totalMSO.textContent.replace('$', '')) || 0]);
+            departmentsData.push(['TOTAL, CCS + MSO', '', parseFloat(totalCCSMSO.textContent.replace('$', '')) || 0]);
+            
+            const departmentsSheet = XLSX.utils.aoa_to_sheet(departmentsData);
+            XLSX.utils.book_append_sheet(workbook, departmentsSheet, 'Departamentos');
+            
+            // Hoja 2: Empresas
+            const companiesData = [
+                ['MES:', `${monthNames[month]} ${year}`],
+                [],
+                ['EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO'],
+                ['EMPRESA', 'IMPORTE']
+            ];
+            
+            // Agregar filas de empresas
+            reportCompanies.forEach((company, index) => {
+                const amount = parseFloat(document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1}) td:last-child`).textContent.replace('$', '')) || 0;
+                companiesData.push([company.name, amount]);
+            });
+            
+            // Agregar total
+            companiesData.push(['TOTAL, CCS + MSO', parseFloat(totalCompanies.textContent.replace('$', '')) || 0]);
+            
+            const companiesSheet = XLSX.utils.aoa_to_sheet(companiesData);
+            XLSX.utils.book_append_sheet(workbook, companiesSheet, 'Empresas');
+            
+            // Hoja 3: Resumen por unidad
+            const unitData = [
+                ['MES:', `${monthNames[month]} ${year}`],
+                [],
+                ['RESUMEN POR UNIDAD'],
+                ['UNIDAD', 'IMPORTE'],
+                ['CCS', parseFloat(unitCCS.textContent.replace('$', '')) || 0],
+                ['MSO', parseFloat(unitMSO.textContent.replace('$', '')) || 0],
+                ['TOTAL', parseFloat(unitTotal.textContent.replace('$', '')) || 0]
+            ];
+            
+            const unitSheet = XLSX.utils.aoa_to_sheet(unitData);
+            XLSX.utils.book_append_sheet(workbook, unitSheet, 'Resumen Unidad');
+            
+            // Descargar archivo
+            const fileName = `Reporte_Traslados_${monthNames[month]}_${year}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showMessage(`Reporte exportado a Excel: ${fileName}`, "success");
+        }
+
+        // Función para exportar reporte a PDF
+        function exportReportToPDF() {
+            const month = parseInt(reportMonthSelect.value);
+            const year = parseInt(reportYearSelect.value);
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            // Crear nuevo documento PDF
+            const doc = new jsPDF();
+            
+            // Título principal
+            doc.setFontSize(16);
+            doc.setTextColor(0, 91, 170); // Color inter-primary
+            doc.text('REPORTE FINANCIERO DE TRASLADOS', 105, 20, null, null, 'center');
+            
+            // Mes y año
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`MES: ${monthNames[month]} ${year}`, 105, 30, null, null, 'center');
+            
+            let yPos = 40;
+            
+            // Sección 1: Departamentos que utilizan servicio de traslado
+            doc.setFontSize(14);
+            doc.setTextColor(0, 91, 170);
+            doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO', 105, yPos, null, null, 'center');
+            yPos += 10;
+            
+            // Tabla de departamentos
+            const departmentsData = [];
+            reportDepartments.forEach(dept => {
+                const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
+                const isMSO = dept.code === 'MSO';
+                departmentsData.push([
+                    dept.name,
+                    isMSO ? 'MSO' : 'UN CCS',
+                    `$${amount.toFixed(2)}`
+                ]);
+            });
+            
+            // Agregar totales a la tabla
+            departmentsData.push([
+                'TOTAL CCS',
+                '',
+                totalCCS.textContent
+            ]);
+            departmentsData.push([
+                'MSO',
+                'MSO',
+                totalMSO.textContent
+            ]);
+            departmentsData.push([
+                'TOTAL, CCS + MSO',
+                '',
+                totalCCSMSO.textContent
+            ]);
+            
+            doc.autoTable({
+                startY: yPos,
+                head: [['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']],
+                body: departmentsData,
+                theme: 'striped',
+                headStyles: { fillColor: [0, 91, 170], textColor: [255, 255, 255] },
+                didDrawPage: function(data) {
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                }
+            });
+            
+            yPos = doc.autoTable.previous.finalY + 15;
+            
+            // Sección 2: Empresas proveedoras
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            doc.setFontSize(14);
+            doc.setTextColor(0, 91, 170);
+            doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', 105, yPos, null, null, 'center');
+            yPos += 10;
+            
+            // Tabla de empresas
+            const companiesData = [];
+            reportCompanies.forEach((company, index) => {
+                const amount = parseFloat(document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1}) td:last-child`).textContent.replace('$', '')) || 0;
+                companiesData.push([
+                    company.name,
+                    `$${amount.toFixed(2)}`
+                ]);
+            });
+            
+            // Agregar total
+            companiesData.push([
+                'TOTAL, CCS + MSO',
+                totalCompanies.textContent
+            ]);
+            
+            doc.autoTable({
+                startY: yPos,
+                head: [['EMPRESA', 'IMPORTE']],
+                body: companiesData,
+                theme: 'striped',
+                headStyles: { fillColor: [92, 225, 230], textColor: [0, 0, 0] }, // Color inter-accent-light
+                didDrawPage: function(data) {
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                }
+            });
+            
+            yPos = doc.autoTable.previous.finalY + 15;
+            
+            // Sección 3: Resumen por unidad
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            doc.setFontSize(14);
+            doc.setTextColor(0, 91, 170);
+            doc.text('RESUMEN POR UNIDAD', 105, yPos, null, null, 'center');
+            yPos += 10;
+            
+            // Tabla de resumen por unidad
+            const unitData = [
+                ['CCS', unitCCS.textContent],
+                ['MSO', unitMSO.textContent],
+                ['TOTAL', unitTotal.textContent]
+            ];
+            
+            doc.autoTable({
+                startY: yPos,
+                head: [['UNIDAD', 'IMPORTE']],
+                body: unitData,
+                theme: 'striped',
+                headStyles: { fillColor: [0, 91, 170], textColor: [255, 255, 255] },
+                didDrawPage: function(data) {
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                }
+            });
+            
+            // Información de generación
+            const finalY = doc.autoTable.previous.finalY + 20;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 105, finalY, null, null, 'center');
+            doc.text('Sistema de Control de Traslados de Taxi - Inter', 105, finalY + 5, null, null, 'center');
+            
+            // Guardar PDF
+            const fileName = `Reporte_Traslados_${monthNames[month]}_${year}.pdf`;
+            doc.save(fileName);
+            
+            showMessage(`Reporte exportado a PDF: ${fileName}`, "success");
+        }
+
+        // Event Listeners para pestañas
+        tabDashboard.addEventListener('click', () => {
+            tabDashboard.classList.add('active', 'bg-inter-primary', 'text-white');
+            tabDashboard.classList.remove('bg-gray-200', 'text-gray-700');
+            tabReports.classList.remove('active', 'bg-inter-primary', 'text-white');
+            tabReports.classList.add('bg-gray-200', 'text-gray-700');
+            dashboardContent.classList.remove('hidden');
+            reportsContent.classList.add('hidden');
+        });
+
+        tabReports.addEventListener('click', () => {
+            tabReports.classList.add('active', 'bg-inter-primary', 'text-white');
+            tabReports.classList.remove('bg-gray-200', 'text-gray-700');
+            tabDashboard.classList.remove('active', 'bg-inter-primary', 'text-white');
+            tabDashboard.classList.add('bg-gray-200', 'text-gray-700');
+            reportsContent.classList.remove('hidden');
+            dashboardContent.classList.add('hidden');
+            generateReport();
+        });
+
+        // Event Listeners para reportes
+        generateReportBtn.addEventListener('click', generateReport);
+        exportReportExcelBtn.addEventListener('click', exportReportToExcel);
+        exportReportPDFBtn.addEventListener('click', exportReportToPDF);
+
+        // Event Listeners del Dashboard
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = submitButton;
@@ -1182,8 +1634,11 @@
                 const transferData = {
                     requesterName: requesterNameInput.value.trim(),
                     department: departmentInput.value,
+                    msoDepartment: departmentInput.value === 'MSO' ? msoDepartmentInput.value : '',
                     originPlace: originPlaceInput.value.trim(),
+                    destinationPlace: destinationPlaceInput.value.trim(),
                     returnAddress: returnAddressInput.value.trim(),
+                    returnDestination: returnDestinationInput.value.trim(),
                     dateTime: normalizeDateToStartOfDay(new Date(transferDateInput.value)),
                     cost: parseFloat(costInput.value),
                     authorizerName: authorizerNameInput.value,
@@ -1193,6 +1648,8 @@
                 const success = await saveTransfer(transferData);
                 if (success) {
                     transferForm.reset();
+                    msoDepartmentsContainer.classList.add('hidden');
+                    msoDepartmentInput.required = false;
                     transferDateInput.value = new Date().toISOString().slice(0, 10);
                     if (editingId) {
                         cancelEdit();
@@ -1215,19 +1672,51 @@
         });
 
         exportCsvBtn.addEventListener('click', () => {
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "Fecha,Solicitante,Departamento,Origen,Dirección Vuelta,Autorizador,Empresa,Costo\n"
-                + transfers.map(t => 
-                    `"${t.dateTime.toLocaleDateString('es-ES')}","${t.requesterName}","${t.department}","${t.originPlace}","${t.returnAddress || 'N/A'}","${t.authorizerName}","${t.companyName}",${t.cost.toFixed(2)}`
-                ).join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `traslados_taxi_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showMessage("Archivo CSV exportado con éxito.", "success");
+            if (transfers.length === 0) {
+                showMessage("No hay datos para exportar.", "error");
+                return;
+            }
+        
+            const dataToExport = transfers.map(t => ({
+                'Fecha': t.dateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                'Solicitante': t.requesterName,
+                'Departamento': t.department,
+                'Depto. MSO': t.msoDepartment || '',
+                'Origen Partida': t.originPlace || '',
+                'Origen Destino': t.destinationPlace || '',
+                'Vuelta Partida': t.returnAddress || '',
+                'Vuelta Destino': t.returnDestination || '',
+                'Quién Autoriza': t.authorizerName,
+                'Empresa de Traslado': t.companyName,
+                'Costo ($)': t.cost
+            }));
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
+            const monthlyTransfers = transfers.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+            
+            const departmentExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                }
+                departmentExpenses[department] = (departmentExpenses[department] || 0) + transfer.cost;
+            });
+
+            const departmentSummaryData = Object.entries(departmentExpenses).map(([department, cost]) => ({
+                'Departamento': department,
+                'Gasto Mensual Total ($)': cost
+            }));
+            
+            const mainWorksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const summaryWorksheet = XLSX.utils.json_to_sheet(departmentSummaryData);
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, mainWorksheet, 'Historial');
+            XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen por Departamento');
+            XLSX.writeFile(workbook, `traslados_taxi_${new Date().toISOString().slice(0,10)}.xlsx`);
         });
 
         importExcelBtn.addEventListener('click', () => {
@@ -1248,10 +1737,10 @@
                 const importedTransfers = [];
                 for (let i = 1; i < jsonData.length; i++) {
                     const row = jsonData[i];
-                    if (row.length >= 8) {
-                        const [dateStr, requesterName, department, originPlace, returnAddress, authorizerName, companyName, cost] = row;
+                    if (row.length >= 11) {
+                        const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
                         
-                        // Parsear fecha (asumiendo formato DD/MM/YYYY)
+                        // Parsear fecha
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
@@ -1264,8 +1753,38 @@
                             importedTransfers.push({
                                 requesterName: requesterName?.toString() || '',
                                 department: department?.toString() || '',
+                                msoDepartment: msoDepartment?.toString() || '',
                                 originPlace: originPlace?.toString() || '',
+                                destinationPlace: destinationPlace?.toString() || '',
                                 returnAddress: returnAddress?.toString() || '',
+                                returnDestination: returnDestination?.toString() || '',
+                                dateTime: dateTime,
+                                cost: parseFloat(cost) || 0,
+                                authorizerName: authorizerName?.toString() || '',
+                                companyName: companyName?.toString() || ''
+                            });
+                        }
+                    } else if (row.length >= 8) {
+                        // Formato antiguo (compatibilidad con archivos antiguos)
+                        const [dateStr, requesterName, department, originPlace, returnAddress, authorizerName, companyName, cost] = row;
+                        
+                        let dateTime;
+                        if (dateStr.includes('/')) {
+                            const [day, month, year] = dateStr.split('/');
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
+                        } else {
+                            dateTime = normalizeDateToStartOfDay(new Date(dateStr));
+                        }
+
+                        if (!isNaN(dateTime.getTime())) {
+                            importedTransfers.push({
+                                requesterName: requesterName?.toString() || '',
+                                department: department?.toString() || '',
+                                msoDepartment: '',
+                                originPlace: originPlace?.toString() || '',
+                                destinationPlace: '',
+                                returnAddress: returnAddress?.toString() || '',
+                                returnDestination: '',
                                 dateTime: dateTime,
                                 cost: parseFloat(cost) || 0,
                                 authorizerName: authorizerName?.toString() || '',
@@ -1314,32 +1833,14 @@
             checkboxes.forEach(cb => cb.checked = e.target.checked);
         });
 
-        // Event listeners para la nueva pestaña
-        updateDistributionBtn.addEventListener('click', updateDistributionReport);
-        
-        exportDistributionBtn.addEventListener('click', () => {
-            // Función básica para exportar a PDF (simplificada)
-            const element = document.getElementById('distribucion-tab');
-            const opt = {
-                margin:       1,
-                filename:     `distribucion_gastos_${monthSelect.options[monthSelect.selectedIndex].text}_${yearSelect.value}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            
-            // Nota: Necesitarías incluir la librería html2pdf.js para funcionalidad completa
-            showMessage("Para exportar a PDF, necesitas implementar html2pdf.js. Por ahora, puedes usar la función de imprimir del navegador.", "info");
-            
-            // Alternativa: abrir ventana de impresión
-            window.print();
-        });
-
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             transferDateInput.value = new Date().toISOString().slice(0, 10);
-            initializeTabs();
-            initializeYearSelect();
+            
+            // Establecer mes actual en el selector de reportes
+            const currentMonth = new Date().getMonth();
+            reportMonthSelect.value = currentMonth.toString();
+            
             loadTransfers();
         });
 
