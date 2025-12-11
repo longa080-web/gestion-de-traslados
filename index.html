@@ -24,6 +24,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+    <!-- Flatpickr para selección de fechas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -52,47 +57,116 @@
             color: white;
             font-weight: bold;
         }
+        .compact-row {
+            max-height: 60px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .compact-row.expanded {
+            max-height: 500px;
+        }
+        .compact-cell {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .compact-cell.expanded {
+            max-width: none;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        .expand-btn {
+            cursor: pointer;
+            color: #005BAA;
+            font-size: 12px;
+        }
+        .filter-section {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .filter-section.collapsed {
+            max-height: 60px;
+        }
+        .filter-section.expanded {
+            max-height: 500px;
+        }
+        .date-range-display {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        @media (max-width: 768px) {
+            .responsive-table {
+                display: block;
+            }
+            .responsive-table thead {
+                display: none;
+            }
+            .responsive-table tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                padding: 1rem;
+            }
+            .responsive-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            .responsive-table tbody td:last-child {
+                border-bottom: none;
+            }
+            .responsive-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #005BAA;
+                min-width: 120px;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-100 p-4 min-h-screen flex flex-col items-center">
-    <div class="w-full max-w-6xl bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
-        <header class="text-center mb-6 bg-inter-primary rounded-t-xl py-6 relative overflow-hidden">
-            <h1 class="text-4xl font-extrabold text-white mb-2 relative z-10">
+<body class="bg-gray-100 p-2 md:p-4 min-h-screen flex flex-col items-center">
+    <div class="w-full max-w-7xl bg-white rounded-xl shadow-lg p-4 md:p-6 lg:p-8 mb-8">
+        <header class="text-center mb-6 bg-inter-primary rounded-t-xl py-4 md:py-6 relative overflow-hidden">
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-2 relative z-10">
                 Control de Traslados de Taxi
             </h1>
-            <p class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-extrabold text-white opacity-10 whitespace-nowrap select-none pointer-events-none z-0">
+            <p class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg md:text-xl lg:text-2xl font-extrabold text-white opacity-10 whitespace-nowrap select-none pointer-events-none z-0">
                 Inter Tu mundo, nuestro compromiso.
             </p>
-            <p class="text-md text-white mt-2 relative z-10">Registro y gestión de solicitudes de traslados de taxi</p>
-            <div id="connectionStatus" class="absolute top-4 right-4 flex items-center">
-                <span class="text-white text-sm mr-2">Conectado</span>
-                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <p class="text-xs md:text-sm text-white mt-2 relative z-10">Registro y gestión de solicitudes de traslados de taxi</p>
+            <div id="connectionStatus" class="absolute top-2 md:top-4 right-2 md:right-4 flex items-center">
+                <span class="text-white text-xs md:text-sm mr-2">Conectado</span>
+                <div class="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse"></div>
             </div>
         </header>
 
         <!-- Pestañas de navegación -->
-        <div class="mb-6 flex space-x-2 border-b border-gray-200">
-            <button id="tabDashboard" class="tab-button active px-4 py-2 rounded-t-lg bg-inter-primary text-white font-semibold">
+        <div class="mb-4 md:mb-6 flex space-x-1 md:space-x-2 border-b border-gray-200">
+            <button id="tabDashboard" class="tab-button active px-3 py-1 md:px-4 md:py-2 rounded-t-lg bg-inter-primary text-white font-semibold text-sm md:text-base">
                 Dashboard
             </button>
-            <button id="tabReports" class="tab-button px-4 py-2 rounded-t-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300">
+            <button id="tabReports" class="tab-button px-3 py-1 md:px-4 md:py-2 rounded-t-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 text-sm md:text-base">
                 Reportes Financieros
             </button>
         </div>
 
         <!-- Contenido del Dashboard (pestaña principal) -->
         <div id="dashboardContent">
-            <!-- ... (todo el contenido del dashboard se mantiene igual) ... -->
-            <section id="registerSection" class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Registrar Nuevo Traslado</h2>
-                <form id="transferForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <section id="registerSection" class="mb-6 md:mb-8 p-4 md:p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4">Registrar Nuevo Traslado</h2>
+                <form id="transferForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                     
                     <div>
                         <label for="requesterName" class="block text-sm font-medium text-gray-700 mb-1">
                             Nombre del Solicitante
                         </label>
                         <input type="text" id="requesterName" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
                                placeholder="Ej. Juan Pérez">
                     </div>
                     <div>
@@ -100,7 +174,7 @@
                             Departamento/Área
                         </label>
                         <select id="department" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                             <option value="" disabled selected>Selecciona un Departamento</option>
                             <option value="Administracion">Administración</option>
                             <option value="Area Comercial">Área Comercial</option>
@@ -117,7 +191,7 @@
                             Departamento MSO (Observaciones)
                         </label>
                         <select id="msoDepartment"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                             <option value="" disabled selected>Selecciona departamento MSO</option>
                             <option value="Marketing">Marketing</option>
                             <option value="Presidencia">Presidencia</option>
@@ -132,7 +206,7 @@
                             Lugar de Origen - Punto de Partida
                         </label>
                         <input type="text" id="originPlace" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
                                placeholder="Ej. Sede Principal, Cliente X, Aeropuerto">
                     </div>
                     <div class="col-span-1 md:col-span-2">
@@ -140,7 +214,7 @@
                             Lugar de Origen - Punto de Llegada
                         </label>
                         <input type="text" id="destinationPlace" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
                                placeholder="Ej. Oficina Central, Hotel, Terminal">
                     </div>
                     <div class="col-span-1 md:col-span-2">
@@ -148,7 +222,7 @@
                             Dirección de Vuelta - Punto de Partida
                         </label>
                         <input type="text" id="returnAddress"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
                                placeholder="Ej. Domicilio particular, Otro cliente, N/A">
                     </div>
                     <div class="col-span-1 md:col-span-2">
@@ -156,7 +230,7 @@
                             Dirección de Vuelta - Destino Final
                         </label>
                         <input type="text" id="returnDestination"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
                                placeholder="Ej. Domicilio particular, Otro cliente, N/A">
                     </div>
                     <div>
@@ -164,21 +238,21 @@
                             Fecha del Traslado
                         </label>
                         <input type="date" id="transferDate" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                     </div>
                     <div>
                         <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">
                             Costo del Traslado (USD $)
                         </label>
                         <input type="number" id="cost" step="0.01" min="0" value="0.00" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                     </div>
                     <div>
                         <label for="authorizerName" class="block text-sm font-medium text-gray-700 mb-1">
                             Quién Autoriza
                         </label>
                         <select id="authorizerName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                             <option value="" disabled selected>Selecciona Autorizador</option>
                             <option value="Jorge Basualdo">Jorge Basualdo</option>
                         </select>
@@ -188,7 +262,7 @@
                             Empresa de Traslado
                         </label>
                         <select id="companyName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                             <option value="" disabled selected>Selecciona Empresa</option>
                             <option value="Yummy">Yummy</option>
                             <option value="Andrew">Andrew</option>
@@ -197,13 +271,13 @@
                             <option value="Jose">Jose</option>
                         </select>
                     </div>
-                    <div class="col-span-1 md:col-span-3 flex justify-end space-x-4">
+                    <div class="col-span-1 md:col-span-3 flex justify-end space-x-2 md:space-x-4">
                         <button type="button" id="cancelEditBtn"
-                                class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
-                            Cancelar Edición
+                                class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base">
+                            Cancelar
                         </button>
                         <button type="submit" id="submitButton"
-                                class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                                class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base">
                             Registrar Traslado
                         </button>
                     </div>
@@ -211,76 +285,180 @@
                 <div id="messageBox" class="mt-4 p-3 rounded-md text-sm hidden"></div>
             </section>
 
-            <section class="mb-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Resumen de Gastos de Traslados</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold text-gray-700">Gastos Diarios</h3>
-                        <p id="dailyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+            <section class="mb-6 md:mb-8 p-4 md:p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4">Resumen de Gastos de Traslados</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-center">
+                    <div class="bg-white p-3 md:p-4 rounded-lg shadow-md">
+                        <h3 class="text-sm md:text-lg font-semibold text-gray-700">Gastos Diarios</h3>
+                        <p id="dailyTotal" class="text-xl md:text-2xl lg:text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold text-gray-700">Gastos Semanales</h3>
-                        <p id="weeklyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                    <div class="bg-white p-3 md:p-4 rounded-lg shadow-md">
+                        <h3 class="text-sm md:text-lg font-semibold text-gray-700">Gastos Semanales</h3>
+                        <p id="weeklyTotal" class="text-xl md:text-2xl lg:text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold text-gray-700">Gastos Mensuales</h3>
-                        <p id="monthlyTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                    <div class="bg-white p-3 md:p-4 rounded-lg shadow-md">
+                        <h3 class="text-sm md:text-lg font-semibold text-gray-700">Gastos Mensuales</h3>
+                        <p id="monthlyTotal" class="text-xl md:text-2xl lg:text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold text-gray-700">Gastos Anuales</h3>
-                        <p id="annualTotal" class="text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
+                    <div class="bg-white p-3 md:p-4 rounded-lg shadow-md">
+                        <h3 class="text-sm md:text-lg font-semibold text-gray-700">Gastos Anuales</h3>
+                        <p id="annualTotal" class="text-xl md:text-2xl lg:text-3xl font-extrabold text-inter-primary mt-2">$0.00</p>
                     </div>
                 </div>
             </section>
 
-            <section class="p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Historial de Traslados</h2>
-
-                <div class="mb-4 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row items-center gap-4">
-                    <label for="filterRequester" class="text-sm font-medium text-gray-700 whitespace-nowrap">
-                        Filtrar por Solicitante:
-                    </label>
-                    <input type="text" id="filterRequester"
-                           class="w-full md:w-auto flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary"
-                           placeholder="Nombre del solicitante">
-                    <button id="clearFilterBtn"
-                            class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        Limpiar Filtro
-                    </button>
-                    <button id="exportCsvBtn"
-                            class="bg-inter-accent-light hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        Exportar a Excel
-                    </button>
-                    <button id="importExcelBtn"
-                            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        Importar de Excel
-                    </button>
-                    <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx">
-                    <button id="deleteSelectedBtn"
-                            class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        Eliminar Seleccionados
+            <!-- SECCIÓN DE FILTROS MEJORADA -->
+            <section class="p-4 md:p-6 bg-white rounded-lg border border-inter-primary shadow-lg mb-4 md:mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-inter-primary">Historial de Traslados</h2>
+                    <button id="toggleFiltersBtn" class="bg-inter-accent-light hover:bg-cyan-600 text-gray-800 hover:text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                        <span id="toggleFiltersText">Mostrar Filtros</span>
+                        <span id="toggleFiltersIcon">▼</span>
                     </button>
                 </div>
 
+                <!-- Filtros avanzados - Colapsable -->
+                <div id="filtersSection" class="filter-section collapsed mb-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <!-- Filtro por nombre/apellido -->
+                        <div>
+                            <label for="filterName" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nombre/Apellido
+                            </label>
+                            <input type="text" id="filterName"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
+                                   placeholder="Buscar por nombre o apellido">
+                        </div>
+                        
+                        <!-- Filtro por departamento -->
+                        <div>
+                            <label for="filterDepartment" class="block text-sm font-medium text-gray-700 mb-1">
+                                Departamento
+                            </label>
+                            <select id="filterDepartment" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
+                                <option value="">Todos los departamentos</option>
+                                <option value="Administracion">Administración</option>
+                                <option value="Area Comercial">Área Comercial</option>
+                                <option value="Area tecnica">Área Técnica</option>
+                                <option value="Obras">Obras</option>
+                                <option value="RRHH y Seguridad Laboral">RRHH y Seguridad Laboral</option>
+                                <option value="Sistemas">Sistemas</option>
+                                <option value="MSO">MSO</option>
+                                <option value="Gerencia Senior">Gerencia Senior</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Filtro por empresa -->
+                        <div>
+                            <label for="filterCompany" class="block text-sm font-medium text-gray-700 mb-1">
+                                Empresa de Traslado
+                            </label>
+                            <select id="filterCompany" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
+                                <option value="">Todas las empresas</option>
+                                <option value="Yummy">Yummy</option>
+                                <option value="Andrew">Andrew</option>
+                                <option value="Oscar">Oscar</option>
+                                <option value="Neomar">Neomar</option>
+                                <option value="Jose">Jose</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Filtro por autorizador -->
+                        <div>
+                            <label for="filterAuthorizer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Quién Autoriza
+                            </label>
+                            <select id="filterAuthorizer" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
+                                <option value="">Todos los autorizadores</option>
+                                <option value="Jorge Basualdo">Jorge Basualdo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtro por rango de fechas -->
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                        <div>
+                            <label for="filterDateRange" class="block text-sm font-medium text-gray-700 mb-1">
+                                Rango de Fechas
+                            </label>
+                            <input type="text" id="filterDateRange"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
+                                   placeholder="Seleccionar rango de fechas">
+                            <div id="dateRangeDisplay" class="date-range-display"></div>
+                        </div>
+                        
+                        <!-- Filtro por costo -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Rango de Costo ($)
+                            </label>
+                            <div class="flex space-x-2">
+                                <input type="number" id="filterMinCost" step="0.01" min="0"
+                                       class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
+                                       placeholder="Mínimo">
+                                <input type="number" id="filterMaxCost" step="0.01" min="0"
+                                       class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base"
+                                       placeholder="Máximo">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción de filtros -->
+                    <div class="mt-4 flex flex-wrap gap-2 md:gap-4">
+                        <button id="applyFiltersBtn" class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            Aplicar Filtros
+                        </button>
+                        <button id="clearAllFiltersBtn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            Limpiar Todos los Filtros
+                        </button>
+                        <button id="toggleViewBtn" class="bg-inter-accent-yellow hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            <span id="toggleViewText">Vista Compacta</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de herramientas -->
+                <div class="mb-4 p-3 md:p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row items-center gap-2 md:gap-4">
+                    <div class="text-sm text-gray-700 font-medium">
+                        Resultados: <span id="resultsCount">0</span> traslados
+                    </div>
+                    <div class="flex-grow"></div>
+                    <div class="flex flex-wrap gap-2 md:gap-4">
+                        <button id="exportCsvBtn"
+                                class="bg-inter-accent-light hover:bg-cyan-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            Exportar a Excel
+                        </button>
+                        <button id="importExcelBtn"
+                                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            Importar
+                        </button>
+                        <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx">
+                        <button id="deleteSelectedBtn"
+                                class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition duration-300 ease-in-out text-sm md:text-base">
+                            Eliminar Seleccionados
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de historial - MEJORADA PARA RESPONSIVE -->
                 <div class="overflow-x-auto rounded-lg shadow-md">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 responsive-table">
                         <thead class="bg-blue-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">
                                     <input type="checkbox" id="selectAllCheckboxes" class="form-checkbox h-4 w-4 text-inter-primary rounded">
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Fecha</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Solicitante</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Depto. MSO</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen Partida</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen Destino</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Vuelta Partida</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Vuelta Destino</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Quién Autoriza</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo ($)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Acciones</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Fecha</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Solicitante</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Destino</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Costo ($)</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="transferTableBody" class="bg-white divide-y divide-gray-200">
@@ -290,53 +468,54 @@
                 <p id="noTransfersMessage" class="text-center text-gray-500 mt-4 hidden">No hay traslados registrados aún.</p>
             </section>
             
-            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Gastos por Empresa de Traslado</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Mensual por Empresa</h3>
-                        <div class="w-full max-w-lg h-64">
+            <!-- Secciones de gráficos (mantenidas igual) -->
+            <section class="mt-6 md:mt-8 p-4 md:p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4">Gastos por Empresa de Traslado</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div class="p-3 md:p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-lg md:text-xl font-bold text-inter-primary mb-3 md:mb-4 text-center">Gasto Mensual por Empresa</h3>
+                        <div class="w-full h-48 md:h-64">
                             <canvas id="monthlyCompanyChart"></canvas>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Empresa</h3>
-                        <div class="w-full max-w-lg h-64">
+                    <div class="p-3 md:p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-lg md:text-xl font-bold text-inter-primary mb-3 md:mb-4 text-center">Gasto Anual por Empresa</h3>
+                        <div class="w-full h-48 md:h-64">
                             <canvas id="annualCompanyChart"></canvas>
                         </div>
                     </div>
                 </div>
             </section>
             
-            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Gastos por Departamento</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Mensual por Departamento</h3>
-                        <div class="w-full max-w-lg h-64">
+            <section class="mt-6 md:mt-8 p-4 md:p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4">Gastos por Departamento</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div class="p-3 md:p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-lg md:text-xl font-bold text-inter-primary mb-3 md:mb-4 text-center">Gasto Mensual por Departamento</h3>
+                        <div class="w-full h-48 md:h-64">
                             <canvas id="monthlyDepartmentChart"></canvas>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
-                        <h3 class="text-xl font-bold text-inter-primary mb-4 text-center">Gasto Anual por Departamento</h3>
-                        <div class="w-full max-w-lg h-64">
+                    <div class="p-3 md:p-4 bg-gray-50 rounded-lg shadow-inner flex flex-col items-center">
+                        <h3 class="text-lg md:text-xl font-bold text-inter-primary mb-3 md:mb-4 text-center">Gasto Anual por Departamento</h3>
+                        <div class="w-full h-48 md:h-64">
                             <canvas id="annualDepartmentChart"></canvas>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="mt-8 p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
-                <h2 class="text-2xl font-bold text-inter-primary mb-4">Estadísticas de Traslados por Departamento</h2>
+            <section class="mt-6 md:mt-8 p-4 md:p-6 bg-white rounded-lg border border-inter-accent-light shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4">Estadísticas de Traslados por Departamento</h2>
                 <div class="overflow-x-auto rounded-lg shadow-md">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-blue-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Mensuales</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual ($)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Anuales</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Anual ($)</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Mensuales</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual ($)</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Anuales</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Anual ($)</th>
                             </tr>
                         </thead>
                         <tbody id="departmentStatsTableBody" class="bg-white divide-y divide-gray-200">
@@ -347,8 +526,9 @@
             </section>
         </div>
 
-        <!-- Contenido de Reportes Financieros (nueva pestaña) -->
+        <!-- Contenido de Reportes Financieros (pestaña secundaria - mantenida igual) -->
         <div id="reportsContent" class="hidden">
+            <!-- ... (todo el contenido de reportes se mantiene igual) ... -->
             <section class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
                 <h2 class="text-2xl font-bold text-inter-primary mb-4">Reportes Financieros de Traslados</h2>
                 <div class="mb-6 flex flex-col md:flex-row gap-4">
@@ -434,7 +614,7 @@
                     </div>
                 </div>
 
-                <!-- Reporte: Empresas proveedoras de servicio CCS y MSO - MODIFICADO -->
+                <!-- Reporte: Empresas proveedoras de servicio CCS y MSO -->
                 <div class="mb-8">
                     <h3 class="text-xl font-bold text-inter-primary mb-4">EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO</h3>
                     <div class="overflow-x-auto rounded-lg shadow-md">
@@ -566,6 +746,25 @@
         const unitMSO = document.getElementById('unitMSO');
         const unitTotal = document.getElementById('unitTotal');
 
+        // Elementos de filtros MEJORADOS
+        const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+        const toggleFiltersText = document.getElementById('toggleFiltersText');
+        const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
+        const filtersSection = document.getElementById('filtersSection');
+        const filterName = document.getElementById('filterName');
+        const filterDepartment = document.getElementById('filterDepartment');
+        const filterCompany = document.getElementById('filterCompany');
+        const filterAuthorizer = document.getElementById('filterAuthorizer');
+        const filterDateRange = document.getElementById('filterDateRange');
+        const dateRangeDisplay = document.getElementById('dateRangeDisplay');
+        const filterMinCost = document.getElementById('filterMinCost');
+        const filterMaxCost = document.getElementById('filterMaxCost');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        const toggleViewText = document.getElementById('toggleViewText');
+        const resultsCount = document.getElementById('resultsCount');
+
         // Gráficos
         const monthlyCompanyChartCtx = document.getElementById('monthlyCompanyChart').getContext('2d');
         const annualCompanyChartCtx = document.getElementById('annualCompanyChart').getContext('2d');
@@ -577,8 +776,6 @@
         let monthlyDepartmentChart;
         let annualDepartmentChart;
 
-        const filterRequesterInput = document.getElementById('filterRequester');
-        const clearFilterBtn = document.getElementById('clearFilterBtn');
         const exportCsvBtn = document.getElementById('exportCsvBtn');
         const importExcelBtn = document.getElementById('importExcelBtn');
         const fileInput = document.getElementById('fileInput');
@@ -588,8 +785,20 @@
         let transfers = [];
         let editingId = null;
         let unsubscribeTransfers = null;
+        let currentFilters = {
+            name: '',
+            department: '',
+            company: '',
+            authorizer: '',
+            dateStart: null,
+            dateEnd: null,
+            minCost: null,
+            maxCost: null
+        };
+        let isCompactView = true;
+        let expandedRows = new Set();
 
-        // Lista de departamentos para reportes (según el formato Word)
+        // Lista de departamentos para reportes
         const reportDepartments = [
             { name: "ADMINISTRACION", code: "Administracion" },
             { name: "AREA COMERCIAL", code: "Area Comercial" },
@@ -625,10 +834,63 @@
             }, 5000);
         }
 
+        // CORRECCIÓN: Función para normalizar fechas sin problema de zona horaria
         function normalizeDateToStartOfDay(date) {
+            // Crear una nueva fecha para no modificar la original
             const d = new Date(date);
-            d.setHours(0, 0, 0, 0);
-            return d;
+            
+            // Usar UTC para evitar problemas de zona horaria
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const day = d.getDate();
+            
+            // Retornar fecha con hora local a medianoche
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+
+        // CORRECCIÓN: Función para parsear fechas del input sin problemas de zona horaria
+        function parseDateInput(dateString) {
+            // Dividir la fecha YYYY-MM-DD
+            const parts = dateString.split('-');
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1; // Meses son 0-11
+            const day = parseInt(parts[2]);
+            
+            // Crear fecha local sin problemas de zona horaria
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+
+        // Inicializar flatpickr para rango de fechas
+        let dateRangePicker;
+        function initDateRangePicker() {
+            dateRangePicker = flatpickr(filterDateRange, {
+                mode: "range",
+                dateFormat: "d/m/Y",
+                locale: "es",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0];
+                        const endDate = selectedDates[1];
+                        
+                        // CORRECCIÓN: Configurar horas para rango completo
+                        const start = new Date(startDate);
+                        start.setHours(0, 0, 0, 0);
+                        
+                        const end = new Date(endDate);
+                        end.setHours(23, 59, 59, 999);
+                        
+                        currentFilters.dateStart = start;
+                        currentFilters.dateEnd = end;
+                        
+                        // Mostrar el rango seleccionado
+                        dateRangeDisplay.textContent = `${startDate.toLocaleDateString('es-ES')} - ${endDate.toLocaleDateString('es-ES')}`;
+                    } else {
+                        currentFilters.dateStart = null;
+                        currentFilters.dateEnd = null;
+                        dateRangeDisplay.textContent = '';
+                    }
+                }
+            });
         }
 
         // Manejar cambio en departamento MSO
@@ -657,10 +919,12 @@
                         transfers = [];
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
+                            // CORRECCIÓN: Parsear fecha usando nuestra función corregida
+                            const date = new Date(data.dateTime);
                             transfers.push({
                                 id: doc.id,
                                 ...data,
-                                dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
+                                dateTime: normalizeDateToStartOfDay(date)
                             });
                         });
                         
@@ -741,68 +1005,334 @@
             }
         }
 
+        // CORRECCIÓN: Función para aplicar filtros - AHORA FUNCIONA CORRECTAMENTE
+        function applyFilters() {
+            // Capturar valores de los filtros
+            currentFilters.name = filterName.value.trim().toLowerCase();
+            currentFilters.department = filterDepartment.value;
+            currentFilters.company = filterCompany.value;
+            currentFilters.authorizer = filterAuthorizer.value;
+            
+            // Capturar filtro de costo
+            currentFilters.minCost = filterMinCost.value ? parseFloat(filterMinCost.value) : null;
+            currentFilters.maxCost = filterMaxCost.value ? parseFloat(filterMaxCost.value) : null;
+            
+            // IMPORTANTE: Capturar las fechas de flatpickr directamente
+            const selectedDates = dateRangePicker.selectedDates;
+            if (selectedDates && selectedDates.length === 2) {
+                const startDate = new Date(selectedDates[0]);
+                const endDate = new Date(selectedDates[1]);
+                
+                // Configurar horas para rango completo
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(23, 59, 59, 999); // Incluir todo el último día
+                
+                currentFilters.dateStart = startDate;
+                currentFilters.dateEnd = endDate;
+                
+                // Mostrar el rango seleccionado
+                dateRangeDisplay.textContent = `${selectedDates[0].toLocaleDateString('es-ES')} - ${selectedDates[1].toLocaleDateString('es-ES')}`;
+            } else {
+                currentFilters.dateStart = null;
+                currentFilters.dateEnd = null;
+                dateRangeDisplay.textContent = '';
+            }
+            
+            renderTransfers();
+            showMessage("Filtros aplicados correctamente", "success");
+        }
+
+        // Función para limpiar todos los filtros
+        function clearAllFilters() {
+            filterName.value = '';
+            filterDepartment.value = '';
+            filterCompany.value = '';
+            filterAuthorizer.value = '';
+            filterMinCost.value = '';
+            filterMaxCost.value = '';
+            filterDateRange.value = '';
+            dateRangeDisplay.textContent = '';
+            
+            // Resetear flatpickr
+            if (dateRangePicker) {
+                dateRangePicker.clear();
+            }
+            
+            // Resetear filtros actuales
+            currentFilters = {
+                name: '',
+                department: '',
+                company: '',
+                authorizer: '',
+                dateStart: null,
+                dateEnd: null,
+                minCost: null,
+                maxCost: null
+            };
+            
+            renderTransfers();
+            showMessage("Todos los filtros han sido limpiados", "success");
+        }
+
+        // Función para alternar vista compacta/detallada
+        function toggleView() {
+            isCompactView = !isCompactView;
+            toggleViewText.textContent = isCompactView ? 'Vista Compacta' : 'Vista Detallada';
+            
+            // Actualizar todas las filas visibles
+            document.querySelectorAll('.compact-row').forEach(row => {
+                if (isCompactView) {
+                    row.classList.add('compact-row');
+                    row.classList.remove('expanded');
+                    row.querySelectorAll('.compact-cell').forEach(cell => {
+                        cell.classList.add('compact-cell');
+                        cell.classList.remove('expanded');
+                    });
+                } else {
+                    row.classList.remove('compact-row');
+                    row.classList.add('expanded');
+                    row.querySelectorAll('.compact-cell').forEach(cell => {
+                        cell.classList.remove('compact-cell');
+                        cell.classList.add('expanded');
+                    });
+                }
+            });
+            
+            // Resetear filas expandidas
+            if (!isCompactView) {
+                expandedRows.clear();
+            }
+        }
+
+        // Función para expandir/contraer fila individual
+        function toggleRowExpansion(rowId) {
+            const row = document.querySelector(`tr[data-id="${rowId}"]`);
+            if (!row) return;
+            
+            if (expandedRows.has(rowId)) {
+                // Contraer
+                expandedRows.delete(rowId);
+                row.classList.remove('expanded');
+                row.querySelectorAll('.compact-cell').forEach(cell => {
+                    cell.classList.remove('expanded');
+                });
+            } else {
+                // Expandir
+                expandedRows.add(rowId);
+                row.classList.add('expanded');
+                row.querySelectorAll('.compact-cell').forEach(cell => {
+                    cell.classList.add('expanded');
+                });
+            }
+        }
+
         function renderTransfers() {
             transferTableBody.innerHTML = '';
             selectAllCheckboxes.checked = false;
+            expandedRows.clear();
 
-            const filterText = filterRequesterInput.value.trim().toLowerCase();
-            let displayTransfers = [...transfers];
-            if (filterText) {
-                displayTransfers = displayTransfers.filter(transfer =>
-                    transfer.requesterName.toLowerCase().includes(filterText)
+            // Aplicar filtros
+            let filteredTransfers = [...transfers];
+            
+            // Filtrar por nombre/apellido
+            if (currentFilters.name) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.requesterName.toLowerCase().includes(currentFilters.name)
+                );
+            }
+            
+            // Filtrar por departamento
+            if (currentFilters.department) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.department === currentFilters.department
+                );
+            }
+            
+            // Filtrar por empresa
+            if (currentFilters.company) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.companyName === currentFilters.company
+                );
+            }
+            
+            // Filtrar por autorizador
+            if (currentFilters.authorizer) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.authorizerName === currentFilters.authorizer
+                );
+            }
+            
+            // CORRECCIÓN: Filtrar por rango de fechas - AHORA FUNCIONA
+            if (currentFilters.dateStart && currentFilters.dateEnd) {
+                filteredTransfers = filteredTransfers.filter(transfer => {
+                    const transferDate = transfer.dateTime;
+                    // Comparar solo la parte de la fecha
+                    return transferDate >= currentFilters.dateStart && 
+                           transferDate <= currentFilters.dateEnd;
+                });
+            }
+            
+            // Filtrar por rango de costo
+            if (currentFilters.minCost !== null) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.cost >= currentFilters.minCost
+                );
+            }
+            
+            if (currentFilters.maxCost !== null) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.cost <= currentFilters.maxCost
                 );
             }
 
-            const requesterCounts = {};
-            transfers.forEach(transfer => {
-                const name = transfer.requesterName.toLowerCase();
-                requesterCounts[name] = (requesterCounts[name] || 0) + 1;
-            });
-            let maxCount = 0;
-            if (Object.keys(requesterCounts).length > 0) {
-                maxCount = Math.max(...Object.values(requesterCounts));
-            }
+            // Actualizar contador de resultados
+            resultsCount.textContent = filteredTransfers.length;
 
-            const topRequesters = Object.keys(requesterCounts).filter(name => requesterCounts[name] === maxCount && maxCount > 0);
-            const sortedTransfers = displayTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+            // Ordenar por fecha (más reciente primero)
+            const sortedTransfers = filteredTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
             if (sortedTransfers.length === 0) {
                 noTransfersMessage.classList.remove('hidden');
             } else {
                 noTransfersMessage.classList.add('hidden');
-                sortedTransfers.forEach((transfer) => {
+                
+                // Detectar si es móvil
+                const isMobile = window.innerWidth < 768;
+                
+                sortedTransfers.forEach((transfer, index) => {
                     const row = document.createElement('tr');
-                    const isTopRequester = topRequesters.includes(transfer.requesterName.toLowerCase());
-                    const requesterClass = isTopRequester ? 'font-bold text-inter-accent-yellow' : '';
-
+                    row.setAttribute('data-id', transfer.id);
+                    
                     const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
                         year: 'numeric', month: '2-digit', day: '2-digit'
                     });
 
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-id="${transfer.id}">
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formattedDate}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${requesterClass}">${transfer.requesterName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.department || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.msoDepartment || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.originPlace || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.destinationPlace || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnAddress || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.returnDestination || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.authorizerName || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transfer.companyName || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">$${transfer.cost.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick="startEditTransfer('${transfer.id}')" 
-                                class="text-inter-primary hover:text-blue-700 font-bold text-xs py-1 px-2 rounded-md border border-inter-primary hover:border-blue-700 transition duration-150">
-                                Editar
-                            </button>
-                        </td>
-                    `;
+                    if (isMobile) {
+                        // Vista móvil: diseño vertical
+                        row.innerHTML = `
+                            <td data-label="Seleccionar">
+                                <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-id="${transfer.id}">
+                            </td>
+                            <td data-label="Fecha">${formattedDate}</td>
+                            <td data-label="Solicitante">${transfer.requesterName}</td>
+                            <td data-label="Departamento">${transfer.department || 'N/A'}</td>
+                            <td data-label="Origen">${transfer.originPlace || 'N/A'}</td>
+                            <td data-label="Destino">${transfer.destinationPlace || 'N/A'}</td>
+                            <td data-label="Empresa">${transfer.companyName || 'N/A'}</td>
+                            <td data-label="Costo" class="text-right">$${transfer.cost.toFixed(2)}</td>
+                            <td data-label="Acciones">
+                                <button onclick="startEditTransfer('${transfer.id}')" 
+                                    class="text-inter-primary hover:text-blue-700 font-bold text-xs py-1 px-2 rounded-md border border-inter-primary hover:border-blue-700 transition duration-150">
+                                    Editar
+                                </button>
+                                <div class="mt-2">
+                                    <button onclick="toggleRowDetails('${transfer.id}')" class="expand-btn text-xs">
+                                        <span id="expandIcon-${transfer.id}">▼</span> Más info
+                                    </button>
+                                </div>
+                            </td>
+                            <tr id="details-${transfer.id}" class="hidden bg-gray-50">
+                                <td colspan="9" class="p-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
+                                            <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
+                                            <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
+                                        </div>
+                                        <div>
+                                            <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
+                                            <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        // Vista escritorio: diseño de tabla normal con filas expandibles
+                        const isExpanded = expandedRows.has(transfer.id);
+                        const rowClass = isCompactView && !isExpanded ? 'compact-row' : 'expanded';
+                        
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-id="${transfer.id}">
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">${formattedDate}</td>
+                            <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
+                                ${transfer.requesterName}
+                            </td>
+                            <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
+                                ${transfer.department || 'N/A'}
+                                ${transfer.msoDepartment ? `<br><small class="text-gray-500">${transfer.msoDepartment}</small>` : ''}
+                            </td>
+                            <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
+                                ${transfer.originPlace || 'N/A'}
+                                ${transfer.returnAddress ? `<br><small class="text-gray-500">Vuelta: ${transfer.returnAddress}</small>` : ''}
+                            </td>
+                            <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
+                                ${transfer.destinationPlace || 'N/A'}
+                                ${transfer.returnDestination ? `<br><small class="text-gray-500">Destino vuelta: ${transfer.returnDestination}</small>` : ''}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">${transfer.companyName || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-right font-medium">$${transfer.cost.toFixed(2)}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex flex-col space-y-2">
+                                    <button onclick="startEditTransfer('${transfer.id}')" 
+                                        class="text-inter-primary hover:text-blue-700 font-bold text-xs py-1 px-2 rounded-md border border-inter-primary hover:border-blue-700 transition duration-150">
+                                        Editar
+                                    </button>
+                                    <button onclick="toggleRowExpansion('${transfer.id}')" class="expand-btn text-xs">
+                                        <span id="expandIcon-${transfer.id}">${isExpanded ? '▲' : '▼'}</span> ${isExpanded ? 'Menos' : 'Más'}
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        
+                        if (isCompactView && !isExpanded) {
+                            row.classList.add('compact-row');
+                        } else {
+                            row.classList.add('expanded');
+                        }
+                    }
+                    
                     transferTableBody.appendChild(row);
+                    
+                    // Si es móvil, agregar la fila de detalles
+                    if (isMobile) {
+                        const detailsRow = document.createElement('tr');
+                        detailsRow.id = `details-${transfer.id}`;
+                        detailsRow.classList.add('hidden', 'bg-gray-50');
+                        detailsRow.innerHTML = `
+                            <td colspan="9" class="p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
+                                        <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
+                                        <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
+                                    </div>
+                                    <div>
+                                        <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
+                                        <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        transferTableBody.appendChild(detailsRow);
+                    }
                 });
+            }
+        }
+
+        // Función para mostrar/ocultar detalles en móvil
+        function toggleRowDetails(rowId) {
+            const detailsRow = document.getElementById(`details-${rowId}`);
+            const expandIcon = document.getElementById(`expandIcon-${rowId}`);
+            
+            if (detailsRow.classList.contains('hidden')) {
+                detailsRow.classList.remove('hidden');
+                expandIcon.textContent = '▲';
+            } else {
+                detailsRow.classList.add('hidden');
+                expandIcon.textContent = '▼';
             }
         }
         
@@ -830,7 +1360,13 @@
             destinationPlaceInput.value = transfer.destinationPlace || '';
             returnAddressInput.value = transfer.returnAddress || '';
             returnDestinationInput.value = transfer.returnDestination || '';
-            transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
+            
+            // CORRECCIÓN: Mostrar fecha correctamente
+            const year = transfer.dateTime.getFullYear();
+            const month = String(transfer.dateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(transfer.dateTime.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
+            
             costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
@@ -852,7 +1388,14 @@
             cancelEditBtn.classList.add('hidden');
             msoDepartmentsContainer.classList.add('hidden');
             msoDepartmentInput.required = false;
-            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            
+            // CORRECCIÓN: Establecer fecha actual correctamente
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
+            
             showMessage("Modo de registro restaurado.", "success");
         }
 
@@ -1259,18 +1802,18 @@
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${department}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${stats.monthlyCount}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${stats.monthlyCost.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${stats.annualCount}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">$${stats.annualCost.toFixed(2)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${department}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${stats.monthlyCount}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">$${stats.monthlyCost.toFixed(2)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${stats.annualCount}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">$${stats.annualCost.toFixed(2)}</td>
                     `;
                     departmentStatsTableBody.appendChild(row);
                 });
             }
         }
 
-        // Función para generar reporte financiero - MODIFICADA
+        // Función para generar reporte financiero
         function generateReport() {
             const month = parseInt(reportMonthSelect.value);
             const year = parseInt(reportYearSelect.value);
@@ -1408,7 +1951,7 @@
             unitTotal.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
         }
 
-        // Función para exportar reporte a Excel - MODIFICADA
+        // Función para exportar reporte a Excel
         function exportReportToExcel() {
             const month = parseInt(reportMonthSelect.value);
             const year = parseInt(reportYearSelect.value);
@@ -1494,7 +2037,7 @@
             showMessage(`Reporte exportado a Excel: ${fileName}`, "success");
         }
 
-        // Función para exportar reporte a PDF - MODIFICADA
+        // Función para exportar reporte a PDF
         function exportReportToPDF() {
             const month = parseInt(reportMonthSelect.value);
             const year = parseInt(reportYearSelect.value);
@@ -1690,20 +2233,337 @@
             generateReport();
         });
 
+        // Event Listeners para filtros MEJORADOS
+        toggleFiltersBtn.addEventListener('click', () => {
+            if (filtersSection.classList.contains('collapsed')) {
+                filtersSection.classList.remove('collapsed');
+                filtersSection.classList.add('expanded');
+                toggleFiltersText.textContent = 'Ocultar Filtros';
+                toggleFiltersIcon.textContent = '▲';
+            } else {
+                filtersSection.classList.remove('expanded');
+                filtersSection.classList.add('collapsed');
+                toggleFiltersText.textContent = 'Mostrar Filtros';
+                toggleFiltersIcon.textContent = '▼';
+            }
+        });
+
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        clearAllFiltersBtn.addEventListener('click', clearAllFilters);
+        toggleViewBtn.addEventListener('click', toggleView);
+
+        // Función debounce para evitar múltiples llamadas
+        function debounce(func, wait, immediate) {
+            let timeout;
+            return function executedFunction(...args) {
+                const context = this;
+                const later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                const callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        }
+
+        // Event Listeners para filtros en tiempo real
+        filterName.addEventListener('input', debounce(applyFilters, 300));
+        filterDepartment.addEventListener('change', applyFilters);
+        filterCompany.addEventListener('change', applyFilters);
+        filterAuthorizer.addEventListener('change', applyFilters);
+        filterMinCost.addEventListener('input', debounce(applyFilters, 500));
+        filterMaxCost.addEventListener('input', debounce(applyFilters, 500));
+
         // Event Listeners para reportes
         generateReportBtn.addEventListener('click', generateReport);
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
 
-        // ... (el resto del código del dashboard se mantiene igual) ...
+        // Event Listeners del Dashboard - CORREGIDO
+        transferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = submitButton;
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+            document.body.classList.add('loading');
+
+            try {
+                // CORRECCIÓN: Usar parseDateInput en lugar de new Date() directamente
+                const transferData = {
+                    requesterName: requesterNameInput.value.trim(),
+                    department: departmentInput.value,
+                    msoDepartment: departmentInput.value === 'MSO' ? msoDepartmentInput.value : '',
+                    originPlace: originPlaceInput.value.trim(),
+                    destinationPlace: destinationPlaceInput.value.trim(),
+                    returnAddress: returnAddressInput.value.trim(),
+                    returnDestination: returnDestinationInput.value.trim(),
+                    dateTime: parseDateInput(transferDateInput.value), // USAR FUNCIÓN CORREGIDA
+                    cost: parseFloat(costInput.value),
+                    authorizerName: authorizerNameInput.value,
+                    companyName: companyNameInput.value
+                };
+
+                const success = await saveTransfer(transferData);
+                if (success) {
+                    transferForm.reset();
+                    msoDepartmentsContainer.classList.add('hidden');
+                    msoDepartmentInput.required = false;
+                    
+                    // CORRECCIÓN: Establecer fecha actual correctamente
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    transferDateInput.value = `${year}-${month}-${day}`;
+                    
+                    if (editingId) {
+                        cancelEdit();
+                    }
+                }
+            } catch (error) {
+                console.error("Error al procesar el formulario:", error);
+                showMessage("Error al procesar la solicitud.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                document.body.classList.remove('loading');
+            }
+        });
+
+        exportCsvBtn.addEventListener('click', () => {
+            // Filtrar traslados según los filtros aplicados
+            let transfersToExport = [...transfers];
+            
+            // Aplicar mismos filtros que en la vista
+            if (currentFilters.name) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.requesterName.toLowerCase().includes(currentFilters.name)
+                );
+            }
+            
+            if (currentFilters.department) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.department === currentFilters.department
+                );
+            }
+            
+            if (currentFilters.company) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.companyName === currentFilters.company
+                );
+            }
+            
+            if (currentFilters.authorizer) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.authorizerName === currentFilters.authorizer
+                );
+            }
+            
+            if (currentFilters.dateStart && currentFilters.dateEnd) {
+                transfersToExport = transfersToExport.filter(transfer => {
+                    const transferDate = transfer.dateTime;
+                    return transferDate >= currentFilters.dateStart && transferDate <= currentFilters.dateEnd;
+                });
+            }
+            
+            if (currentFilters.minCost !== null) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.cost >= currentFilters.minCost
+                );
+            }
+            
+            if (currentFilters.maxCost !== null) {
+                transfersToExport = transfersToExport.filter(transfer =>
+                    transfer.cost <= currentFilters.maxCost
+                );
+            }
+
+            if (transfersToExport.length === 0) {
+                showMessage("No hay datos para exportar con los filtros actuales.", "error");
+                return;
+            }
+        
+            const dataToExport = transfersToExport.map(t => ({
+                'Fecha': t.dateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                'Solicitante': t.requesterName,
+                'Departamento': t.department,
+                'Depto. MSO': t.msoDepartment || '',
+                'Origen Partida': t.originPlace || '',
+                'Origen Destino': t.destinationPlace || '',
+                'Vuelta Partida': t.returnAddress || '',
+                'Vuelta Destino': t.returnDestination || '',
+                'Quién Autoriza': t.authorizerName,
+                'Empresa de Traslado': t.companyName,
+                'Costo ($)': t.cost
+            }));
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
+            const monthlyTransfers = transfersToExport.filter(t => normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime());
+            
+            const departmentExpenses = {};
+            monthlyTransfers.forEach(transfer => {
+                let department = transfer.department || 'Desconocido';
+                if (department === 'MSO' && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                }
+                departmentExpenses[department] = (departmentExpenses[department] || 0) + transfer.cost;
+            });
+
+            const departmentSummaryData = Object.entries(departmentExpenses).map(([department, cost]) => ({
+                'Departamento': department,
+                'Gasto Mensual Total ($)': cost
+            }));
+            
+            const mainWorksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const summaryWorksheet = XLSX.utils.json_to_sheet(departmentSummaryData);
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, mainWorksheet, 'Historial');
+            XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen por Departamento');
+            XLSX.writeFile(workbook, `traslados_taxi_${new Date().toISOString().slice(0,10)}.xlsx`);
+        });
+
+        importExcelBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Saltar la fila de encabezado y procesar datos
+                const importedTransfers = [];
+                for (let i = 1; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    if (row.length >= 11) {
+                        const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
+                        
+                        // Parsear fecha usando nuestra función corregida
+                        let dateTime;
+                        if (dateStr.includes('/')) {
+                            const [day, month, year] = dateStr.split('/');
+                            dateTime = parseDateInput(`${year}-${month}-${day}`);
+                        } else if (dateStr.includes('-')) {
+                            dateTime = parseDateInput(dateStr);
+                        } else {
+                            dateTime = normalizeDateToStartOfDay(new Date(dateStr));
+                        }
+
+                        if (!isNaN(dateTime.getTime())) {
+                            importedTransfers.push({
+                                requesterName: requesterName?.toString() || '',
+                                department: department?.toString() || '',
+                                msoDepartment: msoDepartment?.toString() || '',
+                                originPlace: originPlace?.toString() || '',
+                                destinationPlace: destinationPlace?.toString() || '',
+                                returnAddress: returnAddress?.toString() || '',
+                                returnDestination: returnDestination?.toString() || '',
+                                dateTime: dateTime,
+                                cost: parseFloat(cost) || 0,
+                                authorizerName: authorizerName?.toString() || '',
+                                companyName: companyName?.toString() || ''
+                            });
+                        }
+                    } else if (row.length >= 8) {
+                        // Formato antiguo (compatibilidad con archivos antiguos)
+                        const [dateStr, requesterName, department, originPlace, returnAddress, authorizerName, companyName, cost] = row;
+                        
+                        let dateTime;
+                        if (dateStr.includes('/')) {
+                            const [day, month, year] = dateStr.split('/');
+                            dateTime = parseDateInput(`${year}-${month}-${day}`);
+                        } else if (dateStr.includes('-')) {
+                            dateTime = parseDateInput(dateStr);
+                        } else {
+                            dateTime = normalizeDateToStartOfDay(new Date(dateStr));
+                        }
+
+                        if (!isNaN(dateTime.getTime())) {
+                            importedTransfers.push({
+                                requesterName: requesterName?.toString() || '',
+                                department: department?.toString() || '',
+                                msoDepartment: '',
+                                originPlace: originPlace?.toString() || '',
+                                destinationPlace: '',
+                                returnAddress: returnAddress?.toString() || '',
+                                returnDestination: '',
+                                dateTime: dateTime,
+                                cost: parseFloat(cost) || 0,
+                                authorizerName: authorizerName?.toString() || '',
+                                companyName: companyName?.toString() || ''
+                            });
+                        }
+                    }
+                }
+
+                // Guardar todos los traslados importados
+                let successCount = 0;
+                for (const transfer of importedTransfers) {
+                    const success = await saveTransfer(transfer);
+                    if (success) successCount++;
+                }
+
+                showMessage(`Importación completada: ${successCount}/${importedTransfers.length} traslados importados.`, "success");
+                fileInput.value = '';
+
+            } catch (error) {
+                console.error("Error al importar archivo:", error);
+                showMessage("Error al importar el archivo. Verifica el formato.", "error");
+            }
+        });
+
+        deleteSelectedBtn.addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showMessage("Por favor, selecciona al menos un traslado para eliminar.", "error");
+                return;
+            }
+
+            if (!confirm(`¿Estás seguro de que deseas eliminar ${checkboxes.length} traslado(s)? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            const idsToDelete = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+            const success = await deleteTransfers(idsToDelete);
+            if (success) {
+                selectAllCheckboxes.checked = false;
+            }
+        });
+
+        selectAllCheckboxes.addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+        });
+
+        // Redimensionar tabla cuando cambie el tamaño de la ventana
+        window.addEventListener('resize', debounce(renderTransfers, 250));
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            // CORRECCIÓN: Establecer fecha actual correctamente
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
             
             // Establecer mes actual en el selector de reportes
             const currentMonth = new Date().getMonth();
             reportMonthSelect.value = currentMonth.toString();
+            
+            // Inicializar flatpickr
+            initDateRangePicker();
             
             loadTransfers();
         });
@@ -1715,8 +2575,10 @@
             }
         });
 
-        // Hacer la función accesible globalmente
+        // Hacer las funciones accesibles globalmente
         window.startEditTransfer = startEditTransfer;
+        window.toggleRowExpansion = toggleRowExpansion;
+        window.toggleRowDetails = toggleRowDetails;
     </script>
 </body>
 </html>
