@@ -96,6 +96,23 @@
             color: #666;
             margin-top: 4px;
         }
+        .service-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 5px;
+        }
+        .badge-ccs {
+            background-color: #005BAA;
+            color: white;
+        }
+        .badge-mso {
+            background-color: #FDD000;
+            color: #333;
+        }
         @media (max-width: 768px) {
             .responsive-table {
                 display: block;
@@ -182,9 +199,15 @@
                             <option value="Obras">Obras</option>
                             <option value="RRHH y Seguridad Laboral">RRHH y Seguridad Laboral</option>
                             <option value="Sistemas">Sistemas</option>
-                            <option value="MSO">MSO</option>
                             <option value="Gerencia Senior">Gerencia Senior</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Colaboradores">Colaboradores</option>
+                            <option value="MSO">MSO</option>
                         </select>
+                        <div id="serviceTypeBadge" class="mt-1 text-xs font-semibold hidden">
+                            Tipo de servicio: 
+                            <span id="serviceTypeText" class="service-type-badge"></span>
+                        </div>
                     </div>
                     <div id="msoDepartmentsContainer" class="hidden col-span-1 md:col-span-3">
                         <label for="msoDepartment" class="block text-sm font-medium text-gray-700 mb-1">
@@ -199,6 +222,8 @@
                             <option value="Importaciones">Importaciones</option>
                             <option value="RRHH MSO">RRHH MSO</option>
                             <option value="Documentacion de obras">Documentación de Obras</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Colaboradores">Colaboradores</option>
                         </select>
                     </div>
                     <div class="col-span-1 md:col-span-2">
@@ -344,8 +369,10 @@
                                 <option value="Obras">Obras</option>
                                 <option value="RRHH y Seguridad Laboral">RRHH y Seguridad Laboral</option>
                                 <option value="Sistemas">Sistemas</option>
-                                <option value="MSO">MSO</option>
                                 <option value="Gerencia Senior">Gerencia Senior</option>
+                                <option value="Limpieza">Limpieza</option>
+                                <option value="Colaboradores">Colaboradores</option>
+                                <option value="MSO">MSO</option>
                             </select>
                         </div>
                         
@@ -454,6 +481,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Fecha</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Solicitante</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Tipo Servicio</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Origen</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Destino</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Empresa</th>
@@ -512,6 +540,7 @@
                         <thead class="bg-blue-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Departamento</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Tipo Servicio</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Mensuales</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-inter-primary uppercase tracking-wider">Gasto Mensual ($)</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider">Traslados Anuales</th>
@@ -528,7 +557,6 @@
 
         <!-- Contenido de Reportes Financieros (pestaña secundaria - mantenida igual) -->
         <div id="reportsContent" class="hidden">
-            <!-- ... (todo el contenido de reportes se mantiene igual) ... -->
             <section class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
                 <h2 class="text-2xl font-bold text-inter-primary mb-4">Reportes Financieros de Traslados</h2>
                 <div class="mb-6 flex flex-col md:flex-row gap-4">
@@ -698,6 +726,8 @@
         const transferForm = document.getElementById('transferForm');
         const requesterNameInput = document.getElementById('requesterName');
         const departmentInput = document.getElementById('department');
+        const serviceTypeBadge = document.getElementById('serviceTypeBadge');
+        const serviceTypeText = document.getElementById('serviceTypeText');
         const msoDepartmentsContainer = document.getElementById('msoDepartmentsContainer');
         const msoDepartmentInput = document.getElementById('msoDepartment');
         const originPlaceInput = document.getElementById('originPlace');
@@ -798,15 +828,18 @@
         let isCompactView = true;
         let expandedRows = new Set();
 
-        // Lista de departamentos para reportes
+        // Lista de departamentos para reportes (actualizada con Limpieza y Colaboradores en ambos CCS y MSO)
         const reportDepartments = [
-            { name: "ADMINISTRACION", code: "Administracion" },
-            { name: "AREA COMERCIAL", code: "Area Comercial" },
-            { name: "AREA TECNICA", code: "Area tecnica" },
-            { name: "DPTO DE OBRAS", code: "Obras" },
-            { name: "RRHH y Seguridad Laboral", code: "RRHH y Seguridad Laboral" },
-            { name: "G. SENIOR", code: "Gerencia Senior" },
-            { name: "MSO", code: "MSO" }
+            { name: "ADMINISTRACION", code: "Administracion", serviceType: "CCS" },
+            { name: "AREA COMERCIAL", code: "Area Comercial", serviceType: "CCS" },
+            { name: "AREA TECNICA", code: "Area tecnica", serviceType: "CCS" },
+            { name: "DPTO DE OBRAS", code: "Obras", serviceType: "CCS" },
+            { name: "RRHH y Seguridad Laboral", code: "RRHH y Seguridad Laboral", serviceType: "CCS" },
+            { name: "SISTEMAS", code: "Sistemas", serviceType: "CCS" },
+            { name: "G. SENIOR", code: "Gerencia Senior", serviceType: "CCS" },
+            { name: "LIMPIEZA", code: "Limpieza", serviceType: "CCS" },
+            { name: "COLABORADORES", code: "Colaboradores", serviceType: "CCS" },
+            { name: "MSO", code: "MSO", serviceType: "MSO" }
         ];
 
         // Lista de empresas para reportes
@@ -817,6 +850,36 @@
             { name: "OSCAR", code: "Oscar" },
             { name: "JOSE", code: "Jose" }
         ];
+
+        // Función para determinar si un departamento es MSO o CCS
+        function getServiceType(department) {
+            if (department === 'MSO') {
+                return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
+            } else {
+                return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
+            }
+        }
+
+        // Función para determinar si un traslado con msoDepartment es MSO o CCS
+        function getServiceTypeWithMSO(department, msoDepartment) {
+            // Si el departamento principal es MSO, entonces es MSO
+            if (department === 'MSO') {
+                return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
+            }
+            // Si el departamento principal es Limpieza o Colaboradores
+            else if (department === 'Limpieza' || department === 'Colaboradores') {
+                // Si tiene msoDepartment especificado, entonces es MSO
+                if (msoDepartment) {
+                    return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
+                } else {
+                    return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
+                }
+            }
+            // Todos los demás departamentos son CCS
+            else {
+                return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
+            }
+        }
 
         function showMessage(message, type = 'info', box = messageBox) {
             box.textContent = message;
@@ -834,30 +897,10 @@
             }, 5000);
         }
 
-        // CORRECCIÓN: Función para normalizar fechas sin problema de zona horaria
         function normalizeDateToStartOfDay(date) {
-            // Crear una nueva fecha para no modificar la original
             const d = new Date(date);
-            
-            // Usar UTC para evitar problemas de zona horaria
-            const year = d.getFullYear();
-            const month = d.getMonth();
-            const day = d.getDate();
-            
-            // Retornar fecha con hora local a medianoche
-            return new Date(year, month, day, 0, 0, 0, 0);
-        }
-
-        // CORRECCIÓN: Función para parsear fechas del input sin problemas de zona horaria
-        function parseDateInput(dateString) {
-            // Dividir la fecha YYYY-MM-DD
-            const parts = dateString.split('-');
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1; // Meses son 0-11
-            const day = parseInt(parts[2]);
-            
-            // Crear fecha local sin problemas de zona horaria
-            return new Date(year, month, day, 0, 0, 0, 0);
+            d.setHours(0, 0, 0, 0);
+            return d;
         }
 
         // Inicializar flatpickr para rango de fechas
@@ -871,16 +914,8 @@
                     if (selectedDates.length === 2) {
                         const startDate = selectedDates[0];
                         const endDate = selectedDates[1];
-                        
-                        // CORRECCIÓN: Configurar horas para rango completo
-                        const start = new Date(startDate);
-                        start.setHours(0, 0, 0, 0);
-                        
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-                        
-                        currentFilters.dateStart = start;
-                        currentFilters.dateEnd = end;
+                        currentFilters.dateStart = normalizeDateToStartOfDay(startDate);
+                        currentFilters.dateEnd = normalizeDateToStartOfDay(endDate);
                         
                         // Mostrar el rango seleccionado
                         dateRangeDisplay.textContent = `${startDate.toLocaleDateString('es-ES')} - ${endDate.toLocaleDateString('es-ES')}`;
@@ -893,15 +928,49 @@
             });
         }
 
-        // Manejar cambio en departamento MSO
+        // Manejar cambio en departamento - actualizar tipo de servicio
         departmentInput.addEventListener('change', function() {
-            if (this.value === 'MSO') {
+            const department = this.value;
+            
+            if (department === 'MSO') {
                 msoDepartmentsContainer.classList.remove('hidden');
                 msoDepartmentInput.required = true;
-            } else {
+                serviceTypeBadge.classList.remove('hidden');
+                serviceTypeText.textContent = 'MSO';
+                serviceTypeText.className = 'service-type-badge badge-mso';
+            } 
+            else if (department === 'Limpieza' || department === 'Colaboradores') {
+                // Mostrar selector MSO para Limpieza y Colaboradores
+                msoDepartmentsContainer.classList.remove('hidden');
+                msoDepartmentInput.required = false;
+                serviceTypeBadge.classList.remove('hidden');
+                serviceTypeText.textContent = 'CCS'; // Por defecto CCS
+                serviceTypeText.className = 'service-type-badge badge-ccs';
+            }
+            else {
                 msoDepartmentsContainer.classList.add('hidden');
                 msoDepartmentInput.required = false;
                 msoDepartmentInput.value = '';
+                
+                if (department) {
+                    serviceTypeBadge.classList.remove('hidden');
+                    serviceTypeText.textContent = 'CCS';
+                    serviceTypeText.className = 'service-type-badge badge-ccs';
+                } else {
+                    serviceTypeBadge.classList.add('hidden');
+                }
+            }
+        });
+
+        // Manejar cambio en departamento MSO para Limpieza/Colaboradores
+        msoDepartmentInput.addEventListener('change', function() {
+            const department = departmentInput.value;
+            const msoDepartment = this.value;
+            
+            if ((department === 'Limpieza' || department === 'Colaboradores') && msoDepartment) {
+                // Si se selecciona un departamento MSO para Limpieza/Colaboradores, es MSO
+                serviceTypeText.textContent = 'MSO';
+                serviceTypeText.className = 'service-type-badge badge-mso';
             }
         });
 
@@ -919,12 +988,10 @@
                         transfers = [];
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
-                            // CORRECCIÓN: Parsear fecha usando nuestra función corregida
-                            const date = new Date(data.dateTime);
                             transfers.push({
                                 id: doc.id,
                                 ...data,
-                                dateTime: normalizeDateToStartOfDay(date)
+                                dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
                             });
                         });
                         
@@ -964,10 +1031,15 @@
         // Función para guardar un traslado en Firestore
         async function saveTransfer(transferData) {
             try {
+                // Determinar tipo de servicio (CCS o MSO) considerando msoDepartment
+                const serviceType = getServiceTypeWithMSO(transferData.department, transferData.msoDepartment);
+                
                 // Convertir fecha a string ISO para Firestore
                 const dataToSave = {
                     ...transferData,
-                    dateTime: transferData.dateTime.toISOString()
+                    dateTime: transferData.dateTime.toISOString(),
+                    serviceType: serviceType.type,
+                    serviceTypeText: serviceType.text
                 };
                 
                 if (editingId) {
@@ -1005,7 +1077,7 @@
             }
         }
 
-        // CORRECCIÓN: Función para aplicar filtros - AHORA FUNCIONA CORRECTAMENTE
+        // Función para aplicar filtros
         function applyFilters() {
             // Capturar valores de los filtros
             currentFilters.name = filterName.value.trim().toLowerCase();
@@ -1017,29 +1089,7 @@
             currentFilters.minCost = filterMinCost.value ? parseFloat(filterMinCost.value) : null;
             currentFilters.maxCost = filterMaxCost.value ? parseFloat(filterMaxCost.value) : null;
             
-            // IMPORTANTE: Capturar las fechas de flatpickr directamente
-            const selectedDates = dateRangePicker.selectedDates;
-            if (selectedDates && selectedDates.length === 2) {
-                const startDate = new Date(selectedDates[0]);
-                const endDate = new Date(selectedDates[1]);
-                
-                // Configurar horas para rango completo
-                startDate.setHours(0, 0, 0, 0);
-                endDate.setHours(23, 59, 59, 999); // Incluir todo el último día
-                
-                currentFilters.dateStart = startDate;
-                currentFilters.dateEnd = endDate;
-                
-                // Mostrar el rango seleccionado
-                dateRangeDisplay.textContent = `${selectedDates[0].toLocaleDateString('es-ES')} - ${selectedDates[1].toLocaleDateString('es-ES')}`;
-            } else {
-                currentFilters.dateStart = null;
-                currentFilters.dateEnd = null;
-                dateRangeDisplay.textContent = '';
-            }
-            
             renderTransfers();
-            showMessage("Filtros aplicados correctamente", "success");
         }
 
         // Función para limpiar todos los filtros
@@ -1162,13 +1212,11 @@
                 );
             }
             
-            // CORRECCIÓN: Filtrar por rango de fechas - AHORA FUNCIONA
+            // Filtrar por rango de fechas
             if (currentFilters.dateStart && currentFilters.dateEnd) {
                 filteredTransfers = filteredTransfers.filter(transfer => {
                     const transferDate = transfer.dateTime;
-                    // Comparar solo la parte de la fecha
-                    return transferDate >= currentFilters.dateStart && 
-                           transferDate <= currentFilters.dateEnd;
+                    return transferDate >= currentFilters.dateStart && transferDate <= currentFilters.dateEnd;
                 });
             }
             
@@ -1207,6 +1255,9 @@
                         year: 'numeric', month: '2-digit', day: '2-digit'
                     });
 
+                    // Obtener tipo de servicio considerando msoDepartment
+                    const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                    
                     if (isMobile) {
                         // Vista móvil: diseño vertical
                         row.innerHTML = `
@@ -1216,6 +1267,9 @@
                             <td data-label="Fecha">${formattedDate}</td>
                             <td data-label="Solicitante">${transfer.requesterName}</td>
                             <td data-label="Departamento">${transfer.department || 'N/A'}</td>
+                            <td data-label="Tipo Servicio">
+                                <span class="service-type-badge ${serviceType.badgeClass}">${serviceType.text}</span>
+                            </td>
                             <td data-label="Origen">${transfer.originPlace || 'N/A'}</td>
                             <td data-label="Destino">${transfer.destinationPlace || 'N/A'}</td>
                             <td data-label="Empresa">${transfer.companyName || 'N/A'}</td>
@@ -1231,22 +1285,31 @@
                                     </button>
                                 </div>
                             </td>
-                            <tr id="details-${transfer.id}" class="hidden bg-gray-50">
-                                <td colspan="9" class="p-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
-                                            <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
-                                            <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
-                                        </div>
-                                        <div>
-                                            <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
-                                            <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
                         `;
+                        
+                        // Agregar fila de detalles para móvil
+                        const detailsRow = document.createElement('tr');
+                        detailsRow.id = `details-${transfer.id}`;
+                        detailsRow.classList.add('hidden', 'bg-gray-50');
+                        detailsRow.innerHTML = `
+                            <td colspan="10" class="p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
+                                        <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
+                                        <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
+                                    </div>
+                                    <div>
+                                        <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
+                                        <strong>Tipo Servicio:</strong> 
+                                        <span class="service-type-badge ${serviceType.badgeClass}">${serviceType.text}</span><br>
+                                        <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        transferTableBody.appendChild(row);
+                        transferTableBody.appendChild(detailsRow);
                     } else {
                         // Vista escritorio: diseño de tabla normal con filas expandibles
                         const isExpanded = expandedRows.has(transfer.id);
@@ -1263,6 +1326,9 @@
                             <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
                                 ${transfer.department || 'N/A'}
                                 ${transfer.msoDepartment ? `<br><small class="text-gray-500">${transfer.msoDepartment}</small>` : ''}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="service-type-badge ${serviceType.badgeClass}">${serviceType.text}</span>
                             </td>
                             <td class="px-4 py-3 ${isCompactView && !isExpanded ? 'compact-cell' : 'expanded'}">
                                 ${transfer.originPlace || 'N/A'}
@@ -1292,31 +1358,8 @@
                         } else {
                             row.classList.add('expanded');
                         }
-                    }
-                    
-                    transferTableBody.appendChild(row);
-                    
-                    // Si es móvil, agregar la fila de detalles
-                    if (isMobile) {
-                        const detailsRow = document.createElement('tr');
-                        detailsRow.id = `details-${transfer.id}`;
-                        detailsRow.classList.add('hidden', 'bg-gray-50');
-                        detailsRow.innerHTML = `
-                            <td colspan="9" class="p-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
-                                        <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
-                                        <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
-                                    </div>
-                                    <div>
-                                        <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
-                                        <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
-                                    </div>
-                                </div>
-                            </td>
-                        `;
-                        transferTableBody.appendChild(detailsRow);
+                        
+                        transferTableBody.appendChild(row);
                     }
                 });
             }
@@ -1347,10 +1390,23 @@
             requesterNameInput.value = transfer.requesterName;
             departmentInput.value = transfer.department;
             
-            if (transfer.department === 'MSO') {
+            // Determinar tipo de servicio para mostrar
+            const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+            if (transfer.department) {
+                serviceTypeBadge.classList.remove('hidden');
+                serviceTypeText.textContent = serviceType.text;
+                serviceTypeText.className = `service-type-badge ${serviceType.badgeClass}`;
+            }
+            
+            // Manejar departamentos especiales (Limpieza, Colaboradores, MSO)
+            if (transfer.department === 'MSO' || transfer.department === 'Limpieza' || transfer.department === 'Colaboradores') {
                 msoDepartmentsContainer.classList.remove('hidden');
                 msoDepartmentInput.value = transfer.msoDepartment || '';
-                msoDepartmentInput.required = true;
+                if (transfer.department === 'MSO') {
+                    msoDepartmentInput.required = true;
+                } else {
+                    msoDepartmentInput.required = false;
+                }
             } else {
                 msoDepartmentsContainer.classList.add('hidden');
                 msoDepartmentInput.required = false;
@@ -1360,13 +1416,7 @@
             destinationPlaceInput.value = transfer.destinationPlace || '';
             returnAddressInput.value = transfer.returnAddress || '';
             returnDestinationInput.value = transfer.returnDestination || '';
-            
-            // CORRECCIÓN: Mostrar fecha correctamente
-            const year = transfer.dateTime.getFullYear();
-            const month = String(transfer.dateTime.getMonth() + 1).padStart(2, '0');
-            const day = String(transfer.dateTime.getDate()).padStart(2, '0');
-            transferDateInput.value = `${year}-${month}-${day}`;
-            
+            transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
             costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
@@ -1388,14 +1438,8 @@
             cancelEditBtn.classList.add('hidden');
             msoDepartmentsContainer.classList.add('hidden');
             msoDepartmentInput.required = false;
-            
-            // CORRECCIÓN: Establecer fecha actual correctamente
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            transferDateInput.value = `${year}-${month}-${day}`;
-            
+            serviceTypeBadge.classList.add('hidden');
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
             showMessage("Modo de registro restaurado.", "success");
         }
 
@@ -1586,7 +1630,9 @@
             const monthlyDepartmentExpenses = {};
             monthlyTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
-                if (department === 'MSO' && transfer.msoDepartment) {
+                if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                } else if (department === 'MSO' && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 }
                 monthlyDepartmentExpenses[department] = (monthlyDepartmentExpenses[department] || 0) + transfer.cost;
@@ -1599,7 +1645,9 @@
             const annualDepartmentExpenses = {};
             annualTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
-                if (department === 'MSO' && transfer.msoDepartment) {
+                if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                } else if (department === 'MSO' && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 }
                 annualDepartmentExpenses[department] = (annualDepartmentExpenses[department] || 0) + transfer.cost;
@@ -1756,12 +1804,17 @@
             // Procesar datos mensuales
             monthlyTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
-                if (department === 'MSO' && transfer.msoDepartment) {
+                const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                
+                if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                } else if (department === 'MSO' && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 }
                 
                 if (!departmentStats[department]) {
                     departmentStats[department] = {
+                        serviceType: serviceType.text,
                         monthlyCount: 0,
                         monthlyCost: 0,
                         annualCount: 0,
@@ -1775,12 +1828,17 @@
             // Procesar datos anuales
             annualTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
-                if (department === 'MSO' && transfer.msoDepartment) {
+                const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                
+                if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                } else if (department === 'MSO' && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 }
                 
                 if (!departmentStats[department]) {
                     departmentStats[department] = {
+                        serviceType: serviceType.text,
                         monthlyCount: 0,
                         monthlyCost: 0,
                         annualCount: 0,
@@ -1799,10 +1857,15 @@
                 noStatsMessage.classList.add('hidden');
                 departments.forEach(department => {
                     const stats = departmentStats[department];
+                    const badgeClass = stats.serviceType === 'MSO' ? 'badge-mso' : 'badge-ccs';
+                    
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${department}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <span class="service-type-badge ${badgeClass}">${stats.serviceType}</span>
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${stats.monthlyCount}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">$${stats.monthlyCost.toFixed(2)}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${stats.annualCount}</td>
@@ -1836,12 +1899,13 @@
             filteredTransfers.forEach(transfer => {
                 const department = transfer.department;
                 const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, transfer.msoDepartment);
                 
                 if (department && departmentTotals.hasOwnProperty(department)) {
                     departmentTotals[department] += cost;
                     
                     // Sumar a CCS o MSO según corresponda
-                    if (department === 'MSO') {
+                    if (serviceType.type === 'MSO') {
                         totalMSOAmount += cost;
                     } else {
                         totalCCSAmount += cost;
@@ -1853,7 +1917,7 @@
             departmentsReportTableBody.innerHTML = '';
             reportDepartments.forEach(dept => {
                 const amount = departmentTotals[dept.code] || 0;
-                const isMSO = dept.code === 'MSO';
+                const isMSO = dept.serviceType === 'MSO';
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
@@ -1894,11 +1958,13 @@
             filteredTransfers.forEach(transfer => {
                 const company = transfer.companyName;
                 const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
                 const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
                 if (company && companyStats.hasOwnProperty(company)) {
                     // Determinar si es CCS o MSO
-                    if (department === 'MSO') {
+                    if (serviceType.type === 'MSO') {
                         companyStats[company].msoCount++;
                         companyStats[company].msoAmount += cost;
                         totalMSOServicesCount++;
@@ -1972,7 +2038,7 @@
             // Agregar filas de departamentos
             reportDepartments.forEach(dept => {
                 const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
-                const isMSO = dept.code === 'MSO';
+                const isMSO = dept.serviceType === 'MSO';
                 departmentsData.push([dept.name, isMSO ? 'MSO' : 'UN CCS', amount]);
             });
             
@@ -2069,7 +2135,7 @@
             const departmentsData = [];
             reportDepartments.forEach(dept => {
                 const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
-                const isMSO = dept.code === 'MSO';
+                const isMSO = dept.serviceType === 'MSO';
                 departmentsData.push([
                     dept.name,
                     isMSO ? 'MSO' : 'UN CCS',
@@ -2252,22 +2318,6 @@
         clearAllFiltersBtn.addEventListener('click', clearAllFilters);
         toggleViewBtn.addEventListener('click', toggleView);
 
-        // Función debounce para evitar múltiples llamadas
-        function debounce(func, wait, immediate) {
-            let timeout;
-            return function executedFunction(...args) {
-                const context = this;
-                const later = function() {
-                    timeout = null;
-                    if (!immediate) func.apply(context, args);
-                };
-                const callNow = immediate && !timeout;
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-                if (callNow) func.apply(context, args);
-            };
-        }
-
         // Event Listeners para filtros en tiempo real
         filterName.addEventListener('input', debounce(applyFilters, 300));
         filterDepartment.addEventListener('change', applyFilters);
@@ -2276,12 +2326,25 @@
         filterMinCost.addEventListener('input', debounce(applyFilters, 500));
         filterMaxCost.addEventListener('input', debounce(applyFilters, 500));
 
+        // Función debounce para evitar múltiples llamadas
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // Event Listeners para reportes
         generateReportBtn.addEventListener('click', generateReport);
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
 
-        // Event Listeners del Dashboard - CORREGIDO
+        // Event Listeners del Dashboard
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = submitButton;
@@ -2291,16 +2354,15 @@
             document.body.classList.add('loading');
 
             try {
-                // CORRECCIÓN: Usar parseDateInput en lugar de new Date() directamente
                 const transferData = {
                     requesterName: requesterNameInput.value.trim(),
                     department: departmentInput.value,
-                    msoDepartment: departmentInput.value === 'MSO' ? msoDepartmentInput.value : '',
+                    msoDepartment: msoDepartmentInput.value || '',
                     originPlace: originPlaceInput.value.trim(),
                     destinationPlace: destinationPlaceInput.value.trim(),
                     returnAddress: returnAddressInput.value.trim(),
                     returnDestination: returnDestinationInput.value.trim(),
-                    dateTime: parseDateInput(transferDateInput.value), // USAR FUNCIÓN CORREGIDA
+                    dateTime: normalizeDateToStartOfDay(new Date(transferDateInput.value)),
                     cost: parseFloat(costInput.value),
                     authorizerName: authorizerNameInput.value,
                     companyName: companyNameInput.value
@@ -2311,14 +2373,8 @@
                     transferForm.reset();
                     msoDepartmentsContainer.classList.add('hidden');
                     msoDepartmentInput.required = false;
-                    
-                    // CORRECCIÓN: Establecer fecha actual correctamente
-                    const today = new Date();
-                    const year = today.getFullYear();
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const day = String(today.getDate()).padStart(2, '0');
-                    transferDateInput.value = `${year}-${month}-${day}`;
-                    
+                    serviceTypeBadge.classList.add('hidden');
+                    transferDateInput.value = new Date().toISOString().slice(0, 10);
                     if (editingId) {
                         cancelEdit();
                     }
@@ -2386,19 +2442,23 @@
                 return;
             }
         
-            const dataToExport = transfersToExport.map(t => ({
-                'Fecha': t.dateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                'Solicitante': t.requesterName,
-                'Departamento': t.department,
-                'Depto. MSO': t.msoDepartment || '',
-                'Origen Partida': t.originPlace || '',
-                'Origen Destino': t.destinationPlace || '',
-                'Vuelta Partida': t.returnAddress || '',
-                'Vuelta Destino': t.returnDestination || '',
-                'Quién Autoriza': t.authorizerName,
-                'Empresa de Traslado': t.companyName,
-                'Costo ($)': t.cost
-            }));
+            const dataToExport = transfersToExport.map(t => {
+                const serviceType = getServiceTypeWithMSO(t.department, t.msoDepartment);
+                return {
+                    'Fecha': t.dateTime.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                    'Solicitante': t.requesterName,
+                    'Departamento': t.department,
+                    'Tipo Servicio': serviceType.text,
+                    'Depto. MSO': t.msoDepartment || '',
+                    'Origen Partida': t.originPlace || '',
+                    'Origen Destino': t.destinationPlace || '',
+                    'Vuelta Partida': t.returnAddress || '',
+                    'Vuelta Destino': t.returnDestination || '',
+                    'Quién Autoriza': t.authorizerName,
+                    'Empresa de Traslado': t.companyName,
+                    'Costo ($)': t.cost
+                };
+            });
 
             const now = new Date();
             const currentYear = now.getFullYear();
@@ -2408,16 +2468,25 @@
             const departmentExpenses = {};
             monthlyTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
-                if (department === 'MSO' && transfer.msoDepartment) {
+                const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                
+                if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
+                    department = `MSO - ${transfer.msoDepartment}`;
+                } else if (department === 'MSO' && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 }
+                
                 departmentExpenses[department] = (departmentExpenses[department] || 0) + transfer.cost;
             });
 
-            const departmentSummaryData = Object.entries(departmentExpenses).map(([department, cost]) => ({
-                'Departamento': department,
-                'Gasto Mensual Total ($)': cost
-            }));
+            const departmentSummaryData = Object.entries(departmentExpenses).map(([department, cost]) => {
+                const serviceType = department.includes('MSO') ? 'MSO' : 'CCS';
+                return {
+                    'Departamento': department,
+                    'Tipo Servicio': serviceType,
+                    'Gasto Mensual Total ($)': cost
+                };
+            });
             
             const mainWorksheet = XLSX.utils.json_to_sheet(dataToExport);
             const summaryWorksheet = XLSX.utils.json_to_sheet(departmentSummaryData);
@@ -2449,13 +2518,11 @@
                     if (row.length >= 11) {
                         const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
                         
-                        // Parsear fecha usando nuestra función corregida
+                        // Parsear fecha
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
-                            dateTime = parseDateInput(`${year}-${month}-${day}`);
-                        } else if (dateStr.includes('-')) {
-                            dateTime = parseDateInput(dateStr);
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
                         } else {
                             dateTime = normalizeDateToStartOfDay(new Date(dateStr));
                         }
@@ -2482,9 +2549,7 @@
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
-                            dateTime = parseDateInput(`${year}-${month}-${day}`);
-                        } else if (dateStr.includes('-')) {
-                            dateTime = parseDateInput(dateStr);
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
                         } else {
                             dateTime = normalizeDateToStartOfDay(new Date(dateStr));
                         }
@@ -2551,12 +2616,7 @@
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            // CORRECCIÓN: Establecer fecha actual correctamente
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            transferDateInput.value = `${year}-${month}-${day}`;
+            transferDateInput.value = new Date().toISOString().slice(0, 10);
             
             // Establecer mes actual en el selector de reportes
             const currentMonth = new Date().getMonth();
