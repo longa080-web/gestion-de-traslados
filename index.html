@@ -1060,7 +1060,7 @@
             }
         }
 
-        // Función para eliminar traslados de Firestore
+        // Función para eliminar traslados de Firestore - CORREGIDA
         async function deleteTransfers(ids) {
             try {
                 const deletePromises = ids.map(id => {
@@ -1069,6 +1069,11 @@
                 
                 await Promise.all(deletePromises);
                 showMessage("Traslados eliminados con éxito.", "success");
+                
+                // CORRECCIÓN IMPORTANTE: Actualizar el reporte inmediatamente después de eliminar
+                // Esto asegura que los reportes se actualicen en tiempo real
+                generateReport();
+                
                 return true;
             } catch (e) {
                 console.error("Error al eliminar de Firestore:", e);
