@@ -555,12 +555,25 @@
             </section>
         </div>
 
-        <!-- Contenido de Reportes Financieros (pestaña secundaria - mantenida igual) -->
+        <!-- Contenido de Reportes Financieros (pestaña secundaria - MODIFICADA) -->
         <div id="reportsContent" class="hidden">
             <section class="mb-8 p-6 bg-white rounded-lg border border-inter-primary shadow-lg">
                 <h2 class="text-2xl font-bold text-inter-primary mb-4">Reportes Financieros de Traslados</h2>
-                <div class="mb-6 flex flex-col md:flex-row gap-4">
-                    <div class="flex-1">
+                
+                <!-- NUEVO: Selector de tipo de periodo -->
+                <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="reportPeriodType" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipo de Periodo
+                        </label>
+                        <select id="reportPeriodType" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="month" selected>Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="fortnight">Quincena</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                    <div id="monthYearContainer">
                         <label for="reportMonth" class="block text-sm font-medium text-gray-700 mb-1">
                             Seleccionar Mes
                         </label>
@@ -579,7 +592,89 @@
                             <option value="11">Diciembre</option>
                         </select>
                     </div>
-                    <div class="flex-1">
+                </div>
+                
+                <!-- NUEVO: Contenedor para semana -->
+                <div id="weekContainer" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+                    <div>
+                        <label for="reportWeekStart" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha Inicio Semana
+                        </label>
+                        <input type="date" id="reportWeekStart" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                    </div>
+                    <div>
+                        <label for="reportWeekEnd" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha Fin Semana
+                        </label>
+                        <input type="date" id="reportWeekEnd" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="setCurrentWeekBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full">
+                            Semana Actual
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- NUEVO: Contenedor para quincena -->
+                <div id="fortnightContainer" class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                    <div>
+                        <label for="reportFortnight" class="block text-sm font-medium text-gray-700 mb-1">
+                            Seleccionar Quincena
+                        </label>
+                        <select id="reportFortnight" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="first">Primera Quincena (1-15)</option>
+                            <option value="second">Segunda Quincena (16-fin de mes)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reportFortnightMonth" class="block text-sm font-medium text-gray-700 mb-1">
+                            Mes
+                        </label>
+                        <select id="reportFortnightMonth" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- NUEVO: Contenedor para rango personalizado -->
+                <div id="customRangeContainer" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+                    <div>
+                        <label for="reportCustomStart" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha Inicio
+                        </label>
+                        <input type="date" id="reportCustomStart" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                    </div>
+                    <div>
+                        <label for="reportCustomEnd" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha Fin
+                        </label>
+                        <input type="date" id="reportCustomEnd" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="setLast30DaysBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full">
+                            Últimos 30 días
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Contenedor para año (común a todos) -->
+                <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                         <label for="reportYear" class="block text-sm font-medium text-gray-700 mb-1">
                             Seleccionar Año
                         </label>
@@ -590,10 +685,16 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button id="generateReportBtn" class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                        <button id="generateReportBtn" class="bg-inter-primary hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full">
                             Generar Reporte
                         </button>
                     </div>
+                </div>
+                
+                <!-- Display del periodo seleccionado -->
+                <div id="periodDisplay" class="mb-4 p-3 bg-blue-50 rounded-lg">
+                    <h3 class="text-lg font-bold text-inter-primary mb-2">Periodo del Reporte:</h3>
+                    <p id="periodText" class="text-gray-700">No se ha seleccionado ningún periodo</p>
                 </div>
 
                 <!-- Botones de exportación -->
@@ -758,12 +859,28 @@
         const dashboardContent = document.getElementById('dashboardContent');
         const reportsContent = document.getElementById('reportsContent');
 
-        // Elementos de reportes
+        // Elementos de reportes MODIFICADOS
+        const reportPeriodType = document.getElementById('reportPeriodType');
+        const monthYearContainer = document.getElementById('monthYearContainer');
+        const weekContainer = document.getElementById('weekContainer');
+        const fortnightContainer = document.getElementById('fortnightContainer');
+        const customRangeContainer = document.getElementById('customRangeContainer');
         const reportMonthSelect = document.getElementById('reportMonth');
         const reportYearSelect = document.getElementById('reportYear');
+        const reportWeekStart = document.getElementById('reportWeekStart');
+        const reportWeekEnd = document.getElementById('reportWeekEnd');
+        const reportFortnight = document.getElementById('reportFortnight');
+        const reportFortnightMonth = document.getElementById('reportFortnightMonth');
+        const reportCustomStart = document.getElementById('reportCustomStart');
+        const reportCustomEnd = document.getElementById('reportCustomEnd');
+        const setCurrentWeekBtn = document.getElementById('setCurrentWeekBtn');
+        const setLast30DaysBtn = document.getElementById('setLast30DaysBtn');
         const generateReportBtn = document.getElementById('generateReportBtn');
         const exportReportExcelBtn = document.getElementById('exportReportExcelBtn');
         const exportReportPDFBtn = document.getElementById('exportReportPDFBtn');
+        const periodDisplay = document.getElementById('periodDisplay');
+        const periodText = document.getElementById('periodText');
+        
         const departmentsReportTableBody = document.getElementById('departmentsReportTableBody');
         const companiesReportTableBody = document.getElementById('companiesReportTableBody');
         const totalCCS = document.getElementById('totalCCS');
@@ -827,6 +944,15 @@
         };
         let isCompactView = true;
         let expandedRows = new Set();
+        
+        // Variables para reportes
+        let currentReportPeriod = {
+            type: 'month',
+            startDate: null,
+            endDate: null,
+            month: null,
+            year: null
+        };
 
         // Lista de departamentos para reportes (actualizada con Limpieza y Colaboradores en ambos CCS y MSO)
         const reportDepartments = [
@@ -1881,16 +2007,259 @@
             }
         }
 
-        // Función para generar reporte financiero
-        function generateReport() {
-            const month = parseInt(reportMonthSelect.value);
+        // NUEVA: Función para obtener las fechas según el tipo de periodo seleccionado - CORREGIDA
+        function getReportDates() {
+            const periodType = reportPeriodType.value;
             const year = parseInt(reportYearSelect.value);
             
-            // Filtrar traslados por mes y año seleccionados
+            let startDate, endDate;
+            
+            switch(periodType) {
+                case 'month':
+                    const month = parseInt(reportMonthSelect.value);
+                    startDate = new Date(year, month, 1);
+                    endDate = new Date(year, month + 1, 0);
+                    break;
+                    
+                case 'week':
+                    // Obtener valores de fecha del formulario
+                    const weekStartStr = reportWeekStart.value;
+                    const weekEndStr = reportWeekEnd.value;
+                    
+                    if (!weekStartStr || !weekEndStr) {
+                        // Si no hay fechas seleccionadas, usar la semana actual
+                        setCurrentWeek();
+                        startDate = new Date(reportWeekStart.value);
+                        endDate = new Date(reportWeekEnd.value);
+                    } else {
+                        startDate = new Date(weekStartStr);
+                        endDate = new Date(weekEndStr);
+                    }
+                    break;
+                    
+                case 'fortnight':
+                    const fortnightMonth = parseInt(reportFortnightMonth.value);
+                    const fortnight = reportFortnight.value;
+                    
+                    if (fortnight === 'first') {
+                        startDate = new Date(year, fortnightMonth, 1);
+                        endDate = new Date(year, fortnightMonth, 15);
+                    } else {
+                        startDate = new Date(year, fortnightMonth, 16);
+                        endDate = new Date(year, fortnightMonth + 1, 0);
+                    }
+                    break;
+                    
+                case 'custom':
+                    // Obtener valores de fecha del formulario
+                    const customStartStr = reportCustomStart.value;
+                    const customEndStr = reportCustomEnd.value;
+                    
+                    if (!customStartStr || !customEndStr) {
+                        // Si no hay fechas seleccionadas, usar últimos 30 días
+                        setLast30Days();
+                        startDate = new Date(reportCustomStart.value);
+                        endDate = new Date(reportCustomEnd.value);
+                    } else {
+                        startDate = new Date(customStartStr);
+                        endDate = new Date(customEndStr);
+                    }
+                    break;
+            }
+            
+            // Asegurarse de que las fechas sean válidas
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                // Si las fechas no son válidas, usar el mes actual como respaldo
+                const now = new Date();
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            }
+            
+            // Normalizar fechas (inicio a las 00:00, fin a las 23:59:59)
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            return { startDate, endDate };
+        }
+
+        // NUEVA: Función para actualizar el texto del periodo - CORREGIDA
+        function updatePeriodText() {
+            const { startDate, endDate } = getReportDates();
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            let periodTextStr = '';
+            
+            switch(reportPeriodType.value) {
+                case 'month':
+                    const month = parseInt(reportMonthSelect.value);
+                    periodTextStr = `${monthNames[month]} ${reportYearSelect.value}`;
+                    break;
+                    
+                case 'week':
+                    // Usar el formato dd/mm/yyyy para fechas
+                    const formatDate = (date) => {
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    };
+                    periodTextStr = `Semana del ${formatDate(startDate)} al ${formatDate(endDate)}`;
+                    break;
+                    
+                case 'fortnight':
+                    const fortnightMonth = parseInt(reportFortnightMonth.value);
+                    const fortnight = reportFortnight.value;
+                    const monthName = monthNames[fortnightMonth];
+                    const endDay = endDate.getDate();
+                    if (fortnight === 'first') {
+                        periodTextStr = `Primera quincena de ${monthName} ${reportYearSelect.value} (1-15)`;
+                    } else {
+                        periodTextStr = `Segunda quincena de ${monthName} ${reportYearSelect.value} (16-${endDay})`;
+                    }
+                    break;
+                    
+                case 'custom':
+                    // Usar el formato dd/mm/yyyy para fechas personalizadas
+                    const formatDateCustom = (date) => {
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    };
+                    periodTextStr = `Personalizado: ${formatDateCustom(startDate)} - ${formatDateCustom(endDate)}`;
+                    break;
+            }
+            
+            periodText.textContent = periodTextStr;
+            periodDisplay.classList.remove('hidden');
+            
+            // Actualizar objeto currentReportPeriod
+            currentReportPeriod = {
+                type: reportPeriodType.value,
+                startDate: normalizeDateToStartOfDay(startDate),
+                endDate: normalizeDateToStartOfDay(endDate),
+                month: reportPeriodType.value === 'month' ? parseInt(reportMonthSelect.value) : null,
+                year: parseInt(reportYearSelect.value)
+            };
+        }
+
+        // NUEVA: Función para manejar cambio de tipo de periodo
+        function handlePeriodTypeChange() {
+            const periodType = reportPeriodType.value;
+            
+            // Ocultar todos los contenedores
+            monthYearContainer.classList.add('hidden');
+            weekContainer.classList.add('hidden');
+            fortnightContainer.classList.add('hidden');
+            customRangeContainer.classList.add('hidden');
+            
+            // Mostrar el contenedor correspondiente
+            switch(periodType) {
+                case 'month':
+                    monthYearContainer.classList.remove('hidden');
+                    break;
+                case 'week':
+                    weekContainer.classList.remove('hidden');
+                    // Establecer semana actual por defecto si no hay fechas
+                    if (!reportWeekStart.value || !reportWeekEnd.value) {
+                        setCurrentWeek();
+                    }
+                    break;
+                case 'fortnight':
+                    fortnightContainer.classList.remove('hidden');
+                    // Establecer mes actual por defecto
+                    const currentMonth = new Date().getMonth();
+                    reportFortnightMonth.value = currentMonth.toString();
+                    break;
+                case 'custom':
+                    customRangeContainer.classList.remove('hidden');
+                    // Establecer últimos 30 días por defecto si no hay fechas
+                    if (!reportCustomStart.value || !reportCustomEnd.value) {
+                        setLast30Days();
+                    }
+                    break;
+            }
+            
+            // Actualizar inmediatamente el texto del periodo
+            updatePeriodText();
+        }
+
+        // NUEVA: Función para establecer semana actual
+        function setCurrentWeek() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+            
+            // Ajustar para que la semana empiece el Lunes
+            const startOfWeek = new Date(today);
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si es domingo, retroceder 6 días
+            startOfWeek.setDate(today.getDate() + diff);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            // Formatear fechas como YYYY-MM-DD para el input type="date"
+            const formatDateForInput = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            reportWeekStart.value = formatDateForInput(startOfWeek);
+            reportWeekEnd.value = formatDateForInput(endOfWeek);
+            
+            // Actualizar el texto del periodo inmediatamente
+            updatePeriodText();
+        }
+
+        // NUEVA: Función para establecer últimos 30 días
+        function setLast30Days() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            // Formatear fechas como YYYY-MM-DD para el input type="date"
+            const formatDateForInput = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            reportCustomStart.value = formatDateForInput(thirtyDaysAgo);
+            reportCustomEnd.value = formatDateForInput(today);
+            
+            // Actualizar el texto del periodo inmediatamente
+            updatePeriodText();
+        }
+
+        // Función para generar reporte financiero MODIFICADA - CORREGIDA
+        function generateReport() {
+            // Obtener fechas del formulario
+            const { startDate, endDate } = getReportDates();
+            
+            // Actualizar texto del periodo (esto mostrará las fechas exactas)
+            updatePeriodText();
+            
+            // Mostrar mensaje de depuración
+            console.log("Generando reporte para:", {
+                startDate: startDate.toLocaleDateString('es-ES'),
+                endDate: endDate.toLocaleDateString('es-ES'),
+                transfersCount: transfers.length
+            });
+            
+            // Filtrar traslados por periodo seleccionado
             const filteredTransfers = transfers.filter(transfer => {
                 const transferDate = transfer.dateTime;
-                return transferDate.getMonth() === month && transferDate.getFullYear() === year;
+                // Asegurarse de que las fechas se comparen correctamente
+                const transferDateObj = new Date(transferDate);
+                transferDateObj.setHours(0, 0, 0, 0);
+                
+                const startDateObj = new Date(startDate);
+                startDateObj.setHours(0, 0, 0, 0);
+                
+                const endDateObj = new Date(endDate);
+                endDateObj.setHours(23, 59, 59, 999);
+                
+                return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
             });
+            
+            console.log("Traslados filtrados:", filteredTransfers.length);
             
             // Calcular totales por departamento
             const departmentTotals = {};
@@ -1997,13 +2366,16 @@
                 row.innerHTML = `
                     <td class="px-6 py-3 text-left text-sm font-medium text-gray-900">${company.name}</td>
                     <td class="px-6 py-3 text-left text-sm text-gray-900">
-                        ${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''} - $${stats.ccsAmount.toFixed(2)}
+                        ${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}<br>
+                        <span class="font-medium">$${stats.ccsAmount.toFixed(2)}</span>
                     </td>
                     <td class="px-6 py-3 text-left text-sm text-gray-900">
-                        ${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''} - $${stats.msoAmount.toFixed(2)}
+                        ${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''}<br>
+                        <span class="font-medium">$${stats.msoAmount.toFixed(2)}</span>
                     </td>
                     <td class="px-6 py-3 text-left text-sm font-medium text-gray-900">
-                        ${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''} - $${stats.totalAmount.toFixed(2)}
+                        ${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''}<br>
+                        <span class="font-bold">$${stats.totalAmount.toFixed(2)}</span>
                     </td>
                 `;
                 companiesReportTableBody.appendChild(row);
@@ -2020,12 +2392,12 @@
             unitCCS.textContent = `$${totalCCSAmount.toFixed(2)}`;
             unitMSO.textContent = `$${totalMSOAmount.toFixed(2)}`;
             unitTotal.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
+            
+            showMessage(`Reporte generado para el periodo: ${periodText.textContent}`, "success");
         }
 
-        // Función para exportar reporte a Excel
+        // Función para exportar reporte a Excel MODIFICADA
         function exportReportToExcel() {
-            const month = parseInt(reportMonthSelect.value);
-            const year = parseInt(reportYearSelect.value);
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
@@ -2034,7 +2406,7 @@
             
             // Hoja 1: Departamentos
             const departmentsData = [
-                ['MES:', `${monthNames[month]} ${year}`],
+                ['PERIODO:', periodText.textContent],
                 [],
                 ['DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO'],
                 ['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']
@@ -2055,41 +2427,65 @@
             const departmentsSheet = XLSX.utils.aoa_to_sheet(departmentsData);
             XLSX.utils.book_append_sheet(workbook, departmentsSheet, 'Departamentos');
             
-            // Hoja 2: Empresas - MODIFICADA con discriminación CCS/MSO
+            // Hoja 2: Empresas - MEJORADA con formato separado
             const companiesData = [
-                ['MES:', `${monthNames[month]} ${year}`],
+                ['PERIODO:', periodText.textContent],
                 [],
                 ['EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO'],
                 ['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']
             ];
             
-            // Agregar filas de empresas
+            // Agregar filas de empresas con formato mejorado
             reportCompanies.forEach((company, index) => {
                 const row = document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1})`);
                 if (row) {
                     const empresa = row.cells[0].textContent;
-                    const ccsServices = row.cells[1].textContent;
-                    const msoServices = row.cells[2].textContent;
-                    const total = row.cells[3].textContent;
+                    const ccsCell = row.cells[1];
+                    const msoCell = row.cells[2];
+                    const totalCell = row.cells[3];
                     
-                    companiesData.push([empresa, ccsServices, msoServices, total]);
+                    // Extraer datos de los spans
+                    const ccsText = ccsCell.textContent.split('\n');
+                    const msoText = msoCell.textContent.split('\n');
+                    const totalText = totalCell.textContent.split('\n');
+                    
+                    companiesData.push([
+                        empresa,
+                        `${ccsText[0]}\n${ccsText[1] || ''}`,
+                        `${msoText[0]}\n${msoText[1] || ''}`,
+                        `${totalText[0]}\n${totalText[1] || ''}`
+                    ]);
                 }
             });
             
-            // Agregar totales
+            // Agregar totales con formato
+            const totalCCSServicesText = totalCCSServices.textContent;
+            const totalMSOServicesText = totalMSOServices.textContent;
+            const totalCompaniesText = totalCompanies.textContent;
+            
             companiesData.push([
                 'TOTALES', 
-                totalCCSServices.textContent, 
-                totalMSOServices.textContent, 
-                totalCompanies.textContent
+                totalCCSServicesText.replace(' - ', '\n'),
+                totalMSOServicesText.replace(' - ', '\n'),
+                totalCompaniesText.replace(' - ', '\n')
             ]);
             
             const companiesSheet = XLSX.utils.aoa_to_sheet(companiesData);
+            
+            // Ajustar ancho de columnas
+            const wscols = [
+                {wch: 20}, // Empresa
+                {wch: 25}, // Servicios CCS
+                {wch: 25}, // Servicios MSO
+                {wch: 25}  // Total
+            ];
+            companiesSheet['!cols'] = wscols;
+            
             XLSX.utils.book_append_sheet(workbook, companiesSheet, 'Empresas');
             
             // Hoja 3: Resumen por unidad
             const unitData = [
-                ['MES:', `${monthNames[month]} ${year}`],
+                ['PERIODO:', periodText.textContent],
                 [],
                 ['RESUMEN POR UNIDAD'],
                 ['UNIDAD', 'IMPORTE'],
@@ -2101,32 +2497,56 @@
             const unitSheet = XLSX.utils.aoa_to_sheet(unitData);
             XLSX.utils.book_append_sheet(workbook, unitSheet, 'Resumen Unidad');
             
+            // Generar nombre de archivo según el tipo de periodo
+            let fileName = '';
+            const periodType = reportPeriodType.value;
+            
+            switch(periodType) {
+                case 'month':
+                    const month = parseInt(reportMonthSelect.value);
+                    fileName = `Reporte_Mensual_${monthNames[month]}_${reportYearSelect.value}.xlsx`;
+                    break;
+                case 'week':
+                    const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
+                    const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
+                    fileName = `Reporte_Semanal_${weekStart}_a_${weekEnd}.xlsx`;
+                    break;
+                case 'fortnight':
+                    const fortnightMonth = parseInt(reportFortnightMonth.value);
+                    const fortnight = reportFortnight.value;
+                    const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
+                    fileName = `Reporte_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.xlsx`;
+                    break;
+                case 'custom':
+                    const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
+                    const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
+                    fileName = `Reporte_Personalizado_${customStart}_a_${customEnd}.xlsx`;
+                    break;
+            }
+            
             // Descargar archivo
-            const fileName = `Reporte_Traslados_${monthNames[month]}_${year}.xlsx`;
             XLSX.writeFile(workbook, fileName);
             
             showMessage(`Reporte exportado a Excel: ${fileName}`, "success");
         }
 
-        // Función para exportar reporte a PDF
+        // Función para exportar reporte a PDF MODIFICADA con formato mejorado
         function exportReportToPDF() {
-            const month = parseInt(reportMonthSelect.value);
-            const year = parseInt(reportYearSelect.value);
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
             // Crear nuevo documento PDF
-            const doc = new jsPDF();
+            const doc = new jsPDF('p', 'mm', 'a4');
             
             // Título principal
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
             doc.text('REPORTE FINANCIERO DE TRASLADOS', 105, 20, null, null, 'center');
             
-            // Mes y año
+            // Periodo
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
-            doc.text(`MES: ${monthNames[month]} ${year}`, 105, 30, null, null, 'center');
+            doc.text('PERIODO: ' + periodText.textContent, 105, 30, null, null, 'center');
             
             let yPos = 40;
             
@@ -2170,7 +2590,17 @@
                 head: [['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']],
                 body: departmentsData,
                 theme: 'striped',
-                headStyles: { fillColor: [0, 91, 170], textColor: [255, 255, 255] },
+                headStyles: { 
+                    fillColor: [0, 91, 170], 
+                    textColor: [255, 255, 255],
+                    fontSize: 10
+                },
+                bodyStyles: { fontSize: 9 },
+                columnStyles: {
+                    0: { cellWidth: 70 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 40 }
+                },
                 didDrawPage: function(data) {
                     // Footer
                     doc.setFontSize(10);
@@ -2181,8 +2611,8 @@
             
             yPos = doc.autoTable.previous.finalY + 15;
             
-            // Sección 2: Empresas proveedoras - MODIFICADA
-            if (yPos > 250) {
+            // Sección 2: Empresas proveedoras - MEJORADA con formato de dos líneas
+            if (yPos > 220) {
                 doc.addPage();
                 yPos = 20;
             }
@@ -2192,28 +2622,42 @@
             doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', 105, yPos, null, null, 'center');
             yPos += 10;
             
-            // Tabla de empresas discriminada
+            // Tabla de empresas con formato de dos líneas
             const companiesData = [];
             
             // Procesar cada empresa
             reportCompanies.forEach((company, index) => {
                 const row = document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1})`);
                 if (row) {
+                    const empresa = row.cells[0].textContent;
+                    const ccsCell = row.cells[1];
+                    const msoCell = row.cells[2];
+                    const totalCell = row.cells[3];
+                    
+                    // Extraer datos como dos líneas separadas
+                    const ccsLines = ccsCell.innerHTML.replace(/<br>/g, '\n').split('\n');
+                    const msoLines = msoCell.innerHTML.replace(/<br>/g, '\n').split('\n');
+                    const totalLines = totalCell.innerHTML.replace(/<br>/g, '\n').split('\n');
+                    
                     companiesData.push([
-                        row.cells[0].textContent,
-                        row.cells[1].textContent,
-                        row.cells[2].textContent,
-                        row.cells[3].textContent
+                        empresa,
+                        `${ccsLines[0] || ''}\n${ccsLines[1] || ''}`,
+                        `${msoLines[0] || ''}\n${msoLines[1] || ''}`,
+                        `${totalLines[0] || ''}\n${totalLines[1] || ''}`
                     ]);
                 }
             });
             
-            // Agregar totales
+            // Agregar totales con formato de dos líneas
+            const totalCCSServicesText = totalCCSServices.textContent;
+            const totalMSOServicesText = totalMSOServices.textContent;
+            const totalCompaniesText = totalCompanies.textContent;
+            
             companiesData.push([
                 'TOTALES',
-                totalCCSServices.textContent,
-                totalMSOServices.textContent,
-                totalCompanies.textContent
+                totalCCSServicesText.replace(' - ', '\n'),
+                totalMSOServicesText.replace(' - ', '\n'),
+                totalCompaniesText.replace(' - ', '\n')
             ]);
             
             doc.autoTable({
@@ -2221,12 +2665,46 @@
                 head: [['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']],
                 body: companiesData,
                 theme: 'striped',
-                headStyles: { fillColor: [92, 225, 230], textColor: [0, 0, 0] },
+                headStyles: { 
+                    fillColor: [92, 225, 230], 
+                    textColor: [0, 0, 0],
+                    fontSize: 9
+                },
+                bodyStyles: { 
+                    fontSize: 8,
+                    cellPadding: 2,
+                    lineHeight: 1.2
+                },
                 columnStyles: {
-                    0: { cellWidth: 45 },
-                    1: { cellWidth: 50 },
-                    2: { cellWidth: 50 },
-                    3: { cellWidth: 45 }
+                    0: { cellWidth: 35 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 35 }
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 2,
+                    lineWidth: 0.1,
+                    lineColor: [200, 200, 200]
+                },
+                didDrawCell: function(data) {
+                    // Centrar verticalmente el contenido de dos líneas
+                    if (data.column.index > 0 && data.cell.section === 'body') {
+                        const lines = data.cell.text[0].split('\n');
+                        if (lines.length > 1) {
+                            doc.setFontSize(7);
+                            const textHeight = 7;
+                            const cellHeight = data.cell.height;
+                            const totalTextHeight = lines.length * textHeight;
+                            const startY = data.cell.y + (cellHeight - totalTextHeight) / 2 + textHeight;
+                            
+                            lines.forEach((line, i) => {
+                                doc.text(line.trim(), data.cell.x + 2, startY + (i * textHeight));
+                            });
+                            
+                            return false; // Evitar que autoTable dibuje el texto por defecto
+                        }
+                    }
                 },
                 didDrawPage: function(data) {
                     // Footer
@@ -2261,7 +2739,16 @@
                 head: [['UNIDAD', 'IMPORTE']],
                 body: unitData,
                 theme: 'striped',
-                headStyles: { fillColor: [0, 91, 170], textColor: [255, 255, 255] },
+                headStyles: { 
+                    fillColor: [0, 91, 170], 
+                    textColor: [255, 255, 255],
+                    fontSize: 10
+                },
+                bodyStyles: { fontSize: 10 },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 50 }
+                },
                 didDrawPage: function(data) {
                     // Footer
                     doc.setFontSize(10);
@@ -2277,8 +2764,34 @@
             doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 105, finalY, null, null, 'center');
             doc.text('Sistema de Control de Traslados de Taxi - Inter', 105, finalY + 5, null, null, 'center');
             
+            // Generar nombre de archivo según el tipo de periodo
+            let fileName = '';
+            const periodType = reportPeriodType.value;
+            
+            switch(periodType) {
+                case 'month':
+                    const month = parseInt(reportMonthSelect.value);
+                    fileName = `Reporte_Mensual_${monthNames[month]}_${reportYearSelect.value}.pdf`;
+                    break;
+                case 'week':
+                    const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
+                    const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
+                    fileName = `Reporte_Semanal_${weekStart}_a_${weekEnd}.pdf`;
+                    break;
+                case 'fortnight':
+                    const fortnightMonth = parseInt(reportFortnightMonth.value);
+                    const fortnight = reportFortnight.value;
+                    const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
+                    fileName = `Reporte_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.pdf`;
+                    break;
+                case 'custom':
+                    const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
+                    const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
+                    fileName = `Reporte_Personalizado_${customStart}_a_${customEnd}.pdf`;
+                    break;
+            }
+            
             // Guardar PDF
-            const fileName = `Reporte_Traslados_${monthNames[month]}_${year}.pdf`;
             doc.save(fileName);
             
             showMessage(`Reporte exportado a PDF: ${fileName}`, "success");
@@ -2344,7 +2857,20 @@
             };
         }
 
-        // Event Listeners para reportes
+        // NUEVOS Event Listeners para reportes
+        reportPeriodType.addEventListener('change', handlePeriodTypeChange);
+        reportMonthSelect.addEventListener('change', updatePeriodText);
+        reportYearSelect.addEventListener('change', updatePeriodText);
+        reportWeekStart.addEventListener('change', updatePeriodText);
+        reportWeekEnd.addEventListener('change', updatePeriodText);
+        reportFortnight.addEventListener('change', updatePeriodText);
+        reportFortnightMonth.addEventListener('change', updatePeriodText);
+        reportCustomStart.addEventListener('change', updatePeriodText);
+        reportCustomEnd.addEventListener('change', updatePeriodText);
+        
+        setCurrentWeekBtn.addEventListener('click', setCurrentWeek);
+        setLast30DaysBtn.addEventListener('click', setLast30Days);
+        
         generateReportBtn.addEventListener('click', generateReport);
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
@@ -2629,6 +3155,9 @@
             
             // Inicializar flatpickr
             initDateRangePicker();
+            
+            // Manejar cambio inicial del tipo de periodo
+            handlePeriodTypeChange();
             
             loadTransfers();
         });
