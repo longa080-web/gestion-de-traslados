@@ -1035,10 +1035,17 @@
             }, 5000);
         }
 
+        // FUNCIÓN CORREGIDA: Normalizar fecha correctamente
         function normalizeDateToStartOfDay(date) {
             const d = new Date(date);
-            d.setHours(0, 0, 0, 0);
-            return d;
+            // Asegurarse de usar la fecha local correcta
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const day = d.getDate();
+            
+            // Crear nueva fecha con los componentes correctos
+            const normalized = new Date(year, month, day, 0, 0, 0, 0);
+            return normalized;
         }
 
         // Inicializar flatpickr para rango de fechas
@@ -1128,7 +1135,7 @@
             }
         });
 
-        // Función para cargar traslados desde Firestore
+        // Función para cargar traslados desde Firestore - CORREGIDA
         function loadTransfers() {
             try {
                 showMessage("Conectando a la base de datos...", "info");
@@ -1142,10 +1149,27 @@
                         transfers = [];
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
+                            // CORRECCIÓN: Convertir correctamente la fecha desde Firestore
+                            let dateTime;
+                            if (data.dateTime) {
+                                // Si es un objeto Timestamp de Firestore
+                                if (data.dateTime.toDate) {
+                                    dateTime = normalizeDateToStartOfDay(data.dateTime.toDate());
+                                } 
+                                // Si es un string ISO
+                                else if (typeof data.dateTime === 'string') {
+                                    dateTime = normalizeDateToStartOfDay(new Date(data.dateTime));
+                                }
+                                // Si ya es un objeto Date
+                                else if (data.dateTime instanceof Date) {
+                                    dateTime = normalizeDateToStartOfDay(data.dateTime);
+                                }
+                            }
+                            
                             transfers.push({
                                 id: doc.id,
                                 ...data,
-                                dateTime: normalizeDateToStartOfDay(new Date(data.dateTime))
+                                dateTime: dateTime || normalizeDateToStartOfDay(new Date())
                             });
                         });
                         
@@ -1182,7 +1206,7 @@
             }
         }
 
-        // Función para guardar un traslado en Firestore
+        // Función para guardar un traslado en Firestore - CORREGIDA
         async function saveTransfer(transferData) {
             try {
                 // Determinar tipo de servicio (CCS o MSO) considerando msoDepartment
@@ -1193,10 +1217,11 @@
                     transferData.authorizerName = getDefaultAuthorizer(transferData.department, transferData.msoDepartment);
                 }
                 
-                // Convertir fecha a string ISO para Firestore
+                // CORRECCIÓN: Asegurarse de que la fecha se guarde correctamente
                 const dataToSave = {
                     ...transferData,
-                    dateTime: transferData.dateTime.toISOString(),
+                    // Guardar como Timestamp de Firestore para consistencia
+                    dateTime: firebase.firestore.Timestamp.fromDate(transferData.dateTime),
                     serviceType: serviceType.type,
                     serviceTypeText: serviceType.text
                 };
@@ -1415,6 +1440,7 @@
                     const row = document.createElement('tr');
                     row.setAttribute('data-id', transfer.id);
                     
+                    // CORRECCIÓN: Formatear fecha correctamente
                     const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
                         year: 'numeric', month: '2-digit', day: '2-digit'
                     });
@@ -1580,7 +1606,14 @@
             destinationPlaceInput.value = transfer.destinationPlace || '';
             returnAddressInput.value = transfer.returnAddress || '';
             returnDestinationInput.value = transfer.returnDestination || '';
-            transferDateInput.value = transfer.dateTime.toISOString().slice(0, 10);
+            
+            // CORRECCIÓN: Formatear correctamente la fecha para el input type="date"
+            const transferDate = transfer.dateTime;
+            const year = transferDate.getFullYear();
+            const month = String(transferDate.getMonth() + 1).padStart(2, '0');
+            const day = String(transferDate.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
+            
             costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
@@ -1603,7 +1636,14 @@
             msoDepartmentsContainer.classList.add('hidden');
             msoDepartmentInput.required = false;
             serviceTypeBadge.classList.add('hidden');
-            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            
+            // Establecer fecha actual
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
+            
             // Restablecer autorizador por defecto según el departamento seleccionado
             const department = departmentInput.value;
             if (department) {
@@ -2922,7 +2962,7 @@
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
 
-        // Event Listeners del Dashboard
+        // Event Listeners del Dashboard - CORREGIDO
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = submitButton;
@@ -2932,6 +2972,11 @@
             document.body.classList.add('loading');
 
             try {
+                // CORRECCIÓN: Parsear correctamente la fecha del input
+                const dateValue = transferDateInput.value;
+                const [year, month, day] = dateValue.split('-').map(Number);
+                const dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
+
                 const transferData = {
                     requesterName: requesterNameInput.value.trim(),
                     department: departmentInput.value,
@@ -2940,7 +2985,7 @@
                     destinationPlace: destinationPlaceInput.value.trim(),
                     returnAddress: returnAddressInput.value.trim(),
                     returnDestination: returnDestinationInput.value.trim(),
-                    dateTime: normalizeDateToStartOfDay(new Date(transferDateInput.value)),
+                    dateTime: dateTime, // Usar fecha corregida
                     cost: parseFloat(costInput.value),
                     authorizerName: authorizerNameInput.value,
                     companyName: companyNameInput.value
@@ -2952,7 +2997,14 @@
                     msoDepartmentsContainer.classList.add('hidden');
                     msoDepartmentInput.required = false;
                     serviceTypeBadge.classList.add('hidden');
-                    transferDateInput.value = new Date().toISOString().slice(0, 10);
+                    
+                    // Establecer fecha actual
+                    const today = new Date();
+                    const currentYear = today.getFullYear();
+                    const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+                    const currentDay = String(today.getDate()).padStart(2, '0');
+                    transferDateInput.value = `${currentYear}-${currentMonth}-${currentDay}`;
+                    
                     // Restablecer autorizador por defecto según el departamento seleccionado
                     const department = departmentInput.value;
                     if (department) {
@@ -3108,10 +3160,13 @@
                     if (row.length >= 11) {
                         const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
                         
-                        // Parsear fecha
+                        // Parsear fecha correctamente
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
+                        } else if (dateStr.includes('-')) {
+                            const [year, month, day] = dateStr.split('-').map(Number);
                             dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
                         } else {
                             dateTime = normalizeDateToStartOfDay(new Date(dateStr));
@@ -3139,6 +3194,9 @@
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
+                            dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
+                        } else if (dateStr.includes('-')) {
+                            const [year, month, day] = dateStr.split('-').map(Number);
                             dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
                         } else {
                             dateTime = normalizeDateToStartOfDay(new Date(dateStr));
@@ -3204,13 +3262,22 @@
         // Redimensionar tabla cuando cambie el tamaño de la ventana
         window.addEventListener('resize', debounce(renderTransfers, 250));
 
-        // Inicialización
+        // Inicialización - CORREGIDA
         document.addEventListener('DOMContentLoaded', () => {
-            transferDateInput.value = new Date().toISOString().slice(0, 10);
+            // Establecer fecha actual correctamente
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            transferDateInput.value = `${year}-${month}-${day}`;
             
             // Establecer mes actual en el selector de reportes
             const currentMonth = new Date().getMonth();
             reportMonthSelect.value = currentMonth.toString();
+            
+            // Establecer año actual en el selector de reportes
+            const currentYear = new Date().getFullYear();
+            reportYearSelect.value = currentYear.toString();
             
             // Inicializar flatpickr
             initDateRangePicker();
