@@ -279,7 +279,8 @@
                         <select id="authorizerName" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                             <option value="" disabled selected>Selecciona Autorizador</option>
-                            <option value="Jorge Basualdo">Jorge Basualdo</option>
+                            <option value="Jorge Basualdo">Jorge Basualdo (CCS)</option>
+                            <option value="Mario Fernandez">Mario Fernandez (MSO)</option>
                         </select>
                     </div>
                     <div>
@@ -400,7 +401,8 @@
                             <select id="filterAuthorizer" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-inter-primary focus:border-inter-primary text-sm md:text-base">
                                 <option value="">Todos los autorizadores</option>
-                                <option value="Jorge Basualdo">Jorge Basualdo</option>
+                                <option value="Jorge Basualdo">Jorge Basualdo (CCS)</option>
+                                <option value="Mario Fernandez">Mario Fernandez (MSO)</option>
                             </select>
                         </div>
                     </div>
@@ -1007,6 +1009,16 @@
             }
         }
 
+        // Función para determinar el autorizador apropiado basado en el tipo de servicio
+        function getDefaultAuthorizer(department, msoDepartment) {
+            const serviceType = getServiceTypeWithMSO(department, msoDepartment);
+            if (serviceType.type === 'MSO') {
+                return 'Mario Fernandez';
+            } else {
+                return 'Jorge Basualdo';
+            }
+        }
+
         function showMessage(message, type = 'info', box = messageBox) {
             box.textContent = message;
             box.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700');
@@ -1054,7 +1066,7 @@
             });
         }
 
-        // Manejar cambio en departamento - actualizar tipo de servicio
+        // Manejar cambio en departamento - actualizar tipo de servicio y autorizador por defecto
         departmentInput.addEventListener('change', function() {
             const department = this.value;
             
@@ -1064,14 +1076,19 @@
                 serviceTypeBadge.classList.remove('hidden');
                 serviceTypeText.textContent = 'MSO';
                 serviceTypeText.className = 'service-type-badge badge-mso';
+                // Establecer autorizador por defecto para MSO
+                authorizerNameInput.value = 'Mario Fernandez';
             } 
             else if (department === 'Limpieza' || department === 'Colaboradores') {
                 // Mostrar selector MSO para Limpieza y Colaboradores
                 msoDepartmentsContainer.classList.remove('hidden');
                 msoDepartmentInput.required = false;
                 serviceTypeBadge.classList.remove('hidden');
-                serviceTypeText.textContent = 'CCS'; // Por defecto CCS
+                // Por defecto, estos departamentos son CCS hasta que se seleccione un departamento MSO
+                serviceTypeText.textContent = 'CCS';
                 serviceTypeText.className = 'service-type-badge badge-ccs';
+                // Establecer autorizador por defecto para CCS
+                authorizerNameInput.value = 'Jorge Basualdo';
             }
             else {
                 msoDepartmentsContainer.classList.add('hidden');
@@ -1082,8 +1099,11 @@
                     serviceTypeBadge.classList.remove('hidden');
                     serviceTypeText.textContent = 'CCS';
                     serviceTypeText.className = 'service-type-badge badge-ccs';
+                    // Establecer autorizador por defecto para CCS
+                    authorizerNameInput.value = 'Jorge Basualdo';
                 } else {
                     serviceTypeBadge.classList.add('hidden');
+                    authorizerNameInput.value = '';
                 }
             }
         });
@@ -1097,6 +1117,14 @@
                 // Si se selecciona un departamento MSO para Limpieza/Colaboradores, es MSO
                 serviceTypeText.textContent = 'MSO';
                 serviceTypeText.className = 'service-type-badge badge-mso';
+                // Cambiar autorizador a Mario Fernandez para MSO
+                authorizerNameInput.value = 'Mario Fernandez';
+            } else if ((department === 'Limpieza' || department === 'Colaboradores') && !msoDepartment) {
+                // Si se quita el departamento MSO, vuelve a ser CCS
+                serviceTypeText.textContent = 'CCS';
+                serviceTypeText.className = 'service-type-badge badge-ccs';
+                // Cambiar autorizador a Jorge Basualdo para CCS
+                authorizerNameInput.value = 'Jorge Basualdo';
             }
         });
 
@@ -1159,6 +1187,11 @@
             try {
                 // Determinar tipo de servicio (CCS o MSO) considerando msoDepartment
                 const serviceType = getServiceTypeWithMSO(transferData.department, transferData.msoDepartment);
+                
+                // Si no se especificó autorizador, asignar uno por defecto según el tipo de servicio
+                if (!transferData.authorizerName || transferData.authorizerName === '') {
+                    transferData.authorizerName = getDefaultAuthorizer(transferData.department, transferData.msoDepartment);
+                }
                 
                 // Convertir fecha a string ISO para Firestore
                 const dataToSave = {
@@ -1571,6 +1604,18 @@
             msoDepartmentInput.required = false;
             serviceTypeBadge.classList.add('hidden');
             transferDateInput.value = new Date().toISOString().slice(0, 10);
+            // Restablecer autorizador por defecto según el departamento seleccionado
+            const department = departmentInput.value;
+            if (department) {
+                const serviceType = getServiceTypeWithMSO(department, '');
+                if (serviceType.type === 'MSO') {
+                    authorizerNameInput.value = 'Mario Fernandez';
+                } else {
+                    authorizerNameInput.value = 'Jorge Basualdo';
+                }
+            } else {
+                authorizerNameInput.value = '';
+            }
             showMessage("Modo de registro restaurado.", "success");
         }
 
@@ -1761,6 +1806,8 @@
             const monthlyDepartmentExpenses = {};
             monthlyTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
+                const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                
                 if ((department === 'Limpieza' || department === 'Colaboradores') && transfer.msoDepartment) {
                     department = `MSO - ${transfer.msoDepartment}`;
                 } else if (department === 'MSO' && transfer.msoDepartment) {
@@ -2906,6 +2953,18 @@
                     msoDepartmentInput.required = false;
                     serviceTypeBadge.classList.add('hidden');
                     transferDateInput.value = new Date().toISOString().slice(0, 10);
+                    // Restablecer autorizador por defecto según el departamento seleccionado
+                    const department = departmentInput.value;
+                    if (department) {
+                        const serviceType = getServiceTypeWithMSO(department, '');
+                        if (serviceType.type === 'MSO') {
+                            authorizerNameInput.value = 'Mario Fernandez';
+                        } else {
+                            authorizerNameInput.value = 'Jorge Basualdo';
+                        }
+                    } else {
+                        authorizerNameInput.value = '';
+                    }
                     if (editingId) {
                         cancelEdit();
                     }
