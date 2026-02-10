@@ -1057,10 +1057,6 @@
     </div>
 
     <script>
-        // El código JavaScript permanece EXACTAMENTE IGUAL al anterior
-        // Todas las funcionalidades están implementadas
-        // Solo se ha cambiado el diseño visual
-        
         // Inicializar Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
@@ -1212,7 +1208,7 @@
             year: null
         };
 
-        // Lista de departamentos para reportes
+        // Lista de departamentos CCS para reportes
         const reportDepartments = [
             { name: "ADMINISTRACION", code: "Administracion", serviceType: "CCS" },
             { name: "AREA COMERCIAL", code: "Area Comercial", serviceType: "CCS" },
@@ -1222,8 +1218,7 @@
             { name: "SISTEMAS", code: "Sistemas", serviceType: "CCS" },
             { name: "G. SENIOR", code: "Gerencia Senior", serviceType: "CCS" },
             { name: "LIMPIEZA", code: "Limpieza", serviceType: "CCS" },
-            { name: "COLABORADORES", code: "Colaboradores", serviceType: "CCS" },
-            { name: "MSO", code: "MSO", serviceType: "MSO" }
+            { name: "COLABORADORES", code: "Colaboradores", serviceType: "CCS" }
         ];
 
         // Lista de empresas para reportes
@@ -2609,43 +2604,66 @@
                 return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
             });
             
-            // Calcular totales por departamento
+            // MODIFICADO: Calcular totales por departamento con detalle de MSO
             const departmentTotals = {};
             let totalCCSAmount = 0;
             let totalMSOAmount = 0;
             
-            reportDepartments.forEach(dept => {
-                departmentTotals[dept.code] = 0;
-            });
-            
             filteredTransfers.forEach(transfer => {
                 const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
                 const cost = transfer.cost || 0;
-                const serviceType = getServiceTypeWithMSO(department, transfer.msoDepartment);
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
-                if (department && departmentTotals.hasOwnProperty(department)) {
-                    departmentTotals[department] += cost;
+                if (serviceType.type === 'MSO') {
+                    // Usar el departamento MSO específico si existe
+                    const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
                     
-                    // Sumar a CCS o MSO según corresponda
-                    if (serviceType.type === 'MSO') {
-                        totalMSOAmount += cost;
-                    } else {
+                    if (!departmentTotals[deptKey]) {
+                        departmentTotals[deptKey] = {
+                            name: deptKey,
+                            type: 'MSO',
+                            amount: 0
+                        };
+                    }
+                    departmentTotals[deptKey].amount += cost;
+                    totalMSOAmount += cost;
+                } else {
+                    // Es CCS - usar el departamento original
+                    if (department) {
+                        if (!departmentTotals[department]) {
+                            departmentTotals[department] = {
+                                name: department.toUpperCase(),
+                                type: 'CCS',
+                                amount: 0
+                            };
+                        }
+                        departmentTotals[department].amount += cost;
                         totalCCSAmount += cost;
                     }
                 }
             });
             
-            // Actualizar tabla de departamentos
+            // MODIFICADO: Actualizar tabla de departamentos con detalle de MSO
             departmentsReportTableBody.innerHTML = '';
-            reportDepartments.forEach(dept => {
-                const amount = departmentTotals[dept.code] || 0;
-                const isMSO = dept.serviceType === 'MSO';
+            
+            // Ordenar departamentos: primero CCS, luego MSO
+            const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
+                if (departmentTotals[a].type === departmentTotals[b].type) {
+                    return a.localeCompare(b);
+                }
+                return departmentTotals[a].type === 'CCS' ? -1 : 1;
+            });
+            
+            sortedDepartments.forEach(deptKey => {
+                const dept = departmentTotals[deptKey];
                 const row = document.createElement('tr');
+                const isMSO = dept.type === 'MSO';
                 
                 row.innerHTML = `
                     <td class="px-6 py-3 text-left text-sm text-gray-900">${dept.name}</td>
                     <td class="px-6 py-3 text-left text-sm text-gray-900">${isMSO ? 'MSO' : 'UN CCS'}</td>
-                    <td class="px-6 py-3 text-left text-sm font-medium text-inter-primary">$${amount.toFixed(2)}</td>
+                    <td class="px-6 py-3 text-left text-sm font-medium text-inter-primary">$${dept.amount.toFixed(2)}</td>
                 `;
                 departmentsReportTableBody.appendChild(row);
             });
@@ -2707,7 +2725,7 @@
             // Actualizar tabla de empresas
             companiesReportTableBody.innerHTML = '';
             
-            reportCompanies.forEach(company => {
+            reportCompanies.forEach((company, index) => {
                 const stats = companyStats[company.code];
                 const row = document.createElement('tr');
                 
@@ -2749,10 +2767,68 @@
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
+            // Obtener fechas del formulario (igual que en generateReport)
+            const { startDate, endDate } = getReportDates();
+            
+            // Filtrar traslados por periodo seleccionado (igual que en generateReport)
+            const filteredTransfers = transfers.filter(transfer => {
+                const transferDate = transfer.dateTime;
+                const transferDateObj = new Date(transferDate);
+                transferDateObj.setHours(0, 0, 0, 0);
+                
+                const startDateObj = new Date(startDate);
+                startDateObj.setHours(0, 0, 0, 0);
+                
+                const endDateObj = new Date(endDate);
+                endDateObj.setHours(23, 59, 59, 999);
+                
+                return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
+            });
+            
+            // MODIFICADO: Calcular departmentTotals con detalle de MSO
+            const departmentTotals = {};
+            let totalCCSAmount = 0;
+            let totalMSOAmount = 0;
+            
+            filteredTransfers.forEach(transfer => {
+                const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
+                const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
+                
+                if (serviceType.type === 'MSO') {
+                    // Usar el departamento MSO específico si existe
+                    const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
+                    
+                    if (!departmentTotals[deptKey]) {
+                        departmentTotals[deptKey] = {
+                            name: deptKey,
+                            type: 'MSO',
+                            amount: 0
+                        };
+                    }
+                    departmentTotals[deptKey].amount += cost;
+                    totalMSOAmount += cost;
+                } else {
+                    // Es CCS - usar el departamento original
+                    if (department) {
+                        if (!departmentTotals[department]) {
+                            departmentTotals[department] = {
+                                name: department.toUpperCase(),
+                                type: 'CCS',
+                                amount: 0
+                            };
+                        }
+                        departmentTotals[department].amount += cost;
+                        totalCCSAmount += cost;
+                    }
+                }
+            });
+            
             // Crear workbook
             const workbook = XLSX.utils.book_new();
             
-            // Hoja 1: Departamentos
+            // MODIFICADO: Hoja 1: Departamentos con detalle de MSO
             const departmentsData = [
                 ['PERIODO:', periodText.textContent],
                 [],
@@ -2760,17 +2836,25 @@
                 ['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']
             ];
             
+            // Ordenar departamentos: primero CCS, luego MSO
+            const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
+                if (departmentTotals[a].type === departmentTotals[b].type) {
+                    return a.localeCompare(b);
+                }
+                return departmentTotals[a].type === 'CCS' ? -1 : 1;
+            });
+            
             // Agregar filas de departamentos
-            reportDepartments.forEach(dept => {
-                const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
-                const isMSO = dept.serviceType === 'MSO';
-                departmentsData.push([dept.name, isMSO ? 'MSO' : 'UN CCS', amount]);
+            sortedDepartments.forEach(deptKey => {
+                const dept = departmentTotals[deptKey];
+                const isMSO = dept.type === 'MSO';
+                departmentsData.push([dept.name, isMSO ? 'MSO' : 'UN CCS', dept.amount]);
             });
             
             // Agregar totales
-            departmentsData.push(['TOTAL CCS', '', parseFloat(totalCCS.textContent.replace('$', '')) || 0]);
-            departmentsData.push(['MSO', 'MSO', parseFloat(totalMSO.textContent.replace('$', '')) || 0]);
-            departmentsData.push(['TOTAL, CCS + MSO', '', parseFloat(totalCCSMSO.textContent.replace('$', '')) || 0]);
+            departmentsData.push(['TOTAL CCS', '', totalCCSAmount]);
+            departmentsData.push(['MSO', 'MSO', totalMSOAmount]);
+            departmentsData.push(['TOTAL, CCS + MSO', '', totalCCSAmount + totalMSOAmount]);
             
             const departmentsSheet = XLSX.utils.aoa_to_sheet(departmentsData);
             XLSX.utils.book_append_sheet(workbook, departmentsSheet, 'Departamentos');
@@ -2783,33 +2867,68 @@
                 ['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']
             ];
             
-            // Agregar filas de empresas con formato mejorado
-            reportCompanies.forEach((company, index) => {
-                const row = document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1})`);
-                if (row) {
-                    const empresa = row.cells[0].textContent;
-                    const ccsCell = row.cells[1];
-                    const msoCell = row.cells[2];
-                    const totalCell = row.cells[3];
+            // Calcular companyStats (igual que en generateReport)
+            const companyStats = {};
+            let totalCCSServicesCount = 0;
+            let totalCCSAmountServices = 0;
+            let totalMSOServicesCount = 0;
+            let totalMSOAmountServices = 0;
+            
+            reportCompanies.forEach(company => {
+                companyStats[company.code] = {
+                    name: company.name,
+                    ccsCount: 0,
+                    ccsAmount: 0,
+                    msoCount: 0,
+                    msoAmount: 0,
+                    totalCount: 0,
+                    totalAmount: 0
+                };
+            });
+            
+            filteredTransfers.forEach(transfer => {
+                const company = transfer.companyName;
+                const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
+                const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
+                
+                if (company && companyStats.hasOwnProperty(company)) {
+                    if (serviceType.type === 'MSO') {
+                        companyStats[company].msoCount++;
+                        companyStats[company].msoAmount += cost;
+                        totalMSOServicesCount++;
+                        totalMSOAmountServices += cost;
+                    } else {
+                        companyStats[company].ccsCount++;
+                        companyStats[company].ccsAmount += cost;
+                        totalCCSServicesCount++;
+                        totalCCSAmountServices += cost;
+                    }
                     
-                    // Extraer datos de los spans
-                    const ccsText = ccsCell.textContent.split('\n');
-                    const msoText = msoCell.textContent.split('\n');
-                    const totalText = totalCell.textContent.split('\n');
-                    
-                    companiesData.push([
-                        empresa,
-                        `${ccsText[0]}\n${ccsText[1] || ''}`,
-                        `${msoText[0]}\n${msoText[1] || ''}`,
-                        `${totalText[0]}\n${totalText[1] || ''}`
-                    ]);
+                    companyStats[company].totalCount++;
+                    companyStats[company].totalAmount += cost;
                 }
             });
             
+            // Agregar filas de empresas con formato mejorado
+            reportCompanies.forEach((company) => {
+                const stats = companyStats[company.code];
+                
+                companiesData.push([
+                    company.name,
+                    `${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}\n$${stats.ccsAmount.toFixed(2)}`,
+                    `${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''}\n$${stats.msoAmount.toFixed(2)}`,
+                    `${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''}\n$${stats.totalAmount.toFixed(2)}`
+                ]);
+            });
+            
             // Agregar totales con formato
-            const totalCCSServicesText = totalCCSServices.textContent;
-            const totalMSOServicesText = totalMSOServices.textContent;
-            const totalCompaniesText = totalCompanies.textContent;
+            const totalCCSServicesText = `${totalCCSServicesCount} servicios - $${totalCCSAmountServices.toFixed(2)}`;
+            const totalMSOServicesText = `${totalMSOServicesCount} servicios - $${totalMSOAmountServices.toFixed(2)}`;
+            const totalServicesCount = totalCCSServicesCount + totalMSOServicesCount;
+            const totalServicesAmount = totalCCSAmountServices + totalMSOAmountServices;
+            const totalCompaniesText = `${totalServicesCount} servicios - $${totalServicesAmount.toFixed(2)}`;
             
             companiesData.push([
                 'TOTALES', 
@@ -2837,9 +2956,9 @@
                 [],
                 ['RESUMEN POR UNIDAD'],
                 ['UNIDAD', 'IMPORTE'],
-                ['CCS', parseFloat(unitCCS.textContent.replace('$', '')) || 0],
-                ['MSO', parseFloat(unitMSO.textContent.replace('$', '')) || 0],
-                ['TOTAL', parseFloat(unitTotal.textContent.replace('$', '')) || 0]
+                ['CCS', totalCCSAmount],
+                ['MSO', totalMSOAmount],
+                ['TOTAL', totalCCSAmount + totalMSOAmount]
             ];
             
             const unitSheet = XLSX.utils.aoa_to_sheet(unitData);
@@ -2883,6 +3002,64 @@
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
+            // Obtener fechas del formulario (igual que en generateReport)
+            const { startDate, endDate } = getReportDates();
+            
+            // Filtrar traslados por periodo seleccionado (igual que en generateReport)
+            const filteredTransfers = transfers.filter(transfer => {
+                const transferDate = transfer.dateTime;
+                const transferDateObj = new Date(transferDate);
+                transferDateObj.setHours(0, 0, 0, 0);
+                
+                const startDateObj = new Date(startDate);
+                startDateObj.setHours(0, 0, 0, 0);
+                
+                const endDateObj = new Date(endDate);
+                endDateObj.setHours(23, 59, 59, 999);
+                
+                return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
+            });
+            
+            // MODIFICADO: Calcular departmentTotals con detalle de MSO
+            const departmentTotals = {};
+            let totalCCSAmount = 0;
+            let totalMSOAmount = 0;
+            
+            filteredTransfers.forEach(transfer => {
+                const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
+                const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
+                
+                if (serviceType.type === 'MSO') {
+                    // Usar el departamento MSO específico si existe
+                    const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
+                    
+                    if (!departmentTotals[deptKey]) {
+                        departmentTotals[deptKey] = {
+                            name: deptKey,
+                            type: 'MSO',
+                            amount: 0
+                        };
+                    }
+                    departmentTotals[deptKey].amount += cost;
+                    totalMSOAmount += cost;
+                } else {
+                    // Es CCS - usar el departamento original
+                    if (department) {
+                        if (!departmentTotals[department]) {
+                            departmentTotals[department] = {
+                                name: department.toUpperCase(),
+                                type: 'CCS',
+                                amount: 0
+                            };
+                        }
+                        departmentTotals[department].amount += cost;
+                        totalCCSAmount += cost;
+                    }
+                }
+            });
+            
             // Crear nuevo documento PDF
             const doc = new jsPDF('p', 'mm', 'a4');
             
@@ -2898,21 +3075,29 @@
             
             let yPos = 40;
             
-            // Sección 1: Departamentos que utilizan servicio de traslado
+            // MODIFICADO: Sección 1: Departamentos que utilizan servicio de traslado con detalle MSO
             doc.setFontSize(14);
             doc.setTextColor(0, 91, 170);
             doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO', 105, yPos, null, null, 'center');
             yPos += 10;
             
+            // Ordenar departamentos: primero CCS, luego MSO
+            const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
+                if (departmentTotals[a].type === departmentTotals[b].type) {
+                    return a.localeCompare(b);
+                }
+                return departmentTotals[a].type === 'CCS' ? -1 : 1;
+            });
+            
             // Tabla de departamentos
             const departmentsData = [];
-            reportDepartments.forEach(dept => {
-                const amount = parseFloat(document.querySelector(`#departmentsReportTableBody tr:nth-child(${reportDepartments.indexOf(dept) + 1}) td:last-child`).textContent.replace('$', '')) || 0;
-                const isMSO = dept.serviceType === 'MSO';
+            sortedDepartments.forEach(deptKey => {
+                const dept = departmentTotals[deptKey];
+                const isMSO = dept.type === 'MSO';
                 departmentsData.push([
                     dept.name,
                     isMSO ? 'MSO' : 'UN CCS',
-                    `$${amount.toFixed(2)}`
+                    `$${dept.amount.toFixed(2)}`
                 ]);
             });
             
@@ -2920,17 +3105,17 @@
             departmentsData.push([
                 'TOTAL CCS',
                 '',
-                totalCCS.textContent
+                `$${totalCCSAmount.toFixed(2)}`
             ]);
             departmentsData.push([
                 'MSO',
                 'MSO',
-                totalMSO.textContent
+                `$${totalMSOAmount.toFixed(2)}`
             ]);
             departmentsData.push([
                 'TOTAL, CCS + MSO',
                 '',
-                totalCCSMSO.textContent
+                `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`
             ]);
             
             doc.autoTable({
@@ -2970,36 +3155,71 @@
             doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', 105, yPos, null, null, 'center');
             yPos += 10;
             
+            // Calcular companyStats (igual que en generateReport)
+            const companyStats = {};
+            let totalCCSServicesCount = 0;
+            let totalCCSAmountServices = 0;
+            let totalMSOServicesCount = 0;
+            let totalMSOAmountServices = 0;
+            
+            reportCompanies.forEach(company => {
+                companyStats[company.code] = {
+                    name: company.name,
+                    ccsCount: 0,
+                    ccsAmount: 0,
+                    msoCount: 0,
+                    msoAmount: 0,
+                    totalCount: 0,
+                    totalAmount: 0
+                };
+            });
+            
+            filteredTransfers.forEach(transfer => {
+                const company = transfer.companyName;
+                const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
+                const cost = transfer.cost || 0;
+                const serviceType = getServiceTypeWithMSO(department, msoDepartment);
+                
+                if (company && companyStats.hasOwnProperty(company)) {
+                    if (serviceType.type === 'MSO') {
+                        companyStats[company].msoCount++;
+                        companyStats[company].msoAmount += cost;
+                        totalMSOServicesCount++;
+                        totalMSOAmountServices += cost;
+                    } else {
+                        companyStats[company].ccsCount++;
+                        companyStats[company].ccsAmount += cost;
+                        totalCCSServicesCount++;
+                        totalCCSAmountServices += cost;
+                    }
+                    
+                    companyStats[company].totalCount++;
+                    companyStats[company].totalAmount += cost;
+                }
+            });
+            
             // Tabla de empresas con formato de dos líneas
             const companiesData = [];
             
             // Procesar cada empresa
-            reportCompanies.forEach((company, index) => {
-                const row = document.querySelector(`#companiesReportTableBody tr:nth-child(${index + 1})`);
-                if (row) {
-                    const empresa = row.cells[0].textContent;
-                    const ccsCell = row.cells[1];
-                    const msoCell = row.cells[2];
-                    const totalCell = row.cells[3];
-                    
-                    // Extraer datos como dos líneas separadas
-                    const ccsLines = ccsCell.innerHTML.replace(/<br>/g, '\n').split('\n');
-                    const msoLines = msoCell.innerHTML.replace(/<br>/g, '\n').split('\n');
-                    const totalLines = totalCell.innerHTML.replace(/<br>/g, '\n').split('\n');
-                    
-                    companiesData.push([
-                        empresa,
-                        `${ccsLines[0] || ''}\n${ccsLines[1] || ''}`,
-                        `${msoLines[0] || ''}\n${msoLines[1] || ''}`,
-                        `${totalLines[0] || ''}\n${totalLines[1] || ''}`
-                    ]);
-                }
+            reportCompanies.forEach((company) => {
+                const stats = companyStats[company.code];
+                
+                companiesData.push([
+                    company.name,
+                    `${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}\n$${stats.ccsAmount.toFixed(2)}`,
+                    `${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''}\n$${stats.msoAmount.toFixed(2)}`,
+                    `${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''}\n$${stats.totalAmount.toFixed(2)}`
+                ]);
             });
             
             // Agregar totales con formato de dos líneas
-            const totalCCSServicesText = totalCCSServices.textContent;
-            const totalMSOServicesText = totalMSOServices.textContent;
-            const totalCompaniesText = totalCompanies.textContent;
+            const totalCCSServicesText = `${totalCCSServicesCount} servicios - $${totalCCSAmountServices.toFixed(2)}`;
+            const totalMSOServicesText = `${totalMSOServicesCount} servicios - $${totalMSOAmountServices.toFixed(2)}`;
+            const totalServicesCount = totalCCSServicesCount + totalMSOServicesCount;
+            const totalServicesAmount = totalCCSAmountServices + totalMSOAmountServices;
+            const totalCompaniesText = `${totalServicesCount} servicios - $${totalServicesAmount.toFixed(2)}`;
             
             companiesData.push([
                 'TOTALES',
@@ -3077,9 +3297,9 @@
             
             // Tabla de resumen por unidad
             const unitData = [
-                ['CCS', unitCCS.textContent],
-                ['MSO', unitMSO.textContent],
-                ['TOTAL', unitTotal.textContent]
+                ['CCS', `$${totalCCSAmount.toFixed(2)}`],
+                ['MSO', `$${totalMSOAmount.toFixed(2)}`],
+                ['TOTAL', `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`]
             ];
             
             doc.autoTable({
