@@ -939,16 +939,16 @@
                             </button>
                         </div>
 
-                        <!-- DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO -->
+                        <!-- DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS -->
                         <div class="mb-8">
                             <h3 class="text-xl font-bold text-inter-primary mb-4 flex items-center">
-                                <span class="mr-2">🏢</span> DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO
+                                <span class="mr-2">🏢</span> DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS
                             </h3>
                             <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gradient-to-r from-blue-50 to-cyan-50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 40%;">DEPARTAMENTOS</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 40%;">DEPARTAMENTO</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">CENTRO DE OPERACIONES</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">💰 IMPORTE</th>
                                         </tr>
@@ -2757,11 +2757,11 @@
             const workbook = XLSX.utils.book_new();
             
             const departmentsData = [
-                ['GASTOS DE TRASLADO'],
+                ['GASTOS DE TRASLADOS'],
                 [`PERIODO: ${periodText.textContent}`],
                 [],
-                ['DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO'],
-                ['DEPARTAMENTOS', 'CENTRO DE OPERACIONES', 'IMPORTE']
+                ['DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS'],
+                ['DEPARTAMENTO', 'CENTRO DE OPERACIONES', 'IMPORTE']
             ];
             
             const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
@@ -3028,23 +3028,23 @@
             switch(periodType) {
                 case 'month':
                     const month = parseInt(reportMonthSelect.value);
-                    fileName = `Gastos_Traslado_Mensual_${monthNames[month]}_${reportYearSelect.value}.xlsx`;
+                    fileName = `Gastos_Traslados_Mensual_${monthNames[month]}_${reportYearSelect.value}.xlsx`;
                     break;
                 case 'week':
                     const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
                     const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
-                    fileName = `Gastos_Traslado_Semanal_${weekStart}_a_${weekEnd}.xlsx`;
+                    fileName = `Gastos_Traslados_Semanal_${weekStart}_a_${weekEnd}.xlsx`;
                     break;
                 case 'fortnight':
                     const fortnightMonth = parseInt(reportFortnightMonth.value);
                     const fortnight = reportFortnight.value;
                     const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
-                    fileName = `Gastos_Traslado_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.xlsx`;
+                    fileName = `Gastos_Traslados_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.xlsx`;
                     break;
                 case 'custom':
                     const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
                     const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
-                    fileName = `Gastos_Traslado_Personalizado_${customStart}_a_${customEnd}.xlsx`;
+                    fileName = `Gastos_Traslados_Personalizado_${customStart}_a_${customEnd}.xlsx`;
                     break;
             }
             
@@ -3055,8 +3055,8 @@
         // ============================================
         // FUNCIÓN CORREGIDA PARA EXPORTAR PDF 
         // ORDEN EXACTO: 
-        // PÁGINA 1: DEPARTAMENTOS
-        // PÁGINA 2: EMPRESAS + RESUMEN POR UNIDAD
+        // PÁGINA 1: DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS
+        // PÁGINA 2: EMPRESAS PROVEEDORAS + RESUMEN POR UNIDAD
         // ============================================
         function exportReportToPDF() {
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
@@ -3134,14 +3134,14 @@
             const margin = 12;
             
             // ============================================
-            // PÁGINA 1: SOLO DEPARTAMENTOS
+            // PÁGINA 1: SOLO DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS
             // ============================================
             
             // Título principal - CENTRADO
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
-            doc.text('GASTOS DE TRASLADO', pageWidth / 2, 15, { align: 'center' });
+            doc.text('GASTOS DE TRASLADOS', pageWidth / 2, 15, { align: 'center' });
             
             // Periodo - CENTRADO
             doc.setFontSize(10);
@@ -3158,7 +3158,7 @@
             doc.setFontSize(12);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
-            doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO', pageWidth / 2, 33, { align: 'center' });
+            doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS', pageWidth / 2, 33, { align: 'center' });
             
             const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
                 if (departmentTotals[a].type === departmentTotals[b].type) {
@@ -3201,7 +3201,7 @@
             
             doc.autoTable({
                 startY: 38,
-                head: [['DEPARTAMENTOS', 'CENTRO DE OPERACIONES', 'IMPORTE']],
+                head: [['DEPARTAMENTO', 'CENTRO DE OPERACIONES', 'IMPORTE']],
                 body: departmentsData,
                 theme: 'striped',
                 styles: {
@@ -3244,7 +3244,7 @@
             doc.text('Página 1 de 2', pageWidth / 2, pageHeight - 4, { align: 'center' });
             
             // ============================================
-            // PÁGINA 2: EMPRESAS + RESUMEN POR UNIDAD
+            // PÁGINA 2: EMPRESAS PROVEEDORAS + RESUMEN POR UNIDAD
             // ============================================
             doc.addPage();
             
@@ -3252,7 +3252,7 @@
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
-            doc.text('GASTOS DE TRASLADO', pageWidth / 2, 15, { align: 'center' });
+            doc.text('GASTOS DE TRASLADOS', pageWidth / 2, 15, { align: 'center' });
             
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
@@ -3435,23 +3435,23 @@
             switch(periodType) {
                 case 'month':
                     const month = parseInt(reportMonthSelect.value);
-                    fileName = `Gastos_Traslado_Mensual_${monthNames[month]}_${reportYearSelect.value}.pdf`;
+                    fileName = `Gastos_Traslados_Mensual_${monthNames[month]}_${reportYearSelect.value}.pdf`;
                     break;
                 case 'week':
                     const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
                     const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
-                    fileName = `Gastos_Traslado_Semanal_${weekStart}_a_${weekEnd}.pdf`;
+                    fileName = `Gastos_Traslados_Semanal_${weekStart}_a_${weekEnd}.pdf`;
                     break;
                 case 'fortnight':
                     const fortnightMonth = parseInt(reportFortnightMonth.value);
                     const fortnight = reportFortnight.value;
                     const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
-                    fileName = `Gastos_Traslado_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.pdf`;
+                    fileName = `Gastos_Traslados_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.pdf`;
                     break;
                 case 'custom':
                     const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
                     const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
-                    fileName = `Gastos_Traslado_Personalizado_${customStart}_a_${customEnd}.pdf`;
+                    fileName = `Gastos_Traslados_Personalizado_${customStart}_a_${customEnd}.pdf`;
                     break;
             }
             
