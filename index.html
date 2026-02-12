@@ -779,7 +779,7 @@
                 <div class="card bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                     <div class="p-5 md:p-6">
                         <h2 class="text-xl md:text-2xl font-bold text-inter-primary mb-4 flex items-center">
-                            <span class="mr-3">📈</span> Reportes Financieros de Traslados
+                            <span class="mr-3">📈</span> Gastos de Traslado
                         </h2>
                         
                         <!-- Configuración de Reportes -->
@@ -949,7 +949,7 @@
                                     <thead class="bg-gradient-to-r from-blue-50 to-cyan-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 40%;">DEPARTAMENTOS</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">UN CCS</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">CENTRO DE OPERACIONES</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-inter-primary uppercase tracking-wider" style="width: 30%;">💰 IMPORTE</th>
                                         </tr>
                                     </thead>
@@ -1214,21 +1214,39 @@
             { name: "AREA COMERCIAL", code: "Area Comercial", serviceType: "CCS" },
             { name: "AREA TECNICA", code: "Area tecnica", serviceType: "CCS" },
             { name: "DPTO DE OBRAS", code: "Obras", serviceType: "CCS" },
-            { name: "RRHH y Seguridad Laboral", code: "RRHH y Seguridad Laboral", serviceType: "CCS" },
+            { name: "RRHH Y SEGURIDAD LABORAL", code: "RRHH y Seguridad Laboral", serviceType: "CCS" },
             { name: "SISTEMAS", code: "Sistemas", serviceType: "CCS" },
             { name: "G. SENIOR", code: "Gerencia Senior", serviceType: "CCS" },
             { name: "LIMPIEZA", code: "Limpieza", serviceType: "CCS" },
             { name: "COLABORADORES", code: "Colaboradores", serviceType: "CCS" }
         ];
 
+        // Lista de departamentos MSO para reportes
+        const reportMSODepartments = [
+            { name: "MARKETING", code: "Marketing" },
+            { name: "PRESIDENCIA", code: "Presidencia" },
+            { name: "INTERCONEXIONES", code: "Interconexiones" },
+            { name: "IMPORTACIONES", code: "Importaciones" },
+            { name: "RRHH MSO", code: "RRHH MSO" },
+            { name: "DOCUMENTACION DE OBRAS", code: "Documentacion de obras" },
+            { name: "LIMPIEZA", code: "Limpieza" },
+            { name: "COLABORADORES", code: "Colaboradores" }
+        ];
+
         // Lista de empresas para reportes
         const reportCompanies = [
-            { name: "YUMMY", code: "Yummy" },
             { name: "ANDREW", code: "Andrew" },
+            { name: "JOSE", code: "Jose" },
             { name: "NEOMAR", code: "Neomar" },
             { name: "OSCAR", code: "Oscar" },
-            { name: "JOSE", code: "Jose" }
+            { name: "YUMMY", code: "Yummy" }
         ];
+
+        // Función para capitalizar primera letra y el resto minúsculas
+        function capitalizeFirstLetter(string) {
+            if (!string) return '';
+            return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+        }
 
         // Función para determinar si un departamento es MSO o CCS
         function getServiceType(department) {
@@ -1241,20 +1259,16 @@
 
         // Función para determinar si un traslado con msoDepartment es MSO o CCS
         function getServiceTypeWithMSO(department, msoDepartment) {
-            // Si el departamento principal es MSO, entonces es MSO
             if (department === 'MSO') {
                 return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
             }
-            // Si el departamento principal es Limpieza o Colaboradores
             else if (department === 'Limpieza' || department === 'Colaboradores') {
-                // Si tiene msoDepartment especificado, entonces es MSO
                 if (msoDepartment) {
                     return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
                 } else {
                     return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
                 }
             }
-            // Todos los demás departamentos son CCS
             else {
                 return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
             }
@@ -1314,7 +1328,6 @@
                         currentFilters.dateStart = normalizeDateToStartOfDay(startDate);
                         currentFilters.dateEnd = normalizeDateToStartOfDay(endDate);
                         
-                        // Mostrar el rango seleccionado
                         dateRangeDisplay.textContent = `${startDate.toLocaleDateString('es-ES')} - ${endDate.toLocaleDateString('es-ES')}`;
                     } else {
                         currentFilters.dateStart = null;
@@ -1335,18 +1348,14 @@
                 serviceTypeBadge.classList.remove('hidden');
                 serviceTypeText.textContent = 'MSO';
                 serviceTypeText.className = 'service-type-badge badge-mso';
-                // Establecer autorizador por defecto para MSO
                 authorizerNameInput.value = 'Mario Fernandez';
             } 
             else if (department === 'Limpieza' || department === 'Colaboradores') {
-                // Mostrar selector MSO para Limpieza y Colaboradores
                 msoDepartmentsContainer.classList.remove('hidden');
                 msoDepartmentInput.required = false;
                 serviceTypeBadge.classList.remove('hidden');
-                // Por defecto, estos departamentos son CCS hasta que se seleccione un departamento MSO
                 serviceTypeText.textContent = 'CCS';
                 serviceTypeText.className = 'service-type-badge badge-ccs';
-                // Establecer autorizador por defecto para CCS
                 authorizerNameInput.value = 'Jorge Basualdo';
             }
             else {
@@ -1358,7 +1367,6 @@
                     serviceTypeBadge.classList.remove('hidden');
                     serviceTypeText.textContent = 'CCS';
                     serviceTypeText.className = 'service-type-badge badge-ccs';
-                    // Establecer autorizador por defecto para CCS
                     authorizerNameInput.value = 'Jorge Basualdo';
                 } else {
                     serviceTypeBadge.classList.add('hidden');
@@ -1367,52 +1375,40 @@
             }
         });
 
-        // Manejar cambio en departamento MSO para Limpieza/Colaboradores
         msoDepartmentInput.addEventListener('change', function() {
             const department = departmentInput.value;
             const msoDepartment = this.value;
             
             if ((department === 'Limpieza' || department === 'Colaboradores') && msoDepartment) {
-                // Si se selecciona un departamento MSO para Limpieza/Colaboradores, es MSO
                 serviceTypeText.textContent = 'MSO';
                 serviceTypeText.className = 'service-type-badge badge-mso';
-                // Cambiar autorizador a Mario Fernandez para MSO
                 authorizerNameInput.value = 'Mario Fernandez';
             } else if ((department === 'Limpieza' || department === 'Colaboradores') && !msoDepartment) {
-                // Si se quita el departamento MSO, vuelve a ser CCS
                 serviceTypeText.textContent = 'CCS';
                 serviceTypeText.className = 'service-type-badge badge-ccs';
-                // Cambiar autorizador a Jorge Basualdo para CCS
                 authorizerNameInput.value = 'Jorge Basualdo';
             }
         });
 
-        // Función para cargar traslados desde Firestore
         function loadTransfers() {
             try {
                 showMessage("Conectando a la base de datos...", "info");
                 
-                // Usar Firestore directamente
                 const transfersRef = db.collection('transfers');
                 
-                // Suscribirse a cambios en tiempo real
                 unsubscribeTransfers = transfersRef.orderBy('dateTime', 'asc')
                     .onSnapshot((querySnapshot) => {
                         transfers = [];
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
-                            // Convertir correctamente la fecha desde Firestore
                             let dateTime;
                             if (data.dateTime) {
-                                // Si es un objeto Timestamp de Firestore
                                 if (data.dateTime.toDate) {
                                     dateTime = normalizeDateToStartOfDay(data.dateTime.toDate());
                                 } 
-                                // Si es un string ISO
                                 else if (typeof data.dateTime === 'string') {
                                     dateTime = normalizeDateToStartOfDay(new Date(data.dateTime));
                                 }
-                                // Si ya es un objeto Date
                                 else if (data.dateTime instanceof Date) {
                                     dateTime = normalizeDateToStartOfDay(data.dateTime);
                                 }
@@ -1430,7 +1426,6 @@
                         updateConnectionStatus(true);
                         showMessage("✅ Datos cargados correctamente", "success");
                         
-                        // Generar reporte del mes actual por defecto
                         generateReport();
                     }, (error) => {
                         console.error("Error en tiempo real:", error);
@@ -1458,32 +1453,25 @@
             }
         }
 
-        // Función para guardar un traslado en Firestore
         async function saveTransfer(transferData) {
             try {
-                // Determinar tipo de servicio (CCS o MSO) considerando msoDepartment
                 const serviceType = getServiceTypeWithMSO(transferData.department, transferData.msoDepartment);
                 
-                // Si no se especificó autorizador, asignar uno por defecto según el tipo de servicio
                 if (!transferData.authorizerName || transferData.authorizerName === '') {
                     transferData.authorizerName = getDefaultAuthorizer(transferData.department, transferData.msoDepartment);
                 }
                 
-                // Asegurarse de que la fecha se guarde correctamente
                 const dataToSave = {
                     ...transferData,
-                    // Guardar como Timestamp de Firestore para consistencia
                     dateTime: firebase.firestore.Timestamp.fromDate(transferData.dateTime),
                     serviceType: serviceType.type,
                     serviceTypeText: serviceType.text
                 };
                 
                 if (editingId) {
-                    // Actualizar documento existente
                     await db.collection('transfers').doc(editingId).update(dataToSave);
                     showMessage("✅ ¡Traslado actualizado con éxito!", "success");
                 } else {
-                    // Crear nuevo documento
                     await db.collection('transfers').add(dataToSave);
                     showMessage("✅ ¡Traslado registrado con éxito!", "success");
                 }
@@ -1496,7 +1484,6 @@
             }
         }
 
-        // Función para eliminar traslados de Firestore
         async function deleteTransfers(ids) {
             try {
                 const deletePromises = ids.map(id => {
@@ -1506,8 +1493,6 @@
                 await Promise.all(deletePromises);
                 showMessage("✅ Traslados eliminados con éxito.", "success");
                 
-                // Actualizar el reporte inmediatamente después de eliminar
-                // Esto asegura que los reportes se actualicen en tiempo real
                 generateReport();
                 
                 return true;
@@ -1518,22 +1503,18 @@
             }
         }
 
-        // Función para aplicar filtros
         function applyFilters() {
-            // Capturar valores de los filtros
             currentFilters.name = filterName.value.trim().toLowerCase();
             currentFilters.department = filterDepartment.value;
             currentFilters.company = filterCompany.value;
             currentFilters.authorizer = filterAuthorizer.value;
             
-            // Capturar filtro de costo
             currentFilters.minCost = filterMinCost.value ? parseFloat(filterMinCost.value) : null;
             currentFilters.maxCost = filterMaxCost.value ? parseFloat(filterMaxCost.value) : null;
             
             renderTransfers();
         }
 
-        // Función para limpiar todos los filtros
         function clearAllFilters() {
             filterName.value = '';
             filterDepartment.value = '';
@@ -1544,12 +1525,10 @@
             filterDateRange.value = '';
             dateRangeDisplay.textContent = '';
             
-            // Resetear flatpickr
             if (dateRangePicker) {
                 dateRangePicker.clear();
             }
             
-            // Resetear filtros actuales
             currentFilters = {
                 name: '',
                 department: '',
@@ -1565,12 +1544,10 @@
             showMessage("✅ Todos los filtros han sido limpiados", "success");
         }
 
-        // Función para alternar vista compacta/detallada
         function toggleView() {
             isCompactView = !isCompactView;
             toggleViewText.textContent = isCompactView ? '📱 Vista Compacta' : '💻 Vista Detallada';
             
-            // Actualizar todas las filas visibles
             document.querySelectorAll('.compact-row').forEach(row => {
                 if (isCompactView) {
                     row.classList.add('compact-row');
@@ -1589,26 +1566,22 @@
                 }
             });
             
-            // Resetear filas expandidas
             if (!isCompactView) {
                 expandedRows.clear();
             }
         }
 
-        // Función para expandir/contraer fila individual
         function toggleRowExpansion(rowId) {
             const row = document.querySelector(`tr[data-id="${rowId}"]`);
             if (!row) return;
             
             if (expandedRows.has(rowId)) {
-                // Contraer
                 expandedRows.delete(rowId);
                 row.classList.remove('expanded');
                 row.querySelectorAll('.compact-cell').forEach(cell => {
                     cell.classList.remove('expanded');
                 });
             } else {
-                // Expandir
                 expandedRows.add(rowId);
                 row.classList.add('expanded');
                 row.querySelectorAll('.compact-cell').forEach(cell => {
@@ -1617,7 +1590,6 @@
             }
         }
 
-        // Función para actualizar contador de seleccionados
         function updateSelectedCount() {
             const checkboxes = document.querySelectorAll('.row-checkbox:checked');
             selectedCount.textContent = `${checkboxes.length} seleccionados`;
@@ -1628,41 +1600,34 @@
             selectAllCheckboxes.checked = false;
             expandedRows.clear();
             
-            // Actualizar contador de seleccionados
             updateSelectedCount();
 
-            // Aplicar filtros
             let filteredTransfers = [...transfers];
             
-            // Filtrar por nombre/apellido
             if (currentFilters.name) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.requesterName.toLowerCase().includes(currentFilters.name)
                 );
             }
             
-            // Filtrar por departamento
             if (currentFilters.department) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.department === currentFilters.department
                 );
             }
             
-            // Filtrar por empresa
             if (currentFilters.company) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.companyName === currentFilters.company
                 );
             }
             
-            // Filtrar por autorizador
             if (currentFilters.authorizer) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.authorizerName === currentFilters.authorizer
                 );
             }
             
-            // Filtrar por rango de fechas
             if (currentFilters.dateStart && currentFilters.dateEnd) {
                 filteredTransfers = filteredTransfers.filter(transfer => {
                     const transferDate = transfer.dateTime;
@@ -1670,7 +1635,6 @@
                 });
             }
             
-            // Filtrar por rango de costo
             if (currentFilters.minCost !== null) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.cost >= currentFilters.minCost
@@ -1683,10 +1647,8 @@
                 );
             }
 
-            // Actualizar contador de resultados
             resultsCount.textContent = filteredTransfers.length;
 
-            // Ordenar por fecha (más reciente primero)
             const sortedTransfers = filteredTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
             if (sortedTransfers.length === 0) {
@@ -1694,23 +1656,19 @@
             } else {
                 noTransfersMessage.classList.add('hidden');
                 
-                // Detectar si es móvil
                 const isMobile = window.innerWidth < 768;
                 
                 sortedTransfers.forEach((transfer, index) => {
                     const row = document.createElement('tr');
                     row.setAttribute('data-id', transfer.id);
                     
-                    // Formatear fecha correctamente
                     const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
                         year: 'numeric', month: '2-digit', day: '2-digit'
                     });
 
-                    // Obtener tipo de servicio considerando msoDepartment
                     const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
                     
                     if (isMobile) {
-                        // Vista móvil: diseño vertical
                         row.innerHTML = `
                             <td data-label="Seleccionar">
                                 <input type="checkbox" class="row-checkbox h-4 w-4 text-inter-primary rounded" data-id="${transfer.id}" onchange="updateSelectedCount()">
@@ -1738,7 +1696,6 @@
                             </td>
                         `;
                         
-                        // Agregar fila de detalles para móvil
                         const detailsRow = document.createElement('tr');
                         detailsRow.id = `details-${transfer.id}`;
                         detailsRow.classList.add('hidden', 'bg-gray-50');
@@ -1762,7 +1719,6 @@
                         transferTableBody.appendChild(row);
                         transferTableBody.appendChild(detailsRow);
                     } else {
-                        // Vista escritorio: diseño de tabla normal con filas expandibles
                         const isExpanded = expandedRows.has(transfer.id);
                         const rowClass = isCompactView && !isExpanded ? 'compact-row' : 'expanded';
                         
@@ -1816,7 +1772,6 @@
             }
         }
 
-        // Función para mostrar/ocultar detalles en móvil
         function toggleRowDetails(rowId) {
             const detailsRow = document.getElementById(`details-${rowId}`);
             const expandIcon = document.getElementById(`expandIcon-${rowId}`);
@@ -1837,11 +1792,9 @@
                 return;
             }
 
-            // Cargar datos en el formulario
             requesterNameInput.value = transfer.requesterName;
             departmentInput.value = transfer.department;
             
-            // Determinar tipo de servicio para mostrar
             const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
             if (transfer.department) {
                 serviceTypeBadge.classList.remove('hidden');
@@ -1849,7 +1802,6 @@
                 serviceTypeText.className = `service-type-badge ${serviceType.badgeClass}`;
             }
             
-            // Manejar departamentos especiales (Limpieza, Colaboradores, MSO)
             if (transfer.department === 'MSO' || transfer.department === 'Limpieza' || transfer.department === 'Colaboradores') {
                 msoDepartmentsContainer.classList.remove('hidden');
                 msoDepartmentInput.value = transfer.msoDepartment || '';
@@ -1868,7 +1820,6 @@
             returnAddressInput.value = transfer.returnAddress || '';
             returnDestinationInput.value = transfer.returnDestination || '';
             
-            // Formatear correctamente la fecha para el input type="date"
             const transferDate = transfer.dateTime;
             const year = transferDate.getFullYear();
             const month = String(transferDate.getMonth() + 1).padStart(2, '0');
@@ -1879,12 +1830,10 @@
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
 
-            // Establecer el modo edición
             editingId = id;
             submitButton.textContent = '💾 Guardar Cambios';
             cancelEditBtn.classList.remove('hidden');
 
-            // Desplazarse al formulario
             registerSection.scrollIntoView({ behavior: 'smooth' });
             showMessage(`✏️ Modo Edición: Editando traslado de ${transfer.requesterName}.`, "info");
         }
@@ -1898,14 +1847,12 @@
             msoDepartmentInput.required = false;
             serviceTypeBadge.classList.add('hidden');
             
-            // Establecer fecha actual
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             transferDateInput.value = `${year}-${month}-${day}`;
             
-            // Restablecer autorizador por defecto según el departamento seleccionado
             const department = departmentInput.value;
             if (department) {
                 const serviceType = getServiceTypeWithMSO(department, '');
@@ -1957,7 +1904,6 @@
             const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
             const startOfYear = normalizeDateToStartOfDay(new Date(currentYear, 0, 1));
 
-            // Datos mensuales
             const monthlyTransfers = transfers.filter(t => 
                 normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime()
             );
@@ -1967,7 +1913,6 @@
                 monthlyCompanyExpenses[company] = (monthlyCompanyExpenses[company] || 0) + transfer.cost;
             });
 
-            // Datos anuales
             const annualTransfers = transfers.filter(t => 
                 normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime()
             );
@@ -1977,7 +1922,6 @@
                 annualCompanyExpenses[company] = (annualCompanyExpenses[company] || 0) + transfer.cost;
             });
 
-            // Gráfico mensual
             const monthlyCompanyLabels = Object.keys(monthlyCompanyExpenses);
             const monthlyCompanyData = Object.values(monthlyCompanyExpenses);
             
@@ -2036,7 +1980,6 @@
                 }
             });
 
-            // Gráfico anual
             const annualCompanyLabels = Object.keys(annualCompanyExpenses);
             const annualCompanyData = Object.values(annualCompanyExpenses);
             
@@ -2102,7 +2045,6 @@
             const startOfMonth = normalizeDateToStartOfDay(new Date(currentYear, now.getMonth(), 1));
             const startOfYear = normalizeDateToStartOfDay(new Date(currentYear, 0, 1));
 
-            // Datos mensuales
             const monthlyTransfers = transfers.filter(t => 
                 normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfMonth.getTime()
             );
@@ -2119,7 +2061,6 @@
                 monthlyDepartmentExpenses[department] = (monthlyDepartmentExpenses[department] || 0) + transfer.cost;
             });
 
-            // Datos anuales
             const annualTransfers = transfers.filter(t => 
                 normalizeDateToStartOfDay(t.dateTime).getTime() >= startOfYear.getTime()
             );
@@ -2134,7 +2075,6 @@
                 annualDepartmentExpenses[department] = (annualDepartmentExpenses[department] || 0) + transfer.cost;
             });
 
-            // Gráfico mensual
             const monthlyDepartmentLabels = Object.keys(monthlyDepartmentExpenses);
             const monthlyDepartmentData = Object.values(monthlyDepartmentExpenses);
             
@@ -2200,7 +2140,6 @@
                 }
             });
 
-            // Gráfico anual
             const annualDepartmentLabels = Object.keys(annualDepartmentExpenses);
             const annualDepartmentData = Object.values(annualDepartmentExpenses);
             
@@ -2284,7 +2223,6 @@
 
             const departmentStats = {};
 
-            // Procesar datos mensuales
             monthlyTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
                 const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
@@ -2308,7 +2246,6 @@
                 departmentStats[department].monthlyCost += transfer.cost;
             });
 
-            // Procesar datos anuales
             annualTransfers.forEach(transfer => {
                 let department = transfer.department || 'Desconocido';
                 const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
@@ -2345,7 +2282,7 @@
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${department}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${capitalizeFirstLetter(department)}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             <span class="service-type-badge ${badgeClass}">${stats.serviceType}</span>
                         </td>
@@ -2359,7 +2296,6 @@
             }
         }
 
-        // Función para obtener las fechas según el tipo de periodo seleccionado
         function getReportDates() {
             const periodType = reportPeriodType.value;
             const year = parseInt(reportYearSelect.value);
@@ -2374,12 +2310,10 @@
                     break;
                     
                 case 'week':
-                    // Obtener valores de fecha del formulario
                     const weekStartStr = reportWeekStart.value;
                     const weekEndStr = reportWeekEnd.value;
                     
                     if (!weekStartStr || !weekEndStr) {
-                        // Si no hay fechas seleccionadas, usar la semana actual
                         setCurrentWeek();
                         startDate = new Date(reportWeekStart.value);
                         endDate = new Date(reportWeekEnd.value);
@@ -2403,12 +2337,10 @@
                     break;
                     
                 case 'custom':
-                    // Obtener valores de fecha del formulario
                     const customStartStr = reportCustomStart.value;
                     const customEndStr = reportCustomEnd.value;
                     
                     if (!customStartStr || !customEndStr) {
-                        // Si no hay fechas seleccionadas, usar últimos 30 días
                         setLast30Days();
                         startDate = new Date(reportCustomStart.value);
                         endDate = new Date(reportCustomEnd.value);
@@ -2419,22 +2351,18 @@
                     break;
             }
             
-            // Asegurarse de que las fechas sean válidas
             if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                // Si las fechas no son válidas, usar el mes actual como respaldo
                 const now = new Date();
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                 endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             }
             
-            // Normalizar fechas (inicio a las 00:00, fin a las 23:59:59)
             startDate.setHours(0, 0, 0, 0);
             endDate.setHours(23, 59, 59, 999);
             
             return { startDate, endDate };
         }
 
-        // Función para actualizar el texto del periodo
         function updatePeriodText() {
             const { startDate, endDate } = getReportDates();
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
@@ -2449,7 +2377,6 @@
                     break;
                     
                 case 'week':
-                    // Usar el formato dd/mm/yyyy para fechas
                     const formatDate = (date) => {
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -2472,7 +2399,6 @@
                     break;
                     
                 case 'custom':
-                    // Usar el formato dd/mm/yyyy para fechas personalizadas
                     const formatDateCustom = (date) => {
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -2486,7 +2412,6 @@
             periodText.textContent = periodTextStr;
             periodDisplay.classList.remove('hidden');
             
-            // Actualizar objeto currentReportPeriod
             currentReportPeriod = {
                 type: reportPeriodType.value,
                 startDate: normalizeDateToStartOfDay(startDate),
@@ -2496,61 +2421,51 @@
             };
         }
 
-        // Función para manejar cambio de tipo de periodo
         function handlePeriodTypeChange() {
             const periodType = reportPeriodType.value;
             
-            // Ocultar todos los contenedores
             monthYearContainer.classList.add('hidden');
             weekContainer.classList.add('hidden');
             fortnightContainer.classList.add('hidden');
             customRangeContainer.classList.add('hidden');
             
-            // Mostrar el contenedor correspondiente
             switch(periodType) {
                 case 'month':
                     monthYearContainer.classList.remove('hidden');
                     break;
                 case 'week':
                     weekContainer.classList.remove('hidden');
-                    // Establecer semana actual por defecto si no hay fechas
                     if (!reportWeekStart.value || !reportWeekEnd.value) {
                         setCurrentWeek();
                     }
                     break;
                 case 'fortnight':
                     fortnightContainer.classList.remove('hidden');
-                    // Establecer mes actual por defecto
                     const currentMonth = new Date().getMonth();
                     reportFortnightMonth.value = currentMonth.toString();
                     break;
                 case 'custom':
                     customRangeContainer.classList.remove('hidden');
-                    // Establecer últimos 30 días por defecto si no hay fechas
                     if (!reportCustomStart.value || !reportCustomEnd.value) {
                         setLast30Days();
                     }
                     break;
             }
             
-            // Actualizar inmediatamente el texto del periodo
             updatePeriodText();
         }
 
-        // Función para establecer semana actual
         function setCurrentWeek() {
             const today = new Date();
-            const dayOfWeek = today.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+            const dayOfWeek = today.getDay();
             
-            // Ajustar para que la semana empiece el Lunes
             const startOfWeek = new Date(today);
-            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si es domingo, retroceder 6 días
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
             startOfWeek.setDate(today.getDate() + diff);
             
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(startOfWeek.getDate() + 6);
             
-            // Formatear fechas como YYYY-MM-DD para el input type="date"
             const formatDateForInput = (date) => {
                 return date.toISOString().split('T')[0];
             };
@@ -2558,17 +2473,14 @@
             reportWeekStart.value = formatDateForInput(startOfWeek);
             reportWeekEnd.value = formatDateForInput(endOfWeek);
             
-            // Actualizar el texto del periodo inmediatamente
             updatePeriodText();
         }
 
-        // Función para establecer últimos 30 días
         function setLast30Days() {
             const today = new Date();
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(today.getDate() - 30);
             
-            // Formatear fechas como YYYY-MM-DD para el input type="date"
             const formatDateForInput = (date) => {
                 return date.toISOString().split('T')[0];
             };
@@ -2576,22 +2488,16 @@
             reportCustomStart.value = formatDateForInput(thirtyDaysAgo);
             reportCustomEnd.value = formatDateForInput(today);
             
-            // Actualizar el texto del periodo inmediatamente
             updatePeriodText();
         }
 
-        // Función para generar reporte financiero
         function generateReport() {
-            // Obtener fechas del formulario
             const { startDate, endDate } = getReportDates();
             
-            // Actualizar texto del periodo (esto mostrará las fechas exactas)
             updatePeriodText();
             
-            // Filtrar traslados por periodo seleccionado
             const filteredTransfers = transfers.filter(transfer => {
                 const transferDate = transfer.dateTime;
-                // Asegurarse de que las fechas se comparen correctamente
                 const transferDateObj = new Date(transferDate);
                 transferDateObj.setHours(0, 0, 0, 0);
                 
@@ -2604,8 +2510,25 @@
                 return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
             });
             
-            // MODIFICADO: Calcular totales por departamento con detalle de MSO
             const departmentTotals = {};
+            
+            reportDepartments.forEach(dept => {
+                departmentTotals[dept.code] = {
+                    name: dept.name,
+                    type: 'CCS',
+                    amount: 0
+                };
+            });
+            
+            reportMSODepartments.forEach(dept => {
+                const deptKey = `MSO - ${dept.code}`;
+                departmentTotals[deptKey] = {
+                    name: `MSO - ${dept.name}`,
+                    type: 'MSO',
+                    amount: 0
+                };
+            });
+            
             let totalCCSAmount = 0;
             let totalMSOAmount = 0;
             
@@ -2616,72 +2539,80 @@
                 const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
                 if (serviceType.type === 'MSO') {
-                    // Usar el departamento MSO específico si existe
                     const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
                     
-                    if (!departmentTotals[deptKey]) {
+                    if (departmentTotals[deptKey]) {
+                        departmentTotals[deptKey].amount += cost;
+                    } else {
                         departmentTotals[deptKey] = {
-                            name: deptKey,
+                            name: `MSO - ${msoDepartment || 'Sin especificar'}`,
                             type: 'MSO',
-                            amount: 0
+                            amount: cost
                         };
                     }
-                    departmentTotals[deptKey].amount += cost;
                     totalMSOAmount += cost;
                 } else {
-                    // Es CCS - usar el departamento original
                     if (department) {
-                        if (!departmentTotals[department]) {
+                        if (departmentTotals[department]) {
+                            departmentTotals[department].amount += cost;
+                        } else {
                             departmentTotals[department] = {
                                 name: department.toUpperCase(),
                                 type: 'CCS',
-                                amount: 0
+                                amount: cost
                             };
                         }
-                        departmentTotals[department].amount += cost;
                         totalCCSAmount += cost;
                     }
                 }
             });
             
-            // MODIFICADO: Actualizar tabla de departamentos con detalle de MSO
             departmentsReportTableBody.innerHTML = '';
             
-            // Ordenar departamentos: primero CCS, luego MSO
             const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
                 if (departmentTotals[a].type === departmentTotals[b].type) {
-                    return a.localeCompare(b);
+                    return departmentTotals[a].name.localeCompare(departmentTotals[b].name);
                 }
                 return departmentTotals[a].type === 'CCS' ? -1 : 1;
             });
             
             sortedDepartments.forEach(deptKey => {
                 const dept = departmentTotals[deptKey];
-                const row = document.createElement('tr');
                 const isMSO = dept.type === 'MSO';
                 
+                let displayName = dept.name;
+                
+                if (isMSO) {
+                    const parts = displayName.split(' - ');
+                    if (parts.length > 1) {
+                        const msoPart = parts[1].split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                        displayName = `MSO - ${msoPart}`;
+                    }
+                } else {
+                    displayName = dept.name.split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                }
+                
+                const row = document.createElement('tr');
+                
                 row.innerHTML = `
-                    <td class="px-6 py-3 text-left text-sm text-gray-900">${dept.name}</td>
+                    <td class="px-6 py-3 text-left text-sm text-gray-900">${displayName}</td>
                     <td class="px-6 py-3 text-left text-sm text-gray-900">${isMSO ? 'MSO' : 'UN CCS'}</td>
                     <td class="px-6 py-3 text-left text-sm font-medium text-inter-primary">$${dept.amount.toFixed(2)}</td>
                 `;
                 departmentsReportTableBody.appendChild(row);
             });
             
-            // Actualizar totales de departamentos
             totalCCS.textContent = `$${totalCCSAmount.toFixed(2)}`;
             totalMSO.textContent = `$${totalMSOAmount.toFixed(2)}`;
             const totalCCSMSOTotal = totalCCSAmount + totalMSOAmount;
             totalCCSMSO.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
             
-            // Calcular totales por empresa - DISCRIMINADO POR CCS Y MSO
             const companyStats = {};
             let totalCCSServicesCount = 0;
             let totalCCSAmountServices = 0;
             let totalMSOServicesCount = 0;
             let totalMSOAmountServices = 0;
             
-            // Inicializar estructura para cada empresa
             reportCompanies.forEach(company => {
                 companyStats[company.code] = {
                     name: company.name,
@@ -2694,7 +2625,6 @@
                 };
             });
             
-            // Procesar cada traslado
             filteredTransfers.forEach(transfer => {
                 const company = transfer.companyName;
                 const department = transfer.department;
@@ -2703,7 +2633,6 @@
                 const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
                 if (company && companyStats.hasOwnProperty(company)) {
-                    // Determinar si es CCS o MSO
                     if (serviceType.type === 'MSO') {
                         companyStats[company].msoCount++;
                         companyStats[company].msoAmount += cost;
@@ -2716,21 +2645,22 @@
                         totalCCSAmountServices += cost;
                     }
                     
-                    // Actualizar totales
                     companyStats[company].totalCount++;
                     companyStats[company].totalAmount += cost;
                 }
             });
             
-            // Actualizar tabla de empresas
             companiesReportTableBody.innerHTML = '';
             
-            reportCompanies.forEach((company, index) => {
+            reportCompanies.forEach((company) => {
                 const stats = companyStats[company.code];
+                
+                const companyNameCapitalized = capitalizeFirstLetter(company.name);
+                
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
-                    <td class="px-6 py-3 text-left text-sm font-medium text-gray-900">${company.name}</td>
+                    <td class="px-6 py-3 text-left text-sm font-medium text-gray-900">${companyNameCapitalized}</td>
                     <td class="px-6 py-3 text-left text-sm text-gray-900">
                         ${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}<br>
                         <span class="font-medium text-inter-primary">$${stats.ccsAmount.toFixed(2)}</span>
@@ -2747,14 +2677,12 @@
                 companiesReportTableBody.appendChild(row);
             });
             
-            // Actualizar totales de empresas
             totalCCSServices.textContent = `${totalCCSServicesCount} servicio${totalCCSServicesCount !== 1 ? 's' : ''} - $${totalCCSAmountServices.toFixed(2)}`;
             totalMSOServices.textContent = `${totalMSOServicesCount} servicio${totalMSOServicesCount !== 1 ? 's' : ''} - $${totalMSOAmountServices.toFixed(2)}`;
             const totalServicesCount = totalCCSServicesCount + totalMSOServicesCount;
             const totalServicesAmount = totalCCSAmountServices + totalMSOAmountServices;
             totalCompanies.textContent = `${totalServicesCount} servicio${totalServicesCount !== 1 ? 's' : ''} - $${totalServicesAmount.toFixed(2)}`;
             
-            // Actualizar resumen por unidad
             unitCCS.textContent = `$${totalCCSAmount.toFixed(2)}`;
             unitMSO.textContent = `$${totalMSOAmount.toFixed(2)}`;
             unitTotal.textContent = `$${totalCCSMSOTotal.toFixed(2)}`;
@@ -2762,15 +2690,12 @@
             showMessage(`✅ Reporte generado para el periodo: ${periodText.textContent}`, "success");
         }
 
-        // Función para exportar reporte a Excel
         function exportReportToExcel() {
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
-            // Obtener fechas del formulario (igual que en generateReport)
             const { startDate, endDate } = getReportDates();
             
-            // Filtrar traslados por periodo seleccionado (igual que en generateReport)
             const filteredTransfers = transfers.filter(transfer => {
                 const transferDate = transfer.dateTime;
                 const transferDateObj = new Date(transferDate);
@@ -2785,8 +2710,25 @@
                 return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
             });
             
-            // MODIFICADO: Calcular departmentTotals con detalle de MSO
             const departmentTotals = {};
+            
+            reportDepartments.forEach(dept => {
+                departmentTotals[dept.code] = {
+                    name: dept.name,
+                    type: 'CCS',
+                    amount: 0
+                };
+            });
+            
+            reportMSODepartments.forEach(dept => {
+                const deptKey = `MSO - ${dept.code}`;
+                departmentTotals[deptKey] = {
+                    name: `MSO - ${dept.name}`,
+                    type: 'MSO',
+                    amount: 0
+                };
+            });
+            
             let totalCCSAmount = 0;
             let totalMSOAmount = 0;
             
@@ -2797,77 +2739,111 @@
                 const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
                 if (serviceType.type === 'MSO') {
-                    // Usar el departamento MSO específico si existe
                     const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
-                    
-                    if (!departmentTotals[deptKey]) {
-                        departmentTotals[deptKey] = {
-                            name: deptKey,
-                            type: 'MSO',
-                            amount: 0
-                        };
+                    if (departmentTotals[deptKey]) {
+                        departmentTotals[deptKey].amount += cost;
                     }
-                    departmentTotals[deptKey].amount += cost;
                     totalMSOAmount += cost;
                 } else {
-                    // Es CCS - usar el departamento original
                     if (department) {
-                        if (!departmentTotals[department]) {
-                            departmentTotals[department] = {
-                                name: department.toUpperCase(),
-                                type: 'CCS',
-                                amount: 0
-                            };
+                        if (departmentTotals[department]) {
+                            departmentTotals[department].amount += cost;
                         }
-                        departmentTotals[department].amount += cost;
                         totalCCSAmount += cost;
                     }
                 }
             });
             
-            // Crear workbook
             const workbook = XLSX.utils.book_new();
             
-            // MODIFICADO: Hoja 1: Departamentos con detalle de MSO
             const departmentsData = [
-                ['PERIODO:', periodText.textContent],
+                ['GASTOS DE TRASLADO'],
+                [`PERIODO: ${periodText.textContent}`],
                 [],
                 ['DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO'],
-                ['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']
+                ['DEPARTAMENTOS', 'CENTRO DE OPERACIONES', 'IMPORTE']
             ];
             
-            // Ordenar departamentos: primero CCS, luego MSO
             const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
                 if (departmentTotals[a].type === departmentTotals[b].type) {
-                    return a.localeCompare(b);
+                    return departmentTotals[a].name.localeCompare(departmentTotals[b].name);
                 }
                 return departmentTotals[a].type === 'CCS' ? -1 : 1;
             });
             
-            // Agregar filas de departamentos
             sortedDepartments.forEach(deptKey => {
                 const dept = departmentTotals[deptKey];
                 const isMSO = dept.type === 'MSO';
-                departmentsData.push([dept.name, isMSO ? 'MSO' : 'UN CCS', dept.amount]);
+                
+                let displayName = dept.name;
+                if (isMSO) {
+                    const parts = displayName.split(' - ');
+                    if (parts.length > 1) {
+                        const msoPart = parts[1].split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                        displayName = `MSO - ${msoPart}`;
+                    }
+                } else {
+                    displayName = dept.name.split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                }
+                
+                departmentsData.push([displayName, isMSO ? 'MSO' : 'UN CCS', dept.amount]);
             });
             
-            // Agregar totales
             departmentsData.push(['TOTAL CCS', '', totalCCSAmount]);
             departmentsData.push(['MSO', 'MSO', totalMSOAmount]);
             departmentsData.push(['TOTAL, CCS + MSO', '', totalCCSAmount + totalMSOAmount]);
             
             const departmentsSheet = XLSX.utils.aoa_to_sheet(departmentsData);
-            XLSX.utils.book_append_sheet(workbook, departmentsSheet, 'Departamentos');
             
-            // Hoja 2: Empresas - con formato separado
-            const companiesData = [
-                ['PERIODO:', periodText.textContent],
-                [],
-                ['EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO'],
-                ['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']
+            departmentsSheet['!cols'] = [
+                { wch: 50 },
+                { wch: 25 },
+                { wch: 20 }
             ];
             
-            // Calcular companyStats (igual que en generateReport)
+            for (let i = 0; i < departmentsData.length; i++) {
+                for (let j = 0; j < departmentsData[i].length; j++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c: j });
+                    if (!departmentsSheet[cellRef]) continue;
+                    
+                    departmentsSheet[cellRef].s = departmentsSheet[cellRef].s || {};
+                    departmentsSheet[cellRef].s.alignment = departmentsSheet[cellRef].s.alignment || {};
+                    
+                    departmentsSheet[cellRef].s.alignment.horizontal = 'center';
+                    departmentsSheet[cellRef].s.alignment.vertical = 'center';
+                    departmentsSheet[cellRef].s.alignment.wrapText = true;
+                    
+                    if (j === 2 && i >= 5) {
+                        departmentsSheet[cellRef].s.numFmt = '"$"#,##0.00';
+                    }
+                    
+                    if (i === 0 || i === 3 || i === 4 || i >= departmentsData.length - 3) {
+                        departmentsSheet[cellRef].s.font = departmentsSheet[cellRef].s.font || {};
+                        departmentsSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i === 0) {
+                        departmentsSheet[cellRef].s.font = departmentsSheet[cellRef].s.font || {};
+                        departmentsSheet[cellRef].s.font.color = { rgb: "005BAA" };
+                        departmentsSheet[cellRef].s.font.size = 16;
+                        departmentsSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i >= departmentsData.length - 3) {
+                        departmentsSheet[cellRef].s.fill = departmentsSheet[cellRef].s.fill || {};
+                        departmentsSheet[cellRef].s.fill.fgColor = { rgb: "F2F2F2" };
+                    }
+                }
+            }
+            
+            departmentsSheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+                { s: { r: 3, c: 0 }, e: { r: 3, c: 2 } }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, departmentsSheet, 'Departamentos');
+            
             const companyStats = {};
             let totalCCSServicesCount = 0;
             let totalCCSAmountServices = 0;
@@ -2905,56 +2881,93 @@
                         totalCCSServicesCount++;
                         totalCCSAmountServices += cost;
                     }
-                    
                     companyStats[company].totalCount++;
                     companyStats[company].totalAmount += cost;
                 }
             });
             
-            // Agregar filas de empresas con formato mejorado
+            const companiesData = [
+                ['EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO'],
+                [`PERIODO: ${periodText.textContent}`],
+                [],
+                ['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']
+            ];
+            
             reportCompanies.forEach((company) => {
                 const stats = companyStats[company.code];
+                const companyNameCapitalized = capitalizeFirstLetter(company.name);
                 
                 companiesData.push([
-                    company.name,
+                    companyNameCapitalized,
                     `${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}\n$${stats.ccsAmount.toFixed(2)}`,
                     `${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''}\n$${stats.msoAmount.toFixed(2)}`,
                     `${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''}\n$${stats.totalAmount.toFixed(2)}`
                 ]);
             });
             
-            // Agregar totales con formato
             const totalCCSServicesText = `${totalCCSServicesCount} servicios - $${totalCCSAmountServices.toFixed(2)}`;
             const totalMSOServicesText = `${totalMSOServicesCount} servicios - $${totalMSOAmountServices.toFixed(2)}`;
             const totalServicesCount = totalCCSServicesCount + totalMSOServicesCount;
             const totalServicesAmount = totalCCSAmountServices + totalMSOAmountServices;
-            const totalCompaniesText = `${totalServicesCount} servicios - $${totalServicesAmount.toFixed(2)}`;
             
             companiesData.push([
-                'TOTALES', 
+                'TOTALES',
                 totalCCSServicesText.replace(' - ', '\n'),
                 totalMSOServicesText.replace(' - ', '\n'),
-                totalCompaniesText.replace(' - ', '\n')
+                `${totalServicesCount} servicios\n$${totalServicesAmount.toFixed(2)}`
             ]);
             
             const companiesSheet = XLSX.utils.aoa_to_sheet(companiesData);
             
-            // Ajustar ancho de columnas
-            const wscols = [
-                {wch: 20}, // Empresa
-                {wch: 25}, // Servicios CCS
-                {wch: 25}, // Servicios MSO
-                {wch: 25}  // Total
+            companiesSheet['!cols'] = [
+                { wch: 22 },
+                { wch: 28 },
+                { wch: 28 },
+                { wch: 28 }
             ];
-            companiesSheet['!cols'] = wscols;
+            
+            for (let i = 0; i < companiesData.length; i++) {
+                for (let j = 0; j < companiesData[i].length; j++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c: j });
+                    if (!companiesSheet[cellRef]) continue;
+                    
+                    companiesSheet[cellRef].s = companiesSheet[cellRef].s || {};
+                    companiesSheet[cellRef].s.alignment = companiesSheet[cellRef].s.alignment || {};
+                    
+                    companiesSheet[cellRef].s.alignment.horizontal = 'center';
+                    companiesSheet[cellRef].s.alignment.vertical = 'center';
+                    companiesSheet[cellRef].s.alignment.wrapText = true;
+                    
+                    if (i === 0 || i === 3 || i === companiesData.length - 1) {
+                        companiesSheet[cellRef].s.font = companiesSheet[cellRef].s.font || {};
+                        companiesSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i === 0) {
+                        companiesSheet[cellRef].s.font = companiesSheet[cellRef].s.font || {};
+                        companiesSheet[cellRef].s.font.color = { rgb: "005BAA" };
+                        companiesSheet[cellRef].s.font.size = 16;
+                        companiesSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i === companiesData.length - 1) {
+                        companiesSheet[cellRef].s.fill = companiesSheet[cellRef].s.fill || {};
+                        companiesSheet[cellRef].s.fill.fgColor = { rgb: "F2F2F2" };
+                    }
+                }
+            }
+            
+            companiesSheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }
+            ];
             
             XLSX.utils.book_append_sheet(workbook, companiesSheet, 'Empresas');
             
-            // Hoja 3: Resumen por unidad
             const unitData = [
-                ['PERIODO:', periodText.textContent],
-                [],
                 ['RESUMEN POR UNIDAD'],
+                [`PERIODO: ${periodText.textContent}`],
+                [],
                 ['UNIDAD', 'IMPORTE'],
                 ['CCS', totalCCSAmount],
                 ['MSO', totalMSOAmount],
@@ -2962,50 +2975,95 @@
             ];
             
             const unitSheet = XLSX.utils.aoa_to_sheet(unitData);
+            
+            unitSheet['!cols'] = [
+                { wch: 30 },
+                { wch: 25 }
+            ];
+            
+            for (let i = 0; i < unitData.length; i++) {
+                for (let j = 0; j < unitData[i].length; j++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c: j });
+                    if (!unitSheet[cellRef]) continue;
+                    
+                    unitSheet[cellRef].s = unitSheet[cellRef].s || {};
+                    unitSheet[cellRef].s.alignment = unitSheet[cellRef].s.alignment || {};
+                    unitSheet[cellRef].s.alignment.horizontal = 'center';
+                    unitSheet[cellRef].s.alignment.vertical = 'center';
+                    unitSheet[cellRef].s.alignment.wrapText = true;
+                    
+                    if (j === 1 && i >= 4) {
+                        unitSheet[cellRef].s.numFmt = '"$"#,##0.00';
+                    }
+                    
+                    if (i === 0) {
+                        unitSheet[cellRef].s.font = unitSheet[cellRef].s.font || {};
+                        unitSheet[cellRef].s.font.color = { rgb: "005BAA" };
+                        unitSheet[cellRef].s.font.size = 16;
+                        unitSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i === 3 || i === 6) {
+                        unitSheet[cellRef].s.font = unitSheet[cellRef].s.font || {};
+                        unitSheet[cellRef].s.font.bold = true;
+                    }
+                    
+                    if (i === 6) {
+                        unitSheet[cellRef].s.fill = unitSheet[cellRef].s.fill || {};
+                        unitSheet[cellRef].s.fill.fgColor = { rgb: "F2F2F2" };
+                    }
+                }
+            }
+            
+            unitSheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } }
+            ];
+            
             XLSX.utils.book_append_sheet(workbook, unitSheet, 'Resumen Unidad');
             
-            // Generar nombre de archivo según el tipo de periodo
             let fileName = '';
             const periodType = reportPeriodType.value;
             
             switch(periodType) {
                 case 'month':
                     const month = parseInt(reportMonthSelect.value);
-                    fileName = `Reporte_Mensual_${monthNames[month]}_${reportYearSelect.value}.xlsx`;
+                    fileName = `Gastos_Traslado_Mensual_${monthNames[month]}_${reportYearSelect.value}.xlsx`;
                     break;
                 case 'week':
                     const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
                     const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
-                    fileName = `Reporte_Semanal_${weekStart}_a_${weekEnd}.xlsx`;
+                    fileName = `Gastos_Traslado_Semanal_${weekStart}_a_${weekEnd}.xlsx`;
                     break;
                 case 'fortnight':
                     const fortnightMonth = parseInt(reportFortnightMonth.value);
                     const fortnight = reportFortnight.value;
                     const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
-                    fileName = `Reporte_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.xlsx`;
+                    fileName = `Gastos_Traslado_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.xlsx`;
                     break;
                 case 'custom':
                     const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
                     const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
-                    fileName = `Reporte_Personalizado_${customStart}_a_${customEnd}.xlsx`;
+                    fileName = `Gastos_Traslado_Personalizado_${customStart}_a_${customEnd}.xlsx`;
                     break;
             }
             
-            // Descargar archivo
             XLSX.writeFile(workbook, fileName);
-            
             showMessage(`✅ Reporte exportado a Excel: ${fileName}`, "success");
         }
 
-        // Función para exportar reporte a PDF con formato mejorado
+        // ============================================
+        // FUNCIÓN CORREGIDA PARA EXPORTAR PDF 
+        // ORDEN EXACTO: 
+        // PÁGINA 1: DEPARTAMENTOS
+        // PÁGINA 2: EMPRESAS + RESUMEN POR UNIDAD
+        // ============================================
         function exportReportToPDF() {
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
-            // Obtener fechas del formulario (igual que en generateReport)
             const { startDate, endDate } = getReportDates();
             
-            // Filtrar traslados por periodo seleccionado (igual que en generateReport)
             const filteredTransfers = transfers.filter(transfer => {
                 const transferDate = transfer.dateTime;
                 const transferDateObj = new Date(transferDate);
@@ -3020,8 +3078,25 @@
                 return transferDateObj >= startDateObj && transferDateObj <= endDateObj;
             });
             
-            // MODIFICADO: Calcular departmentTotals con detalle de MSO
             const departmentTotals = {};
+            
+            reportDepartments.forEach(dept => {
+                departmentTotals[dept.code] = {
+                    name: dept.name,
+                    type: 'CCS',
+                    amount: 0
+                };
+            });
+            
+            reportMSODepartments.forEach(dept => {
+                const deptKey = `MSO - ${dept.code}`;
+                departmentTotals[deptKey] = {
+                    name: `MSO - ${dept.name}`,
+                    type: 'MSO',
+                    amount: 0
+                };
+            });
+            
             let totalCCSAmount = 0;
             let totalMSOAmount = 0;
             
@@ -3032,130 +3107,169 @@
                 const serviceType = getServiceTypeWithMSO(department, msoDepartment);
                 
                 if (serviceType.type === 'MSO') {
-                    // Usar el departamento MSO específico si existe
                     const deptKey = msoDepartment ? `MSO - ${msoDepartment}` : 'MSO - Sin especificar';
-                    
-                    if (!departmentTotals[deptKey]) {
-                        departmentTotals[deptKey] = {
-                            name: deptKey,
-                            type: 'MSO',
-                            amount: 0
-                        };
+                    if (departmentTotals[deptKey]) {
+                        departmentTotals[deptKey].amount += cost;
                     }
-                    departmentTotals[deptKey].amount += cost;
                     totalMSOAmount += cost;
                 } else {
-                    // Es CCS - usar el departamento original
                     if (department) {
-                        if (!departmentTotals[department]) {
-                            departmentTotals[department] = {
-                                name: department.toUpperCase(),
-                                type: 'CCS',
-                                amount: 0
-                            };
+                        if (departmentTotals[department]) {
+                            departmentTotals[department].amount += cost;
                         }
-                        departmentTotals[department].amount += cost;
                         totalCCSAmount += cost;
                     }
                 }
             });
             
-            // Crear nuevo documento PDF
-            const doc = new jsPDF('p', 'mm', 'a4');
+            // Crear documento PDF en orientación horizontal
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'letter'
+            });
             
-            // Título principal
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 12;
+            
+            // ============================================
+            // PÁGINA 1: SOLO DEPARTAMENTOS
+            // ============================================
+            
+            // Título principal - CENTRADO
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
-            doc.text('REPORTE FINANCIERO DE TRASLADOS', 105, 20, null, null, 'center');
+            doc.setFont('helvetica', 'bold');
+            doc.text('GASTOS DE TRASLADO', pageWidth / 2, 15, { align: 'center' });
             
-            // Periodo
-            doc.setFontSize(12);
+            // Periodo - CENTRADO
+            doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
-            doc.text('PERIODO: ' + periodText.textContent, 105, 30, null, null, 'center');
+            doc.setFont('helvetica', 'normal');
+            doc.text(`PERIODO: ${periodText.textContent}`, pageWidth / 2, 22, { align: 'center' });
             
-            let yPos = 40;
+            // Línea separadora
+            doc.setDrawColor(0, 91, 170);
+            doc.setLineWidth(0.3);
+            doc.line(margin, 26, pageWidth - margin, 26);
             
-            // MODIFICADO: Sección 1: Departamentos que utilizan servicio de traslado con detalle MSO
-            doc.setFontSize(14);
+            // SECCIÓN 1: Departamentos - CENTRADA
+            doc.setFontSize(12);
             doc.setTextColor(0, 91, 170);
-            doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO', 105, yPos, null, null, 'center');
-            yPos += 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADO', pageWidth / 2, 33, { align: 'center' });
             
-            // Ordenar departamentos: primero CCS, luego MSO
             const sortedDepartments = Object.keys(departmentTotals).sort((a, b) => {
                 if (departmentTotals[a].type === departmentTotals[b].type) {
-                    return a.localeCompare(b);
+                    return departmentTotals[a].name.localeCompare(departmentTotals[b].name);
                 }
                 return departmentTotals[a].type === 'CCS' ? -1 : 1;
             });
             
-            // Tabla de departamentos
             const departmentsData = [];
+            
             sortedDepartments.forEach(deptKey => {
                 const dept = departmentTotals[deptKey];
                 const isMSO = dept.type === 'MSO';
+                
+                let displayName = dept.name;
+                if (isMSO) {
+                    const parts = displayName.split(' - ');
+                    if (parts.length > 1) {
+                        const msoPart = parts[1].split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                        displayName = `MSO - ${msoPart}`;
+                    }
+                } else {
+                    displayName = dept.name.split(' ').map(word => capitalizeFirstLetter(word)).join(' ');
+                }
+                
                 departmentsData.push([
-                    dept.name,
+                    displayName.substring(0, 35),
                     isMSO ? 'MSO' : 'UN CCS',
                     `$${dept.amount.toFixed(2)}`
                 ]);
             });
             
-            // Agregar totales a la tabla
-            departmentsData.push([
-                'TOTAL CCS',
-                '',
-                `$${totalCCSAmount.toFixed(2)}`
-            ]);
-            departmentsData.push([
-                'MSO',
-                'MSO',
-                `$${totalMSOAmount.toFixed(2)}`
-            ]);
-            departmentsData.push([
-                'TOTAL, CCS + MSO',
-                '',
-                `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`
-            ]);
+            departmentsData.push(['TOTAL CCS', '', `$${totalCCSAmount.toFixed(2)}`]);
+            departmentsData.push(['MSO', 'MSO', `$${totalMSOAmount.toFixed(2)}`]);
+            departmentsData.push(['TOTAL, CCS + MSO', '', `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`]);
+            
+            // Ancho de tabla optimizado para centrar perfectamente
+            const deptTableWidth = 190;
+            const deptTableMargin = (pageWidth - deptTableWidth) / 2;
             
             doc.autoTable({
-                startY: yPos,
-                head: [['DEPARTAMENTOS', 'UN CCS', 'IMPORTE']],
+                startY: 38,
+                head: [['DEPARTAMENTOS', 'CENTRO DE OPERACIONES', 'IMPORTE']],
                 body: departmentsData,
                 theme: 'striped',
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 8,
+                    cellPadding: 2,
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.1,
+                    halign: 'center',
+                    valign: 'middle',
+                    textColor: [0, 0, 0]
+                },
                 headStyles: { 
                     fillColor: [0, 91, 170], 
                     textColor: [255, 255, 255],
-                    fontSize: 10
+                    fontSize: 9,
+                    fontStyle: 'bold',
+                    halign: 'center'
                 },
-                bodyStyles: { fontSize: 9 },
                 columnStyles: {
-                    0: { cellWidth: 70 },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 40 }
+                    0: { cellWidth: 100, halign: 'left' },
+                    1: { cellWidth: 45, halign: 'center' },
+                    2: { cellWidth: 45, halign: 'right', textColor: [0, 91, 170], fontStyle: 'bold' }
                 },
-                didDrawPage: function(data) {
-                    // Footer
-                    doc.setFontSize(10);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
-                }
+                margin: { left: deptTableMargin, right: deptTableMargin },
+                tableWidth: deptTableWidth
             });
             
-            yPos = doc.autoTable.previous.finalY + 15;
+            // Fecha de generación en página 1
+            let yPos = doc.autoTable.previous.finalY + 10;
+            doc.setFontSize(7);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
             
-            // Sección 2: Empresas proveedoras - con formato de dos líneas
-            if (yPos > 220) {
-                doc.addPage();
-                yPos = 20;
-            }
+            // Footer página 1
+            doc.setFontSize(6);
+            doc.setTextColor(128, 128, 128);
+            doc.text('Sistema de Control de Traslados de Taxi - Inter', pageWidth / 2, pageHeight - 8, { align: 'center' });
+            doc.text('Página 1 de 2', pageWidth / 2, pageHeight - 4, { align: 'center' });
             
-            doc.setFontSize(14);
+            // ============================================
+            // PÁGINA 2: EMPRESAS + RESUMEN POR UNIDAD
+            // ============================================
+            doc.addPage();
+            
+            // Título de página 2
+            doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
-            doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', 105, yPos, null, null, 'center');
-            yPos += 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('GASTOS DE TRASLADO', pageWidth / 2, 15, { align: 'center' });
             
-            // Calcular companyStats (igual que en generateReport)
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`PERIODO: ${periodText.textContent}`, pageWidth / 2, 22, { align: 'center' });
+            
+            doc.setDrawColor(0, 91, 170);
+            doc.setLineWidth(0.3);
+            doc.line(margin, 26, pageWidth - margin, 26);
+            
+            // SECCIÓN 2: Empresas - CENTRADA PERFECTAMENTE
+            doc.setFontSize(12);
+            doc.setTextColor(0, 91, 170);
+            doc.setFont('helvetica', 'bold');
+            doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', pageWidth / 2, 33, { align: 'center' });
+            
+            // Calcular companyStats
             const companyStats = {};
             let totalCCSServicesCount = 0;
             let totalCCSAmountServices = 0;
@@ -3193,179 +3307,158 @@
                         totalCCSServicesCount++;
                         totalCCSAmountServices += cost;
                     }
-                    
                     companyStats[company].totalCount++;
                     companyStats[company].totalAmount += cost;
                 }
             });
             
-            // Tabla de empresas con formato de dos líneas
             const companiesData = [];
             
-            // Procesar cada empresa
             reportCompanies.forEach((company) => {
                 const stats = companyStats[company.code];
+                const companyNameCapitalized = capitalizeFirstLetter(company.name);
                 
                 companiesData.push([
-                    company.name,
-                    `${stats.ccsCount} servicio${stats.ccsCount !== 1 ? 's' : ''}\n$${stats.ccsAmount.toFixed(2)}`,
-                    `${stats.msoCount} servicio${stats.msoCount !== 1 ? 's' : ''}\n$${stats.msoAmount.toFixed(2)}`,
-                    `${stats.totalCount} servicio${stats.totalCount !== 1 ? 's' : ''}\n$${stats.totalAmount.toFixed(2)}`
+                    companyNameCapitalized,
+                    `${stats.ccsCount}\n$${stats.ccsAmount.toFixed(2)}`,
+                    `${stats.msoCount}\n$${stats.msoAmount.toFixed(2)}`,
+                    `${stats.totalCount}\n$${stats.totalAmount.toFixed(2)}`
                 ]);
             });
             
-            // Agregar totales con formato de dos líneas
-            const totalCCSServicesText = `${totalCCSServicesCount} servicios - $${totalCCSAmountServices.toFixed(2)}`;
-            const totalMSOServicesText = `${totalMSOServicesCount} servicios - $${totalMSOAmountServices.toFixed(2)}`;
-            const totalServicesCount = totalCCSServicesCount + totalMSOServicesCount;
-            const totalServicesAmount = totalCCSAmountServices + totalMSOAmountServices;
-            const totalCompaniesText = `${totalServicesCount} servicios - $${totalServicesAmount.toFixed(2)}`;
-            
             companiesData.push([
                 'TOTALES',
-                totalCCSServicesText.replace(' - ', '\n'),
-                totalMSOServicesText.replace(' - ', '\n'),
-                totalCompaniesText.replace(' - ', '\n')
+                `${totalCCSServicesCount}\n$${totalCCSAmountServices.toFixed(2)}`,
+                `${totalMSOServicesCount}\n$${totalMSOAmountServices.toFixed(2)}`,
+                `${totalCCSServicesCount + totalMSOServicesCount}\n$${(totalCCSAmountServices + totalMSOAmountServices).toFixed(2)}`
             ]);
             
+            // Ancho de tabla para centrar perfectamente
+            const companyTableWidth = 200;
+            const companyTableMargin = (pageWidth - companyTableWidth) / 2;
+            
             doc.autoTable({
-                startY: yPos,
-                head: [['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']],
+                startY: 38,
+                head: [['EMPRESA', 'SERV. CCS', 'SERV. MSO', 'TOTAL']],
                 body: companiesData,
                 theme: 'striped',
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 8,
+                    cellPadding: 2,
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.1,
+                    halign: 'center',
+                    valign: 'middle',
+                    overflow: 'linebreak',
+                    cellWidth: 'wrap'
+                },
                 headStyles: { 
                     fillColor: [92, 225, 230], 
                     textColor: [0, 0, 0],
-                    fontSize: 9
-                },
-                bodyStyles: { 
-                    fontSize: 8,
-                    cellPadding: 2,
-                    lineHeight: 1.2
+                    fontSize: 9,
+                    fontStyle: 'bold',
+                    halign: 'center'
                 },
                 columnStyles: {
-                    0: { cellWidth: 35 },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 40 },
-                    3: { cellWidth: 35 }
+                    0: { cellWidth: 50, halign: 'left' },
+                    1: { cellWidth: 45, halign: 'center' },
+                    2: { cellWidth: 45, halign: 'center' },
+                    3: { cellWidth: 50, halign: 'center', fontStyle: 'bold' }
                 },
-                styles: {
-                    overflow: 'linebreak',
-                    cellPadding: 2,
-                    lineWidth: 0.1,
-                    lineColor: [200, 200, 200]
-                },
-                didDrawCell: function(data) {
-                    // Centrar verticalmente el contenido de dos líneas
-                    if (data.column.index > 0 && data.cell.section === 'body') {
-                        const lines = data.cell.text[0].split('\n');
-                        if (lines.length > 1) {
-                            doc.setFontSize(7);
-                            const textHeight = 7;
-                            const cellHeight = data.cell.height;
-                            const totalTextHeight = lines.length * textHeight;
-                            const startY = data.cell.y + (cellHeight - totalTextHeight) / 2 + textHeight;
-                            
-                            lines.forEach((line, i) => {
-                                doc.text(line.trim(), data.cell.x + 2, startY + (i * textHeight));
-                            });
-                            
-                            return false; // Evitar que autoTable dibuje el texto por defecto
-                        }
-                    }
-                },
-                didDrawPage: function(data) {
-                    // Footer
-                    doc.setFontSize(10);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
-                }
+                margin: { left: companyTableMargin, right: companyTableMargin },
+                tableWidth: companyTableWidth
             });
             
+            // SECCIÓN 3: Resumen por unidad - CENTRADA (en página 2)
             yPos = doc.autoTable.previous.finalY + 15;
             
-            // Sección 3: Resumen por unidad
-            if (yPos > 250) {
-                doc.addPage();
-                yPos = 20;
-            }
-            
-            doc.setFontSize(14);
+            doc.setFontSize(12);
             doc.setTextColor(0, 91, 170);
-            doc.text('RESUMEN POR UNIDAD', 105, yPos, null, null, 'center');
-            yPos += 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('RESUMEN POR UNIDAD', pageWidth / 2, yPos, { align: 'center' });
+            yPos += 6;
             
-            // Tabla de resumen por unidad
             const unitData = [
                 ['CCS', `$${totalCCSAmount.toFixed(2)}`],
                 ['MSO', `$${totalMSOAmount.toFixed(2)}`],
                 ['TOTAL', `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`]
             ];
             
+            const unitTableWidth = 120;
+            const unitTableMargin = (pageWidth - unitTableWidth) / 2;
+            
             doc.autoTable({
                 startY: yPos,
                 head: [['UNIDAD', 'IMPORTE']],
                 body: unitData,
                 theme: 'striped',
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 10,
+                    cellPadding: 3,
+                    halign: 'center',
+                    valign: 'middle'
+                },
                 headStyles: { 
                     fillColor: [0, 91, 170], 
                     textColor: [255, 255, 255],
-                    fontSize: 10
+                    fontSize: 11,
+                    fontStyle: 'bold',
+                    halign: 'center'
                 },
-                bodyStyles: { fontSize: 10 },
                 columnStyles: {
-                    0: { cellWidth: 80 },
-                    1: { cellWidth: 50 }
+                    0: { cellWidth: 60, halign: 'left' },
+                    1: { cellWidth: 60, halign: 'right', fontStyle: 'bold', textColor: [0, 91, 170] }
                 },
-                didDrawPage: function(data) {
-                    // Footer
-                    doc.setFontSize(10);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
-                }
+                margin: { left: unitTableMargin, right: unitTableMargin },
+                tableWidth: unitTableWidth
             });
             
-            // Información de generación
-            const finalY = doc.autoTable.previous.finalY + 20;
-            doc.setFontSize(10);
+            // Fecha de generación en página 2
+            yPos = doc.autoTable.previous.finalY + 10;
+            doc.setFontSize(7);
             doc.setTextColor(100, 100, 100);
-            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 105, finalY, null, null, 'center');
-            doc.text('Sistema de Control de Traslados de Taxi - Inter', 105, finalY + 5, null, null, 'center');
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
             
-            // Generar nombre de archivo según el tipo de periodo
+            // Footer página 2
+            doc.setFontSize(6);
+            doc.setTextColor(128, 128, 128);
+            doc.text('Sistema de Control de Traslados de Taxi - Inter', pageWidth / 2, pageHeight - 8, { align: 'center' });
+            doc.text('Página 2 de 2', pageWidth / 2, pageHeight - 4, { align: 'center' });
+            
+            // Generar nombre de archivo
             let fileName = '';
             const periodType = reportPeriodType.value;
             
             switch(periodType) {
                 case 'month':
                     const month = parseInt(reportMonthSelect.value);
-                    fileName = `Reporte_Mensual_${monthNames[month]}_${reportYearSelect.value}.pdf`;
+                    fileName = `Gastos_Traslado_Mensual_${monthNames[month]}_${reportYearSelect.value}.pdf`;
                     break;
                 case 'week':
                     const weekStart = new Date(reportWeekStart.value).toISOString().slice(0,10);
                     const weekEnd = new Date(reportWeekEnd.value).toISOString().slice(0,10);
-                    fileName = `Reporte_Semanal_${weekStart}_a_${weekEnd}.pdf`;
+                    fileName = `Gastos_Traslado_Semanal_${weekStart}_a_${weekEnd}.pdf`;
                     break;
                 case 'fortnight':
                     const fortnightMonth = parseInt(reportFortnightMonth.value);
                     const fortnight = reportFortnight.value;
                     const fortnightText = fortnight === 'first' ? 'PrimeraQuincena' : 'SegundaQuincena';
-                    fileName = `Reporte_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.pdf`;
+                    fileName = `Gastos_Traslado_Quincena_${fortnightText}_${monthNames[fortnightMonth]}_${reportYearSelect.value}.pdf`;
                     break;
                 case 'custom':
                     const customStart = new Date(reportCustomStart.value).toISOString().slice(0,10);
                     const customEnd = new Date(reportCustomEnd.value).toISOString().slice(0,10);
-                    fileName = `Reporte_Personalizado_${customStart}_a_${customEnd}.pdf`;
+                    fileName = `Gastos_Traslado_Personalizado_${customStart}_a_${customEnd}.pdf`;
                     break;
             }
             
-            // Guardar PDF
             doc.save(fileName);
-            
             showMessage(`✅ Reporte exportado a PDF: ${fileName}`, "success");
         }
 
-        // Event Listeners para pestañas
         tabDashboard.addEventListener('click', () => {
             tabDashboard.classList.add('btn-primary');
             tabDashboard.classList.remove('bg-gray-100', 'text-gray-700');
@@ -3385,7 +3478,6 @@
             generateReport();
         });
 
-        // Event Listeners para filtros
         toggleFiltersBtn.addEventListener('click', () => {
             if (filtersSection.classList.contains('collapsed')) {
                 filtersSection.classList.remove('collapsed');
@@ -3404,7 +3496,6 @@
         clearAllFiltersBtn.addEventListener('click', clearAllFilters);
         toggleViewBtn.addEventListener('click', toggleView);
 
-        // Event Listeners para filtros en tiempo real
         filterName.addEventListener('input', debounce(applyFilters, 300));
         filterDepartment.addEventListener('change', applyFilters);
         filterCompany.addEventListener('change', applyFilters);
@@ -3412,7 +3503,6 @@
         filterMinCost.addEventListener('input', debounce(applyFilters, 500));
         filterMaxCost.addEventListener('input', debounce(applyFilters, 500));
 
-        // Función debounce para evitar múltiples llamadas
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -3425,7 +3515,6 @@
             };
         }
 
-        // Event Listeners para reportes
         reportPeriodType.addEventListener('change', handlePeriodTypeChange);
         reportMonthSelect.addEventListener('change', updatePeriodText);
         reportYearSelect.addEventListener('change', updatePeriodText);
@@ -3443,7 +3532,6 @@
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
 
-        // Event Listeners del Dashboard
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = submitButton;
@@ -3453,7 +3541,6 @@
             document.body.classList.add('loading');
 
             try {
-                // Parsear correctamente la fecha del input
                 const dateValue = transferDateInput.value;
                 const [year, month, day] = dateValue.split('-').map(Number);
                 const dateTime = normalizeDateToStartOfDay(new Date(year, month - 1, day));
@@ -3466,7 +3553,7 @@
                     destinationPlace: destinationPlaceInput.value.trim(),
                     returnAddress: returnAddressInput.value.trim(),
                     returnDestination: returnDestinationInput.value.trim(),
-                    dateTime: dateTime, // Usar fecha corregida
+                    dateTime: dateTime,
                     cost: parseFloat(costInput.value),
                     authorizerName: authorizerNameInput.value,
                     companyName: companyNameInput.value
@@ -3479,14 +3566,12 @@
                     msoDepartmentInput.required = false;
                     serviceTypeBadge.classList.add('hidden');
                     
-                    // Establecer fecha actual
                     const today = new Date();
                     const currentYear = today.getFullYear();
                     const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
                     const currentDay = String(today.getDate()).padStart(2, '0');
                     transferDateInput.value = `${currentYear}-${currentMonth}-${currentDay}`;
                     
-                    // Restablecer autorizador por defecto según el departamento seleccionado
                     const department = departmentInput.value;
                     if (department) {
                         const serviceType = getServiceTypeWithMSO(department, '');
@@ -3513,10 +3598,8 @@
         });
 
         exportCsvBtn.addEventListener('click', () => {
-            // Filtrar traslados según los filtros aplicados
             let transfersToExport = [...transfers];
             
-            // Aplicar mismos filtros que en la vista
             if (currentFilters.name) {
                 transfersToExport = transfersToExport.filter(transfer =>
                     transfer.requesterName.toLowerCase().includes(currentFilters.name)
@@ -3636,14 +3719,12 @@
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                // Saltar la fila de encabezado y procesar datos
                 const importedTransfers = [];
                 for (let i = 1; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (row.length >= 11) {
                         const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
                         
-                        // Parsear fecha correctamente
                         let dateTime;
                         if (dateStr.includes('/')) {
                             const [day, month, year] = dateStr.split('/');
@@ -3671,7 +3752,6 @@
                             });
                         }
                     } else if (row.length >= 8) {
-                        // Formato antiguo (compatibilidad con archivos antiguos)
                         const [dateStr, requesterName, department, originPlace, returnAddress, authorizerName, companyName, cost] = row;
                         
                         let dateTime;
@@ -3703,7 +3783,6 @@
                     }
                 }
 
-                // Guardar todos los traslados importados
                 let successCount = 0;
                 for (const transfer of importedTransfers) {
                     const success = await saveTransfer(transfer);
@@ -3744,43 +3823,34 @@
             updateSelectedCount();
         });
 
-        // Redimensionar tabla cuando cambie el tamaño de la ventana
         window.addEventListener('resize', debounce(renderTransfers, 250));
 
-        // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            // Establecer fecha actual correctamente
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             transferDateInput.value = `${year}-${month}-${day}`;
             
-            // Establecer mes actual en el selector de reportes
             const currentMonth = new Date().getMonth();
             reportMonthSelect.value = currentMonth.toString();
             
-            // Establecer año actual en el selector de reportes
             const currentYear = new Date().getFullYear();
             reportYearSelect.value = currentYear.toString();
             
-            // Inicializar flatpickr
             initDateRangePicker();
             
-            // Manejar cambio inicial del tipo de periodo
             handlePeriodTypeChange();
             
             loadTransfers();
         });
 
-        // Limpiar suscripción al cerrar la página
         window.addEventListener('beforeunload', () => {
             if (unsubscribeTransfers) {
                 unsubscribeTransfers();
             }
         });
 
-        // Hacer las funciones accesibles globalmente
         window.startEditTransfer = startEditTransfer;
         window.toggleRowExpansion = toggleRowExpansion;
         window.toggleRowDetails = toggleRowDetails;
