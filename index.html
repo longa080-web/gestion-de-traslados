@@ -116,6 +116,23 @@
             background-color: #FDD000;
             color: #333;
         }
+        
+        /* Estilos para filtros rápidos */
+        .quick-filter-btn {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+            background: white;
+        }
+        .quick-filter-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+        .quick-filter-btn.active {
+            background: #005BAA;
+            color: white;
+            border-color: #005BAA;
+        }
+        
         @media (max-width: 768px) {
             .responsive-table {
                 display: block;
@@ -530,9 +547,60 @@
                             </button>
                         </div>
 
-                        <!-- Filtros Avanzados -->
+                        <!-- FILTROS RÁPIDOS - NUEVA SECCIÓN -->
+                        <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                            <h3 class="text-sm font-bold text-inter-primary mb-3 flex items-center">
+                                <span class="mr-2">⚡</span> Filtros Rápidos
+                            </h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="today">
+                                    📅 Hoy
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="yesterday">
+                                    📅 Ayer
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="thisWeek">
+                                    📅 Esta Semana
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="lastWeek">
+                                    📅 Semana Pasada
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="thisMonth">
+                                    📅 Este Mes
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="lastMonth">
+                                    📅 Mes Pasado
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="thisQuarter">
+                                    📅 Este Trimestre
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="thisYear">
+                                    📅 Este Año
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="ccs">
+                                    🏢 Solo CCS
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="mso">
+                                    🏢 Solo MSO
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="yummy">
+                                    🚗 Yummy
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="andrew">
+                                    🚗 Andrew
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="jorge">
+                                    ✅ Jorge Basualdo
+                                </button>
+                                <button class="quick-filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" data-filter="mario">
+                                    ✅ Mario Fernandez
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filtros Avanzados (sin rango de costo) -->
                         <div id="filtersSection" class="filter-section collapsed mb-6 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div class="space-y-2">
                                     <label for="filterName" class="block text-sm font-medium text-gray-700">
                                         👤 Nombre/Apellido
@@ -588,9 +656,7 @@
                                         <option value="Mario Fernandez">Mario Fernandez (MSO)</option>
                                     </select>
                                 </div>
-                            </div>
-                            
-                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                
                                 <div class="space-y-2">
                                     <label for="filterDateRange" class="block text-sm font-medium text-gray-700">
                                         📅 Rango de Fechas
@@ -599,20 +665,6 @@
                                            class="form-control w-full"
                                            placeholder="Seleccionar rango de fechas">
                                     <div id="dateRangeDisplay" class="date-range-display"></div>
-                                </div>
-                                
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        💰 Rango de Costo ($)
-                                    </label>
-                                    <div class="flex space-x-3">
-                                        <input type="number" id="filterMinCost" step="0.01" min="0"
-                                               class="form-control w-1/2"
-                                               placeholder="Mínimo">
-                                        <input type="number" id="filterMaxCost" step="0.01" min="0"
-                                               class="form-control w-1/2"
-                                               placeholder="Máximo">
-                                    </div>
                                 </div>
                             </div>
                             
@@ -645,6 +697,13 @@
                                             class="btn-secondary font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
                                         <span class="flex items-center">
                                             📊 Exportar a Excel
+                                        </span>
+                                    </button>
+                                    <!-- NUEVO BOTÓN: Exportar a PDF desde Historial -->
+                                    <button id="exportHistoryPdfBtn"
+                                            class="bg-gradient-to-r from-red-500 to-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
+                                        <span class="flex items-center">
+                                            📄 Exportar a PDF
                                         </span>
                                     </button>
                                     <button id="importExcelBtn"
@@ -1157,8 +1216,6 @@
         const filterAuthorizer = document.getElementById('filterAuthorizer');
         const filterDateRange = document.getElementById('filterDateRange');
         const dateRangeDisplay = document.getElementById('dateRangeDisplay');
-        const filterMinCost = document.getElementById('filterMinCost');
-        const filterMaxCost = document.getElementById('filterMaxCost');
         const applyFiltersBtn = document.getElementById('applyFiltersBtn');
         const clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
         const toggleViewBtn = document.getElementById('toggleViewBtn');
@@ -1178,6 +1235,7 @@
         let annualDepartmentChart;
 
         const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const exportHistoryPdfBtn = document.getElementById('exportHistoryPdfBtn');
         const importExcelBtn = document.getElementById('importExcelBtn');
         const fileInput = document.getElementById('fileInput');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
@@ -1192,9 +1250,7 @@
             company: '',
             authorizer: '',
             dateStart: null,
-            dateEnd: null,
-            minCost: null,
-            maxCost: null
+            dateEnd: null
         };
         let isCompactView = true;
         let expandedRows = new Set();
@@ -1329,10 +1385,16 @@
                         currentFilters.dateEnd = normalizeDateToStartOfDay(endDate);
                         
                         dateRangeDisplay.textContent = `${startDate.toLocaleDateString('es-ES')} - ${endDate.toLocaleDateString('es-ES')}`;
+                        
+                        // Aplicar filtros automáticamente cuando se selecciona un rango
+                        renderTransfers();
                     } else {
                         currentFilters.dateStart = null;
                         currentFilters.dateEnd = null;
                         dateRangeDisplay.textContent = '';
+                        
+                        // Si se limpia el rango, aplicar filtros
+                        renderTransfers();
                     }
                 }
             });
@@ -1503,14 +1565,48 @@
             }
         }
 
+        function getFilteredTransfers() {
+            let filteredTransfers = [...transfers];
+            
+            if (currentFilters.name) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.requesterName.toLowerCase().includes(currentFilters.name.toLowerCase())
+                );
+            }
+            
+            if (currentFilters.department) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.department === currentFilters.department
+                );
+            }
+            
+            if (currentFilters.company) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.companyName === currentFilters.company
+                );
+            }
+            
+            if (currentFilters.authorizer) {
+                filteredTransfers = filteredTransfers.filter(transfer =>
+                    transfer.authorizerName === currentFilters.authorizer
+                );
+            }
+            
+            if (currentFilters.dateStart && currentFilters.dateEnd) {
+                filteredTransfers = filteredTransfers.filter(transfer => {
+                    const transferDate = transfer.dateTime;
+                    return transferDate >= currentFilters.dateStart && transferDate <= currentFilters.dateEnd;
+                });
+            }
+            
+            return filteredTransfers;
+        }
+
         function applyFilters() {
-            currentFilters.name = filterName.value.trim().toLowerCase();
+            currentFilters.name = filterName.value.trim();
             currentFilters.department = filterDepartment.value;
             currentFilters.company = filterCompany.value;
             currentFilters.authorizer = filterAuthorizer.value;
-            
-            currentFilters.minCost = filterMinCost.value ? parseFloat(filterMinCost.value) : null;
-            currentFilters.maxCost = filterMaxCost.value ? parseFloat(filterMaxCost.value) : null;
             
             renderTransfers();
         }
@@ -1520,8 +1616,6 @@
             filterDepartment.value = '';
             filterCompany.value = '';
             filterAuthorizer.value = '';
-            filterMinCost.value = '';
-            filterMaxCost.value = '';
             filterDateRange.value = '';
             dateRangeDisplay.textContent = '';
             
@@ -1535,13 +1629,153 @@
                 company: '',
                 authorizer: '',
                 dateStart: null,
-                dateEnd: null,
-                minCost: null,
-                maxCost: null
+                dateEnd: null
             };
             
             renderTransfers();
             showMessage("✅ Todos los filtros han sido limpiados", "success");
+        }
+
+        // NUEVA FUNCIÓN: Aplicar filtros rápidos
+        function applyQuickFilter(filterType) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const startOfWeek = new Date(today);
+            const dayOfWeek = today.getDay();
+            const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            startOfWeek.setDate(today.getDate() - diffToMonday);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const startOfLastWeek = new Date(startOfWeek);
+            startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+            
+            const endOfLastWeek = new Date(startOfLastWeek);
+            endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+            
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            
+            const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+            
+            const startOfQuarter = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
+            
+            const startOfYear = new Date(today.getFullYear(), 0, 1);
+            
+            // Limpiar todos los filtros existentes primero
+            currentFilters = {
+                name: '',
+                department: '',
+                company: '',
+                authorizer: '',
+                dateStart: null,
+                dateEnd: null
+            };
+            
+            // Aplicar filtro específico
+            switch(filterType) {
+                case 'today':
+                    currentFilters.dateStart = new Date(today);
+                    currentFilters.dateEnd = new Date(today);
+                    break;
+                case 'yesterday':
+                    currentFilters.dateStart = new Date(yesterday);
+                    currentFilters.dateEnd = new Date(yesterday);
+                    break;
+                case 'thisWeek':
+                    currentFilters.dateStart = new Date(startOfWeek);
+                    currentFilters.dateEnd = new Date(endOfWeek);
+                    break;
+                case 'lastWeek':
+                    currentFilters.dateStart = new Date(startOfLastWeek);
+                    currentFilters.dateEnd = new Date(endOfLastWeek);
+                    break;
+                case 'thisMonth':
+                    currentFilters.dateStart = new Date(startOfMonth);
+                    currentFilters.dateEnd = new Date(endOfMonth);
+                    break;
+                case 'lastMonth':
+                    currentFilters.dateStart = new Date(startOfLastMonth);
+                    currentFilters.dateEnd = new Date(endOfLastMonth);
+                    break;
+                case 'thisQuarter':
+                    currentFilters.dateStart = new Date(startOfQuarter);
+                    currentFilters.dateEnd = new Date(endOfMonth);
+                    break;
+                case 'thisYear':
+                    currentFilters.dateStart = new Date(startOfYear);
+                    currentFilters.dateEnd = new Date(endOfMonth);
+                    break;
+                case 'ccs':
+                    // Filtro para CCS: departamentos que no son MSO
+                    currentFilters.department = 'CCS';
+                    break;
+                case 'mso':
+                    currentFilters.department = 'MSO';
+                    break;
+                case 'yummy':
+                    currentFilters.company = 'Yummy';
+                    break;
+                case 'andrew':
+                    currentFilters.company = 'Andrew';
+                    break;
+                case 'jorge':
+                    currentFilters.authorizer = 'Jorge Basualdo';
+                    break;
+                case 'mario':
+                    currentFilters.authorizer = 'Mario Fernandez';
+                    break;
+            }
+            
+            // Actualizar los campos de filtro en la UI
+            filterName.value = currentFilters.name;
+            filterDepartment.value = currentFilters.department === 'CCS' ? 'Administracion' : currentFilters.department;
+            filterCompany.value = currentFilters.company;
+            filterAuthorizer.value = currentFilters.authorizer;
+            
+            // Si hay rango de fechas, actualizar el picker
+            if (currentFilters.dateStart && currentFilters.dateEnd) {
+                const dateStr = `${currentFilters.dateStart.toLocaleDateString('es-ES')} - ${currentFilters.dateEnd.toLocaleDateString('es-ES')}`;
+                if (dateRangePicker) {
+                    dateRangePicker.setDate([currentFilters.dateStart, currentFilters.dateEnd]);
+                }
+                dateRangeDisplay.textContent = dateStr;
+            }
+            
+            // Aplicar los filtros
+            renderTransfers();
+            
+            // Mostrar mensaje de filtro aplicado
+            showMessage(`✅ Filtro rápido aplicado: ${getFilterDescription(filterType)}`, "success");
+        }
+
+        // Función auxiliar para obtener descripción del filtro
+        function getFilterDescription(filterType) {
+            const descriptions = {
+                'today': 'Hoy',
+                'yesterday': 'Ayer',
+                'thisWeek': 'Esta semana',
+                'lastWeek': 'Semana pasada',
+                'thisMonth': 'Este mes',
+                'lastMonth': 'Mes pasado',
+                'thisQuarter': 'Este trimestre',
+                'thisYear': 'Este año',
+                'ccs': 'Solo CCS',
+                'mso': 'Solo MSO',
+                'yummy': 'Empresa Yummy',
+                'andrew': 'Empresa Andrew',
+                'jorge': 'Autorizador Jorge Basualdo',
+                'mario': 'Autorizador Mario Fernandez'
+            };
+            return descriptions[filterType] || filterType;
         }
 
         function toggleView() {
@@ -1602,50 +1836,7 @@
             
             updateSelectedCount();
 
-            let filteredTransfers = [...transfers];
-            
-            if (currentFilters.name) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.requesterName.toLowerCase().includes(currentFilters.name)
-                );
-            }
-            
-            if (currentFilters.department) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.department === currentFilters.department
-                );
-            }
-            
-            if (currentFilters.company) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.companyName === currentFilters.company
-                );
-            }
-            
-            if (currentFilters.authorizer) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.authorizerName === currentFilters.authorizer
-                );
-            }
-            
-            if (currentFilters.dateStart && currentFilters.dateEnd) {
-                filteredTransfers = filteredTransfers.filter(transfer => {
-                    const transferDate = transfer.dateTime;
-                    return transferDate >= currentFilters.dateStart && transferDate <= currentFilters.dateEnd;
-                });
-            }
-            
-            if (currentFilters.minCost !== null) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.cost >= currentFilters.minCost
-                );
-            }
-            
-            if (currentFilters.maxCost !== null) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.cost <= currentFilters.maxCost
-                );
-            }
+            let filteredTransfers = getFilteredTransfers();
 
             resultsCount.textContent = filteredTransfers.length;
 
@@ -3052,12 +3243,6 @@
             showMessage(`✅ Reporte exportado a Excel: ${fileName}`, "success");
         }
 
-        // ============================================
-        // FUNCIÓN CORREGIDA PARA EXPORTAR PDF 
-        // ORDEN EXACTO: 
-        // PÁGINA 1: DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS
-        // PÁGINA 2: EMPRESAS PROVEEDORAS + RESUMEN POR UNIDAD
-        // ============================================
         function exportReportToPDF() {
             const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -3122,7 +3307,6 @@
                 }
             });
             
-            // Crear documento PDF en orientación horizontal
             const doc = new jsPDF({
                 orientation: 'landscape',
                 unit: 'mm',
@@ -3133,28 +3317,20 @@
             const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 12;
             
-            // ============================================
-            // PÁGINA 1: SOLO DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS
-            // ============================================
-            
-            // Título principal - CENTRADO
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
             doc.text('GASTOS DE TRASLADOS', pageWidth / 2, 15, { align: 'center' });
             
-            // Periodo - CENTRADO
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
             doc.text(`PERIODO: ${periodText.textContent}`, pageWidth / 2, 22, { align: 'center' });
             
-            // Línea separadora
             doc.setDrawColor(0, 91, 170);
             doc.setLineWidth(0.3);
             doc.line(margin, 26, pageWidth - margin, 26);
             
-            // SECCIÓN 1: Departamentos - CENTRADA
             doc.setFontSize(12);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
@@ -3195,7 +3371,6 @@
             departmentsData.push(['MSO', 'MSO', `$${totalMSOAmount.toFixed(2)}`]);
             departmentsData.push(['TOTAL, CCS + MSO', '', `$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`]);
             
-            // Ancho de tabla optimizado para centrar perfectamente
             const deptTableWidth = 190;
             const deptTableMargin = (pageWidth - deptTableWidth) / 2;
             
@@ -3230,25 +3405,19 @@
                 tableWidth: deptTableWidth
             });
             
-            // Fecha de generación en página 1
             let yPos = doc.autoTable.previous.finalY + 10;
             doc.setFontSize(7);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'normal');
             doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
             
-            // Footer página 1
             doc.setFontSize(6);
             doc.setTextColor(128, 128, 128);
             doc.text('Sistema de Control de Traslados de Taxi - Inter', pageWidth / 2, pageHeight - 8, { align: 'center' });
             doc.text('Página 1 de 2', pageWidth / 2, pageHeight - 4, { align: 'center' });
             
-            // ============================================
-            // PÁGINA 2: EMPRESAS PROVEEDORAS + RESUMEN POR UNIDAD
-            // ============================================
             doc.addPage();
             
-            // Título de página 2
             doc.setFontSize(16);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
@@ -3263,13 +3432,11 @@
             doc.setLineWidth(0.3);
             doc.line(margin, 26, pageWidth - margin, 26);
             
-            // SECCIÓN 2: Empresas - CENTRADA PERFECTAMENTE
             doc.setFontSize(12);
             doc.setTextColor(0, 91, 170);
             doc.setFont('helvetica', 'bold');
             doc.text('EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO', pageWidth / 2, 33, { align: 'center' });
             
-            // Calcular companyStats
             const companyStats = {};
             let totalCCSServicesCount = 0;
             let totalCCSAmountServices = 0;
@@ -3333,7 +3500,6 @@
                 `${totalCCSServicesCount + totalMSOServicesCount}\n$${(totalCCSAmountServices + totalMSOAmountServices).toFixed(2)}`
             ]);
             
-            // Ancho de tabla para centrar perfectamente
             const companyTableWidth = 200;
             const companyTableMargin = (pageWidth - companyTableWidth) / 2;
             
@@ -3370,7 +3536,6 @@
                 tableWidth: companyTableWidth
             });
             
-            // SECCIÓN 3: Resumen por unidad - CENTRADA (en página 2)
             yPos = doc.autoTable.previous.finalY + 15;
             
             doc.setFontSize(12);
@@ -3415,20 +3580,17 @@
                 tableWidth: unitTableWidth
             });
             
-            // Fecha de generación en página 2
             yPos = doc.autoTable.previous.finalY + 10;
             doc.setFontSize(7);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'normal');
             doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
             
-            // Footer página 2
             doc.setFontSize(6);
             doc.setTextColor(128, 128, 128);
             doc.text('Sistema de Control de Traslados de Taxi - Inter', pageWidth / 2, pageHeight - 8, { align: 'center' });
             doc.text('Página 2 de 2', pageWidth / 2, pageHeight - 4, { align: 'center' });
             
-            // Generar nombre de archivo
             let fileName = '';
             const periodType = reportPeriodType.value;
             
@@ -3457,6 +3619,199 @@
             
             doc.save(fileName);
             showMessage(`✅ Reporte exportado a PDF: ${fileName}`, "success");
+        }
+
+        // FUNCIÓN CORREGIDA: Exportar historial filtrado a PDF con columna de direcciones aún más ancha
+        function exportHistoryToPDF() {
+            const filteredTransfers = getFilteredTransfers();
+            
+            if (filteredTransfers.length === 0) {
+                showMessage("❌ No hay datos para exportar con los filtros actuales.", "error");
+                return;
+            }
+            
+            // Ordenar por fecha descendente
+            const sortedTransfers = filteredTransfers.sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+            
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'letter'
+            });
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 12;
+            
+            // Título
+            doc.setFontSize(16);
+            doc.setTextColor(0, 91, 170);
+            doc.setFont('helvetica', 'bold');
+            doc.text('HISTORIAL DE TRASLADOS', pageWidth / 2, 15, { align: 'center' });
+            
+            // Subtítulo con fecha del reporte
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            
+            let filterDescription = 'Filtros aplicados: ';
+            const filterParts = [];
+            
+            if (currentFilters.name) filterParts.push(`Nombre: ${currentFilters.name}`);
+            if (currentFilters.department) filterParts.push(`Depto: ${currentFilters.department}`);
+            if (currentFilters.company) filterParts.push(`Empresa: ${currentFilters.company}`);
+            if (currentFilters.authorizer) filterParts.push(`Autorizador: ${currentFilters.authorizer}`);
+            if (currentFilters.dateStart && currentFilters.dateEnd) {
+                const startStr = currentFilters.dateStart.toLocaleDateString('es-ES');
+                const endStr = currentFilters.dateEnd.toLocaleDateString('es-ES');
+                filterParts.push(`Fecha: ${startStr} - ${endStr}`);
+            }
+            
+            filterDescription += filterParts.length > 0 ? filterParts.join(' | ') : 'Ninguno';
+            
+            // Dividir la descripción si es muy larga
+            if (filterDescription.length > 80) {
+                const firstLine = filterDescription.substring(0, 80);
+                const secondLine = filterDescription.substring(80);
+                doc.text(firstLine, pageWidth / 2, 22, { align: 'center' });
+                doc.text(secondLine, pageWidth / 2, 27, { align: 'center' });
+                var yStart = 32;
+            } else {
+                doc.text(filterDescription, pageWidth / 2, 22, { align: 'center' });
+                var yStart = 27;
+            }
+            
+            // Línea separadora
+            doc.setDrawColor(0, 91, 170);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yStart + 2, pageWidth - margin, yStart + 2);
+            
+            // Preparar datos para la tabla con detalles completos de direcciones
+            const tableData = sortedTransfers.map(transfer => {
+                const serviceType = getServiceTypeWithMSO(transfer.department, transfer.msoDepartment);
+                const formattedDate = transfer.dateTime.toLocaleDateString('es-ES', {
+                    year: 'numeric', month: '2-digit', day: '2-digit'
+                });
+                
+                // Construir dirección completa de ida
+                let direccionIda = '';
+                if (transfer.originPlace || transfer.destinationPlace) {
+                    direccionIda = `Ida: ${transfer.originPlace || 'N/A'} → ${transfer.destinationPlace || 'N/A'}`;
+                }
+                
+                // Construir dirección completa de vuelta
+                let direccionVuelta = '';
+                if (transfer.returnAddress || transfer.returnDestination) {
+                    direccionVuelta = `Vuelta: ${transfer.returnAddress || 'N/A'} → ${transfer.returnDestination || 'N/A'}`;
+                }
+                
+                // Combinar ambas direcciones con salto de línea para mejor legibilidad
+                let direccionCompleta = '';
+                if (direccionIda && direccionVuelta) {
+                    direccionCompleta = `${direccionIda}\n${direccionVuelta}`;
+                } else if (direccionIda) {
+                    direccionCompleta = direccionIda;
+                } else if (direccionVuelta) {
+                    direccionCompleta = direccionVuelta;
+                } else {
+                    direccionCompleta = 'N/A';
+                }
+                
+                return [
+                    formattedDate,
+                    transfer.requesterName.substring(0, 25),
+                    transfer.department || 'N/A',
+                    serviceType.text,
+                    transfer.companyName || 'N/A',
+                    direccionCompleta, // Dirección completa
+                    `$${transfer.cost.toFixed(2)}`
+                ];
+            });
+            
+            // Calcular total
+            const totalAmount = sortedTransfers.reduce((sum, t) => sum + t.cost, 0);
+            
+            // Agregar fila de total al final
+            tableData.push(['', '', '', '', '', 'TOTAL:', `$${totalAmount.toFixed(2)}`]);
+            
+            // Configurar la tabla con columna de direcciones más ancha
+            doc.autoTable({
+                startY: yStart + 5,
+                head: [['FECHA', 'SOLICITANTE', 'DEPTO', 'TIPO', 'EMPRESA', 'DIRECCIÓN COMPLETA (IDA Y VUELTA)', 'COSTO']],
+                body: tableData,
+                theme: 'striped',
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 7,
+                    cellPadding: 3,
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.1,
+                    halign: 'center',
+                    valign: 'middle',
+                    overflow: 'linebreak',
+                    cellWidth: 'wrap'
+                },
+                headStyles: { 
+                    fillColor: [0, 91, 170], 
+                    textColor: [255, 255, 255],
+                    fontSize: 8,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                columnStyles: {
+                    0: { cellWidth: 18 },      // Fecha
+                    1: { cellWidth: 28 },      // Solicitante
+                    2: { cellWidth: 20 },      // Departamento
+                    3: { cellWidth: 15 },      // Tipo
+                    4: { cellWidth: 23 },      // Empresa
+                    5: { cellWidth: 100, halign: 'left', minCellHeight: 14 }, // Direcciones - MÁS ANCHA (100mm)
+                    6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' } // Costo
+                },
+                foot: [['', '', '', '', '', 'TOTAL:', `$${totalAmount.toFixed(2)}`]],
+                footStyles: {
+                    fillColor: [240, 240, 240],
+                    textColor: [0, 91, 170],
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                didParseCell: function(data) {
+                    // Para la columna de direcciones, asegurar que el texto se muestre completo
+                    if (data.column.index === 5) {
+                        data.cell.styles.cellWidth = 100;
+                        data.cell.styles.minCellHeight = 14;
+                        data.cell.styles.valign = 'middle';
+                        data.cell.styles.halign = 'left';
+                        data.cell.styles.fontSize = 6.5;
+                    }
+                }
+            });
+            
+            // Fecha de generación
+            const finalY = doc.autoTable.previous.finalY + 10;
+            doc.setFontSize(7);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')} - Total registros: ${sortedTransfers.length}`, pageWidth / 2, finalY, { align: 'center' });
+            
+            // Footer
+            doc.setFontSize(6);
+            doc.setTextColor(128, 128, 128);
+            doc.text('Sistema de Control de Traslados de Taxi - Inter', pageWidth / 2, pageHeight - 8, { align: 'center' });
+            
+            // Número de página
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(6);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, pageHeight - 4, { align: 'center' });
+            }
+            
+            // Generar nombre de archivo
+            const fileName = `Historial_Traslados_${new Date().toISOString().slice(0,10)}.pdf`;
+            
+            doc.save(fileName);
+            showMessage(`✅ Historial exportado a PDF: ${fileName}`, "success");
         }
 
         tabDashboard.addEventListener('click', () => {
@@ -3492,6 +3847,18 @@
             }
         });
 
+        // Agregar event listeners a los botones de filtros rápidos
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filterType = e.target.dataset.filter;
+                applyQuickFilter(filterType);
+                
+                // Actualizar estado activo de los botones
+                document.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+
         applyFiltersBtn.addEventListener('click', applyFilters);
         clearAllFiltersBtn.addEventListener('click', clearAllFilters);
         toggleViewBtn.addEventListener('click', toggleView);
@@ -3500,8 +3867,6 @@
         filterDepartment.addEventListener('change', applyFilters);
         filterCompany.addEventListener('change', applyFilters);
         filterAuthorizer.addEventListener('change', applyFilters);
-        filterMinCost.addEventListener('input', debounce(applyFilters, 500));
-        filterMaxCost.addEventListener('input', debounce(applyFilters, 500));
 
         function debounce(func, wait) {
             let timeout;
@@ -3531,6 +3896,9 @@
         generateReportBtn.addEventListener('click', generateReport);
         exportReportExcelBtn.addEventListener('click', exportReportToExcel);
         exportReportPDFBtn.addEventListener('click', exportReportToPDF);
+        
+        // Event listener para exportar historial a PDF
+        exportHistoryPdfBtn.addEventListener('click', exportHistoryToPDF);
 
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -3598,50 +3966,7 @@
         });
 
         exportCsvBtn.addEventListener('click', () => {
-            let transfersToExport = [...transfers];
-            
-            if (currentFilters.name) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.requesterName.toLowerCase().includes(currentFilters.name)
-                );
-            }
-            
-            if (currentFilters.department) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.department === currentFilters.department
-                );
-            }
-            
-            if (currentFilters.company) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.companyName === currentFilters.company
-                );
-            }
-            
-            if (currentFilters.authorizer) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.authorizerName === currentFilters.authorizer
-                );
-            }
-            
-            if (currentFilters.dateStart && currentFilters.dateEnd) {
-                transfersToExport = transfersToExport.filter(transfer => {
-                    const transferDate = transfer.dateTime;
-                    return transferDate >= currentFilters.dateStart && transferDate <= currentFilters.dateEnd;
-                });
-            }
-            
-            if (currentFilters.minCost !== null) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.cost >= currentFilters.minCost
-                );
-            }
-            
-            if (currentFilters.maxCost !== null) {
-                transfersToExport = transfersToExport.filter(transfer =>
-                    transfer.cost <= currentFilters.maxCost
-                );
-            }
+            let transfersToExport = getFilteredTransfers();
 
             if (transfersToExport.length === 0) {
                 showMessage("❌ No hay datos para exportar con los filtros actuales.", "error");
