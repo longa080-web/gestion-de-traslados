@@ -280,6 +280,31 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
+        /* Estilos para la sección de hora de espera */
+        .waiting-time-container {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+            border: 1px solid #b9e6ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .total-display {
+            background: linear-gradient(135deg, #005BAA 0%, #003366 100%);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .observations-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 p-2 md:p-4 min-h-screen flex flex-col items-center">
@@ -429,6 +454,19 @@
                                        class="form-control w-full"
                                        placeholder="Ej. Domicilio particular, Otro cliente, N/A">
                             </div>
+                            
+                            <!-- NUEVO CAMPO: Observaciones del traslado -->
+                            <div class="col-span-1 md:col-span-3 space-y-2">
+                                <label for="observations" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="flex items-center">
+                                        <span class="mr-2">📝</span> Observaciones del Traslado
+                                    </span>
+                                </label>
+                                <textarea id="observations" 
+                                          class="form-control w-full observations-textarea"
+                                          placeholder="Escribe aquí cualquier observación relevante sobre el traslado (ej. motivo del viaje, instrucciones especiales, etc.)"></textarea>
+                            </div>
+                            
                             <div class="space-y-2">
                                 <label for="transferDate" class="block text-sm font-medium text-gray-700 mb-1">
                                     <span class="flex items-center">
@@ -438,15 +476,62 @@
                                 <input type="date" id="transferDate" required
                                        class="form-control w-full">
                             </div>
-                            <div class="space-y-2">
-                                <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">
-                                    <span class="flex items-center">
-                                        <span class="mr-2">💰</span> Costo del Traslado (USD $)
-                                    </span>
-                                </label>
-                                <input type="number" id="cost" step="0.01" min="0" value="0.00" required
-                                       class="form-control w-full">
+                            
+                            <!-- NUEVA SECCIÓN: Costo base y hora de espera -->
+                            <div class="col-span-1 md:col-span-3 waiting-time-container">
+                                <h3 class="text-md font-bold text-inter-primary mb-3 flex items-center">
+                                    <span class="mr-2">⏱️</span> Información de Costos
+                                </h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div class="space-y-2">
+                                        <label for="baseCost" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <span class="flex items-center">
+                                                <span class="mr-2">💰</span> Costo Base del Traslado (USD $)
+                                            </span>
+                                        </label>
+                                        <input type="number" id="baseCost" step="0.01" min="0" value="0.00" required
+                                               class="form-control w-full"
+                                               onchange="calculateTotalCost()"
+                                               onkeyup="calculateTotalCost()">
+                                    </div>
+                                    
+                                    <div class="space-y-2">
+                                        <label for="hasWaitingTime" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <span class="flex items-center">
+                                                <span class="mr-2">⏱️</span> ¿Cobra hora de espera?
+                                            </span>
+                                        </label>
+                                        <select id="hasWaitingTime" 
+                                                class="form-control w-full"
+                                                onchange="toggleWaitingTimeFields()">
+                                            <option value="no" selected>No</option>
+                                            <option value="yes">Sí</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="waitingTimeFields" class="hidden space-y-2">
+                                        <label for="waitingTimeAmount" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <span class="flex items-center">
+                                                <span class="mr-2">⏱️</span> Monto hora de espera (USD $)
+                                            </span>
+                                        </label>
+                                        <input type="number" id="waitingTimeAmount" step="0.01" min="0" value="0.00"
+                                               class="form-control w-full"
+                                               onchange="calculateTotalCost()"
+                                               onkeyup="calculateTotalCost()">
+                                    </div>
+                                </div>
+                                
+                                <div class="total-display">
+                                    <span class="text-white/80 text-sm mr-2">TOTAL DEL SERVICIO:</span>
+                                    <span id="totalCostDisplay" class="text-xl font-bold">$0.00</span>
+                                </div>
+                                
+                                <!-- Campo oculto para almacenar el costo total calculado -->
+                                <input type="hidden" id="cost" name="cost" value="0.00">
                             </div>
+                            
                             <div class="space-y-2">
                                 <label for="authorizerName" class="block text-sm font-medium text-gray-700 mb-1">
                                     <span class="flex items-center">
@@ -1147,8 +1232,17 @@
         const destinationPlaceInput = document.getElementById('destinationPlace');
         const returnAddressInput = document.getElementById('returnAddress');
         const returnDestinationInput = document.getElementById('returnDestination');
-        const transferDateInput = document.getElementById('transferDate');
+        
+        // NUEVOS ELEMENTOS
+        const observationsInput = document.getElementById('observations');
+        const baseCostInput = document.getElementById('baseCost');
+        const hasWaitingTimeSelect = document.getElementById('hasWaitingTime');
+        const waitingTimeFields = document.getElementById('waitingTimeFields');
+        const waitingTimeAmountInput = document.getElementById('waitingTimeAmount');
+        const totalCostDisplay = document.getElementById('totalCostDisplay');
         const costInput = document.getElementById('cost');
+        
+        const transferDateInput = document.getElementById('transferDate');
         const authorizerNameInput = document.getElementById('authorizerName');
         const companyNameInput = document.getElementById('companyName');
         const messageBox = document.getElementById('messageBox');
@@ -1297,6 +1391,29 @@
             { name: "OSCAR", code: "Oscar" },
             { name: "YUMMY", code: "Yummy" }
         ];
+
+        // NUEVA FUNCIÓN: Calcular costo total
+        function calculateTotalCost() {
+            const baseCost = parseFloat(baseCostInput.value) || 0;
+            const waitingTimeAmount = parseFloat(waitingTimeAmountInput.value) || 0;
+            const hasWaitingTime = hasWaitingTimeSelect.value === 'yes';
+            
+            const totalCost = baseCost + (hasWaitingTime ? waitingTimeAmount : 0);
+            
+            totalCostDisplay.textContent = `$${totalCost.toFixed(2)}`;
+            costInput.value = totalCost.toFixed(2);
+        }
+
+        // NUEVA FUNCIÓN: Mostrar/ocultar campos de hora de espera
+        function toggleWaitingTimeFields() {
+            if (hasWaitingTimeSelect.value === 'yes') {
+                waitingTimeFields.classList.remove('hidden');
+            } else {
+                waitingTimeFields.classList.add('hidden');
+                waitingTimeAmountInput.value = '0.00';
+            }
+            calculateTotalCost();
+        }
 
         // Función para capitalizar primera letra y el resto minúsculas
         function capitalizeFirstLetter(string) {
@@ -1896,12 +2013,16 @@
                                     <div>
                                         <strong>Departamento MSO:</strong> ${transfer.msoDepartment || 'N/A'}<br>
                                         <strong>Vuelta Partida:</strong> ${transfer.returnAddress || 'N/A'}<br>
-                                        <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}
+                                        <strong>Vuelta Destino:</strong> ${transfer.returnDestination || 'N/A'}<br>
+                                        <strong>Observaciones:</strong> ${transfer.observations || 'N/A'}
                                     </div>
                                     <div>
                                         <strong>Autoriza:</strong> ${transfer.authorizerName || 'N/A'}<br>
                                         <strong>Tipo Servicio:</strong> 
                                         <span class="service-type-badge ${serviceType.badgeClass}">${serviceType.text}</span><br>
+                                        <strong>Costo Base:</strong> $${(transfer.baseCost || transfer.cost || 0).toFixed(2)}<br>
+                                        <strong>Hora Espera:</strong> ${transfer.hasWaitingTime === 'yes' ? 'Sí' : 'No'}<br>
+                                        <strong>Monto Espera:</strong> $${(transfer.waitingTimeAmount || 0).toFixed(2)}<br>
                                         <strong>ID:</strong> ${transfer.id.substring(0, 8)}...
                                     </div>
                                 </div>
@@ -2011,13 +2132,26 @@
             returnAddressInput.value = transfer.returnAddress || '';
             returnDestinationInput.value = transfer.returnDestination || '';
             
+            // NUEVOS CAMPOS
+            observationsInput.value = transfer.observations || '';
+            baseCostInput.value = (transfer.baseCost || transfer.cost || 0).toFixed(2);
+            hasWaitingTimeSelect.value = transfer.hasWaitingTime || 'no';
+            waitingTimeAmountInput.value = (transfer.waitingTimeAmount || 0).toFixed(2);
+            
+            if (hasWaitingTimeSelect.value === 'yes') {
+                waitingTimeFields.classList.remove('hidden');
+            } else {
+                waitingTimeFields.classList.add('hidden');
+            }
+            
+            calculateTotalCost();
+            
             const transferDate = transfer.dateTime;
             const year = transferDate.getFullYear();
             const month = String(transferDate.getMonth() + 1).padStart(2, '0');
             const day = String(transferDate.getDate()).padStart(2, '0');
             transferDateInput.value = `${year}-${month}-${day}`;
             
-            costInput.value = transfer.cost.toFixed(2);
             authorizerNameInput.value = transfer.authorizerName;
             companyNameInput.value = transfer.companyName;
 
@@ -2037,6 +2171,13 @@
             msoDepartmentsContainer.classList.add('hidden');
             msoDepartmentInput.required = false;
             serviceTypeBadge.classList.add('hidden');
+            
+            // Resetear campos de costo
+            baseCostInput.value = '0.00';
+            hasWaitingTimeSelect.value = 'no';
+            waitingTimeFields.classList.add('hidden');
+            waitingTimeAmountInput.value = '0.00';
+            calculateTotalCost();
             
             const today = new Date();
             const year = today.getFullYear();
@@ -3921,8 +4062,13 @@
                     destinationPlace: destinationPlaceInput.value.trim(),
                     returnAddress: returnAddressInput.value.trim(),
                     returnDestination: returnDestinationInput.value.trim(),
+                    // NUEVOS CAMPOS
+                    observations: observationsInput.value.trim(),
+                    baseCost: parseFloat(baseCostInput.value) || 0,
+                    hasWaitingTime: hasWaitingTimeSelect.value,
+                    waitingTimeAmount: hasWaitingTimeSelect.value === 'yes' ? (parseFloat(waitingTimeAmountInput.value) || 0) : 0,
                     dateTime: dateTime,
-                    cost: parseFloat(costInput.value),
+                    cost: parseFloat(costInput.value), // Costo total calculado
                     authorizerName: authorizerNameInput.value,
                     companyName: companyNameInput.value
                 };
@@ -3933,6 +4079,13 @@
                     msoDepartmentsContainer.classList.add('hidden');
                     msoDepartmentInput.required = false;
                     serviceTypeBadge.classList.add('hidden');
+                    
+                    // Resetear campos de costo
+                    baseCostInput.value = '0.00';
+                    hasWaitingTimeSelect.value = 'no';
+                    waitingTimeFields.classList.add('hidden');
+                    waitingTimeAmountInput.value = '0.00';
+                    calculateTotalCost();
                     
                     const today = new Date();
                     const currentYear = today.getFullYear();
@@ -3985,9 +4138,13 @@
                     'Origen Destino': t.destinationPlace || '',
                     'Vuelta Partida': t.returnAddress || '',
                     'Vuelta Destino': t.returnDestination || '',
+                    'Observaciones': t.observations || '',
+                    'Costo Base': t.baseCost || t.cost || 0,
+                    'Hora Espera': t.hasWaitingTime || 'no',
+                    'Monto Espera': t.waitingTimeAmount || 0,
                     'Quién Autoriza': t.authorizerName,
                     'Empresa de Traslado': t.companyName,
-                    'Costo ($)': t.cost
+                    'Costo Total ($)': t.cost
                 };
             });
 
@@ -4048,7 +4205,7 @@
                 for (let i = 1; i < jsonData.length; i++) {
                     const row = jsonData[i];
                     if (row.length >= 11) {
-                        const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, authorizerName, companyName, cost] = row;
+                        const [dateStr, requesterName, department, msoDepartment, originPlace, destinationPlace, returnAddress, returnDestination, observations, baseCost, hasWaitingTime, waitingTimeAmount, authorizerName, companyName, cost] = row;
                         
                         let dateTime;
                         if (dateStr.includes('/')) {
@@ -4070,6 +4227,10 @@
                                 destinationPlace: destinationPlace?.toString() || '',
                                 returnAddress: returnAddress?.toString() || '',
                                 returnDestination: returnDestination?.toString() || '',
+                                observations: observations?.toString() || '',
+                                baseCost: parseFloat(baseCost) || 0,
+                                hasWaitingTime: hasWaitingTime?.toString() || 'no',
+                                waitingTimeAmount: parseFloat(waitingTimeAmount) || 0,
                                 dateTime: dateTime,
                                 cost: parseFloat(cost) || 0,
                                 authorizerName: authorizerName?.toString() || '',
@@ -4099,6 +4260,10 @@
                                 destinationPlace: '',
                                 returnAddress: returnAddress?.toString() || '',
                                 returnDestination: '',
+                                observations: '',
+                                baseCost: parseFloat(cost) || 0,
+                                hasWaitingTime: 'no',
+                                waitingTimeAmount: 0,
                                 dateTime: dateTime,
                                 cost: parseFloat(cost) || 0,
                                 authorizerName: authorizerName?.toString() || '',
@@ -4168,6 +4333,9 @@
             handlePeriodTypeChange();
             
             loadTransfers();
+            
+            // Inicializar cálculo de costo total
+            calculateTotalCost();
         });
 
         window.addEventListener('beforeunload', () => {
@@ -4180,6 +4348,8 @@
         window.toggleRowExpansion = toggleRowExpansion;
         window.toggleRowDetails = toggleRowDetails;
         window.updateSelectedCount = updateSelectedCount;
+        window.calculateTotalCost = calculateTotalCost;
+        window.toggleWaitingTimeFields = toggleWaitingTimeFields;
     </script>
 </body>
 </html>
