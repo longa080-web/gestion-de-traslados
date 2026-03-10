@@ -133,6 +133,57 @@
             border-color: #005BAA;
         }
         
+        /* Estilos para filtro de departamentos jerárquico */
+        .dept-filter-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .dept-filter-header {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .dept-filter-header:hover {
+            background: #f1f5f9;
+        }
+        .dept-filter-header input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .dept-subitems {
+            margin-left: 30px;
+            padding-left: 15px;
+            border-left: 2px solid #e5e7eb;
+        }
+        .dept-subitem {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+        }
+        .dept-subitem:hover {
+            background: #f8fafc;
+        }
+        .dept-subitem input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .badge-dept-count {
+            background: #e5e7eb;
+            color: #4b5563;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
         @media (max-width: 768px) {
             .responsive-table {
                 display: block;
@@ -683,7 +734,7 @@
                             </div>
                         </div>
 
-                        <!-- Filtros Avanzados (sin rango de costo) -->
+                        <!-- FILTROS AVANZADOS CON FILTRO JERÁRQUICO DE DEPARTAMENTOS -->
                         <div id="filtersSection" class="filter-section collapsed mb-6 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div class="space-y-2">
@@ -695,24 +746,157 @@
                                            placeholder="Buscar por nombre o apellido">
                                 </div>
                                 
-                                <div class="space-y-2">
-                                    <label for="filterDepartment" class="block text-sm font-medium text-gray-700">
-                                        🏢 Departamento
+                                <!-- FILTRO JERÁRQUICO DE DEPARTAMENTOS -->
+                                <div class="col-span-1 md:col-span-2 space-y-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        🏢 Departamento (selección jerárquica)
                                     </label>
-                                    <select id="filterDepartment" 
-                                            class="form-control w-full">
-                                        <option value="">Todos los departamentos</option>
-                                        <option value="Administracion">Administración</option>
-                                        <option value="Area Comercial">Área Comercial</option>
-                                        <option value="Area tecnica">Área Técnica</option>
-                                        <option value="Obras">Obras</option>
-                                        <option value="RRHH y Seguridad Laboral">RRHH y Seguridad Laboral</option>
-                                        <option value="Sistemas">Sistemas</option>
-                                        <option value="Gerencia Senior">Gerencia Senior</option>
-                                        <option value="Limpieza">Limpieza</option>
-                                        <option value="Colaboradores">Colaboradores</option>
-                                        <option value="MSO">MSO</option>
-                                    </select>
+                                    <div class="dept-filter-container">
+                                        <!-- CCS Principal -->
+                                        <div class="dept-filter-header" onclick="toggleDepartmentGroup('ccs')">
+                                            <input type="checkbox" id="filterDeptCCS" 
+                                                   onclick="event.stopPropagation()"
+                                                   onchange="handleDepartmentGroupChange('ccs')"
+                                                   class="h-4 w-4 text-inter-primary rounded">
+                                            <span class="font-semibold text-inter-primary">CCS - CENTRO DE SERVICIOS COMPARTIDOS</span>
+                                            <span id="ccsCount" class="badge-dept-count">0</span>
+                                            <span class="ml-auto text-gray-500" id="ccsArrow">▼</span>
+                                        </div>
+                                        <div id="ccsSubDepts" class="dept-subitems hidden">
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptAdministracion" 
+                                                       data-group="ccs" data-dept="Administracion"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptAdministracion" class="text-sm">Administración</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptAreaComercial" 
+                                                       data-group="ccs" data-dept="Area Comercial"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptAreaComercial" class="text-sm">Área Comercial</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptAreaTecnica" 
+                                                       data-group="ccs" data-dept="Area tecnica"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptAreaTecnica" class="text-sm">Área Técnica</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptObras" 
+                                                       data-group="ccs" data-dept="Obras"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptObras" class="text-sm">Obras</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptRRHH" 
+                                                       data-group="ccs" data-dept="RRHH y Seguridad Laboral"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptRRHH" class="text-sm">RRHH y Seguridad Laboral</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptSistemas" 
+                                                       data-group="ccs" data-dept="Sistemas"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptSistemas" class="text-sm">Sistemas</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptGerenciaSenior" 
+                                                       data-group="ccs" data-dept="Gerencia Senior"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptGerenciaSenior" class="text-sm">Gerencia Senior</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptLimpiezaCCS" 
+                                                       data-group="ccs" data-dept="Limpieza" data-ccs-only="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptLimpiezaCCS" class="text-sm">Limpieza (CCS)</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptColaboradoresCCS" 
+                                                       data-group="ccs" data-dept="Colaboradores" data-ccs-only="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptColaboradoresCCS" class="text-sm">Colaboradores (CCS)</label>
+                                            </div>
+                                        </div>
+
+                                        <!-- MSO Principal -->
+                                        <div class="dept-filter-header mt-3" onclick="toggleDepartmentGroup('mso')">
+                                            <input type="checkbox" id="filterDeptMSO" 
+                                                   onclick="event.stopPropagation()"
+                                                   onchange="handleDepartmentGroupChange('mso')"
+                                                   class="h-4 w-4 text-inter-primary rounded">
+                                            <span class="font-semibold text-yellow-600">MSO - MANAGEMENT SERVICES OFFICE</span>
+                                            <span id="msoCount" class="badge-dept-count">0</span>
+                                            <span class="ml-auto text-gray-500" id="msoArrow">▼</span>
+                                        </div>
+                                        <div id="msoSubDepts" class="dept-subitems hidden">
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptMarketing" 
+                                                       data-group="mso" data-dept="Marketing" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptMarketing" class="text-sm">Marketing</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptPresidencia" 
+                                                       data-group="mso" data-dept="Presidencia" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptPresidencia" class="text-sm">Presidencia</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptInterconexiones" 
+                                                       data-group="mso" data-dept="Interconexiones" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptInterconexiones" class="text-sm">Interconexiones</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptImportaciones" 
+                                                       data-group="mso" data-dept="Importaciones" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptImportaciones" class="text-sm">Importaciones</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptRRHHMSO" 
+                                                       data-group="mso" data-dept="RRHH MSO" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptRRHHMSO" class="text-sm">RRHH MSO</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptDocObras" 
+                                                       data-group="mso" data-dept="Documentacion de obras" data-mso-dept="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptDocObras" class="text-sm">Documentación de Obras</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptLimpiezaMSO" 
+                                                       data-group="mso" data-dept="Limpieza" data-mso-only="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptLimpiezaMSO" class="text-sm">Limpieza (MSO)</label>
+                                            </div>
+                                            <div class="dept-subitem">
+                                                <input type="checkbox" id="filterDeptColaboradoresMSO" 
+                                                       data-group="mso" data-dept="Colaboradores" data-mso-only="true"
+                                                       onchange="handleSubDepartmentChange()"
+                                                       class="h-4 w-4 text-inter-primary rounded">
+                                                <label for="filterDeptColaboradoresMSO" class="text-sm">Colaboradores (MSO)</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <div class="space-y-2">
@@ -1305,7 +1489,6 @@
         const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
         const filtersSection = document.getElementById('filtersSection');
         const filterName = document.getElementById('filterName');
-        const filterDepartment = document.getElementById('filterDepartment');
         const filterCompany = document.getElementById('filterCompany');
         const filterAuthorizer = document.getElementById('filterAuthorizer');
         const filterDateRange = document.getElementById('filterDateRange');
@@ -1316,6 +1499,16 @@
         const toggleViewText = document.getElementById('toggleViewText');
         const resultsCount = document.getElementById('resultsCount');
         const selectedCount = document.getElementById('selectedCount');
+
+        // Elementos de filtro jerárquico
+        const filterDeptCCS = document.getElementById('filterDeptCCS');
+        const filterDeptMSO = document.getElementById('filterDeptMSO');
+        const ccsSubDepts = document.getElementById('ccsSubDepts');
+        const msoSubDepts = document.getElementById('msoSubDepts');
+        const ccsArrow = document.getElementById('ccsArrow');
+        const msoArrow = document.getElementById('msoArrow');
+        const ccsCount = document.getElementById('ccsCount');
+        const msoCount = document.getElementById('msoCount');
 
         // Gráficos
         const monthlyCompanyChartCtx = document.getElementById('monthlyCompanyChart').getContext('2d');
@@ -1340,7 +1533,7 @@
         let unsubscribeTransfers = null;
         let currentFilters = {
             name: '',
-            department: '',
+            departments: [], // Array de departamentos seleccionados
             company: '',
             authorizer: '',
             dateStart: null,
@@ -1422,9 +1615,15 @@
         }
 
         // Función para determinar si un departamento es MSO o CCS
-        function getServiceType(department) {
+        function getServiceType(department, msoDepartment) {
             if (department === 'MSO') {
                 return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
+            } else if (department === 'Limpieza' || department === 'Colaboradores') {
+                if (msoDepartment) {
+                    return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
+                } else {
+                    return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
+                }
             } else {
                 return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
             }
@@ -1432,19 +1631,7 @@
 
         // Función para determinar si un traslado con msoDepartment es MSO o CCS
         function getServiceTypeWithMSO(department, msoDepartment) {
-            if (department === 'MSO') {
-                return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
-            }
-            else if (department === 'Limpieza' || department === 'Colaboradores') {
-                if (msoDepartment) {
-                    return { type: 'MSO', text: 'MSO', badgeClass: 'badge-mso' };
-                } else {
-                    return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
-                }
-            }
-            else {
-                return { type: 'CCS', text: 'CCS', badgeClass: 'badge-ccs' };
-            }
+            return getServiceType(department, msoDepartment);
         }
 
         // Función para determinar el autorizador apropiado basado en el tipo de servicio
@@ -1515,6 +1702,170 @@
                     }
                 }
             });
+        }
+
+        // FUNCIONES PARA EL FILTRO JERÁRQUICO DE DEPARTAMENTOS
+        
+        // Función para toggle de grupos de departamentos
+        function toggleDepartmentGroup(group) {
+            if (group === 'ccs') {
+                ccsSubDepts.classList.toggle('hidden');
+                ccsArrow.textContent = ccsSubDepts.classList.contains('hidden') ? '▼' : '▲';
+            } else if (group === 'mso') {
+                msoSubDepts.classList.toggle('hidden');
+                msoArrow.textContent = msoSubDepts.classList.contains('hidden') ? '▼' : '▲';
+            }
+        }
+
+        // Función para manejar cambio en checkbox de grupo
+        function handleDepartmentGroupChange(group) {
+            const checkboxes = document.querySelectorAll(`#${group}SubDepts input[type="checkbox"]`);
+            const isChecked = group === 'ccs' ? filterDeptCCS.checked : filterDeptMSO.checked;
+            
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+            });
+            
+            updateDepartmentCounts();
+            applyFilters();
+        }
+
+        // Función para manejar cambio en subdepartamentos
+        function handleSubDepartmentChange() {
+            updateDepartmentCounts();
+            updateGroupCheckboxes();
+            applyFilters();
+        }
+
+        // Función para actualizar los contadores de departamentos
+        function updateDepartmentCounts() {
+            const ccsCheckboxes = document.querySelectorAll('#ccsSubDepts input[type="checkbox"]');
+            const msoCheckboxes = document.querySelectorAll('#msoSubDepts input[type="checkbox"]');
+            
+            const ccsChecked = Array.from(ccsCheckboxes).filter(cb => cb.checked).length;
+            const msoChecked = Array.from(msoCheckboxes).filter(cb => cb.checked).length;
+            
+            ccsCount.textContent = ccsChecked;
+            msoCount.textContent = msoChecked;
+        }
+
+        // Función para actualizar checkboxes de grupo basado en subdepartamentos
+        function updateGroupCheckboxes() {
+            const ccsCheckboxes = document.querySelectorAll('#ccsSubDepts input[type="checkbox"]');
+            const msoCheckboxes = document.querySelectorAll('#msoSubDepts input[type="checkbox"]');
+            
+            const allCcsChecked = ccsCheckboxes.length > 0 && Array.from(ccsCheckboxes).every(cb => cb.checked);
+            const allMsoChecked = msoCheckboxes.length > 0 && Array.from(msoCheckboxes).every(cb => cb.checked);
+            
+            filterDeptCCS.checked = allCcsChecked;
+            filterDeptMSO.checked = allMsoChecked;
+        }
+
+        // Función para obtener los departamentos seleccionados
+        function getSelectedDepartments() {
+            const departments = [];
+            
+            // CCS subdepartamentos
+            const ccsCheckboxes = document.querySelectorAll('#ccsSubDepts input[type="checkbox"]:checked');
+            ccsCheckboxes.forEach(cb => {
+                const dept = cb.dataset.dept;
+                const isCcsOnly = cb.dataset.ccsOnly === 'true';
+                
+                if (dept) {
+                    if (isCcsOnly) {
+                        // Para Limpieza y Colaboradores CCS, solo incluir si NO tienen msoDepartment
+                        departments.push({ type: 'ccs', dept: dept, msoRequired: false, ccsOnly: true });
+                    } else {
+                        departments.push({ type: 'ccs', dept: dept, msoRequired: false });
+                    }
+                }
+            });
+            
+            // MSO subdepartamentos
+            const msoCheckboxes = document.querySelectorAll('#msoSubDepts input[type="checkbox"]:checked');
+            msoCheckboxes.forEach(cb => {
+                const dept = cb.dataset.dept;
+                const isMsoDept = cb.dataset.msoDept === 'true';
+                const isMsoOnly = cb.dataset.msoOnly === 'true';
+                
+                if (dept) {
+                    if (isMsoOnly) {
+                        // Para Limpieza y Colaboradores MSO, requieren msoDepartment
+                        departments.push({ type: 'mso', dept: dept, msoRequired: true, msoOnly: true });
+                    } else if (isMsoDept) {
+                        // Departamentos específicos MSO (Marketing, Presidencia, etc.)
+                        departments.push({ type: 'mso', dept: dept, msoRequired: true, specificMso: dept });
+                    } else {
+                        // Para otros casos
+                        departments.push({ type: 'mso', dept: dept, msoRequired: true });
+                    }
+                }
+            });
+            
+            return departments;
+        }
+
+        // Función para limpiar todos los filtros de departamento
+        function clearDepartmentFilters() {
+            // Desmarcar checkboxes de grupo
+            filterDeptCCS.checked = false;
+            filterDeptMSO.checked = false;
+            
+            // Desmarcar todos los subdepartamentos
+            document.querySelectorAll('#ccsSubDepts input[type="checkbox"], #msoSubDepts input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            updateDepartmentCounts();
+        }
+
+        // Función para obtener filtros de departamento - CORREGIDA
+        function getDepartmentFilter() {
+            const selectedDepts = getSelectedDepartments();
+            
+            if (selectedDepts.length === 0) return null;
+            
+            return function(transfer) {
+                const department = transfer.department;
+                const msoDepartment = transfer.msoDepartment;
+                
+                // Verificar cada departamento seleccionado
+                for (const filter of selectedDepts) {
+                    // Caso especial para Limpieza/Colaboradores CCS
+                    if (filter.ccsOnly && (department === 'Limpieza' || department === 'Colaboradores') && !msoDepartment) {
+                        return true;
+                    }
+                    
+                    // Caso especial para Limpieza/Colaboradores MSO
+                    if (filter.msoOnly && (department === 'Limpieza' || department === 'Colaboradores') && msoDepartment) {
+                        return true;
+                    }
+                    
+                    // Departamentos específicos MSO (Marketing, Presidencia, etc.)
+                    if (filter.specificMso) {
+                        // Para departamentos MSO, el department debe ser 'MSO' y msoDepartment debe coincidir
+                        if (department === 'MSO' && msoDepartment === filter.specificMso) {
+                            return true;
+                        }
+                        // También verificar si el departamento es directamente el específico (por si acaso)
+                        if (department === filter.specificMso && msoDepartment) {
+                            return true;
+                        }
+                    }
+                    
+                    // Departamentos CCS normales
+                    if (!filter.msoRequired && department === filter.dept && !msoDepartment) {
+                        return true;
+                    }
+                    
+                    // Para departamentos MSO que requieren msoDepartment (caso general)
+                    if (filter.msoRequired && filter.dept && department === filter.dept && msoDepartment) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            };
         }
 
         // Manejar cambio en departamento - actualizar tipo de servicio y autorizador por defecto
@@ -1685,30 +2036,34 @@
         function getFilteredTransfers() {
             let filteredTransfers = [...transfers];
             
+            // Filtro por nombre
             if (currentFilters.name) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.requesterName.toLowerCase().includes(currentFilters.name.toLowerCase())
                 );
             }
             
-            if (currentFilters.department) {
-                filteredTransfers = filteredTransfers.filter(transfer =>
-                    transfer.department === currentFilters.department
-                );
+            // Filtro por departamentos (jerárquico)
+            const departmentFilter = getDepartmentFilter();
+            if (departmentFilter) {
+                filteredTransfers = filteredTransfers.filter(departmentFilter);
             }
             
+            // Filtro por empresa
             if (currentFilters.company) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.companyName === currentFilters.company
                 );
             }
             
+            // Filtro por autorizador
             if (currentFilters.authorizer) {
                 filteredTransfers = filteredTransfers.filter(transfer =>
                     transfer.authorizerName === currentFilters.authorizer
                 );
             }
             
+            // Filtro por rango de fechas
             if (currentFilters.dateStart && currentFilters.dateEnd) {
                 filteredTransfers = filteredTransfers.filter(transfer => {
                     const transferDate = transfer.dateTime;
@@ -1721,7 +2076,6 @@
 
         function applyFilters() {
             currentFilters.name = filterName.value.trim();
-            currentFilters.department = filterDepartment.value;
             currentFilters.company = filterCompany.value;
             currentFilters.authorizer = filterAuthorizer.value;
             
@@ -1730,11 +2084,12 @@
 
         function clearAllFilters() {
             filterName.value = '';
-            filterDepartment.value = '';
             filterCompany.value = '';
             filterAuthorizer.value = '';
             filterDateRange.value = '';
             dateRangeDisplay.textContent = '';
+            
+            clearDepartmentFilters();
             
             if (dateRangePicker) {
                 dateRangePicker.clear();
@@ -1742,7 +2097,7 @@
             
             currentFilters = {
                 name: '',
-                department: '',
+                departments: [],
                 company: '',
                 authorizer: '',
                 dateStart: null,
@@ -1788,14 +2143,7 @@
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             
             // Limpiar todos los filtros existentes primero
-            currentFilters = {
-                name: '',
-                department: '',
-                company: '',
-                authorizer: '',
-                dateStart: null,
-                dateEnd: null
-            };
+            clearAllFilters();
             
             // Aplicar filtro específico
             switch(filterType) {
@@ -1832,31 +2180,32 @@
                     currentFilters.dateEnd = new Date(endOfMonth);
                     break;
                 case 'ccs':
-                    // Filtro para CCS: departamentos que no son MSO
-                    currentFilters.department = 'CCS';
+                    // Marcar todos los CCS
+                    filterDeptCCS.checked = true;
+                    handleDepartmentGroupChange('ccs');
                     break;
                 case 'mso':
-                    currentFilters.department = 'MSO';
+                    // Marcar todos los MSO
+                    filterDeptMSO.checked = true;
+                    handleDepartmentGroupChange('mso');
                     break;
                 case 'yummy':
+                    filterCompany.value = 'Yummy';
                     currentFilters.company = 'Yummy';
                     break;
                 case 'andrew':
+                    filterCompany.value = 'Andrew';
                     currentFilters.company = 'Andrew';
                     break;
                 case 'jorge':
+                    filterAuthorizer.value = 'Jorge Basualdo';
                     currentFilters.authorizer = 'Jorge Basualdo';
                     break;
                 case 'mario':
+                    filterAuthorizer.value = 'Mario Fernandez';
                     currentFilters.authorizer = 'Mario Fernandez';
                     break;
             }
-            
-            // Actualizar los campos de filtro en la UI
-            filterName.value = currentFilters.name;
-            filterDepartment.value = currentFilters.department === 'CCS' ? 'Administracion' : currentFilters.department;
-            filterCompany.value = currentFilters.company;
-            filterAuthorizer.value = currentFilters.authorizer;
             
             // Si hay rango de fechas, actualizar el picker
             if (currentFilters.dateStart && currentFilters.dateEnd) {
@@ -3762,7 +4111,7 @@
             showMessage(`✅ Reporte exportado a PDF: ${fileName}`, "success");
         }
 
-        // FUNCIÓN CORREGIDA: Exportar historial filtrado a PDF con columna de direcciones aún más ancha
+        // FUNCIÓN CORREGIDA: Exportar historial filtrado a PDF con filtros jerárquicos
         function exportHistoryToPDF() {
             const filteredTransfers = getFilteredTransfers();
             
@@ -3790,7 +4139,7 @@
             doc.setFont('helvetica', 'bold');
             doc.text('HISTORIAL DE TRASLADOS', pageWidth / 2, 15, { align: 'center' });
             
-            // Subtítulo con fecha del reporte
+            // Subtítulo con filtros aplicados
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
@@ -3799,7 +4148,19 @@
             const filterParts = [];
             
             if (currentFilters.name) filterParts.push(`Nombre: ${currentFilters.name}`);
-            if (currentFilters.department) filterParts.push(`Depto: ${currentFilters.department}`);
+            
+            // Descripción de departamentos seleccionados
+            const selectedDepts = getSelectedDepartments();
+            if (selectedDepts.length > 0) {
+                const deptNames = selectedDepts.map(d => {
+                    if (d.msoOnly) return `${d.dept} (MSO)`;
+                    if (d.ccsOnly) return `${d.dept} (CCS)`;
+                    if (d.specificMso) return d.specificMso;
+                    return d.dept;
+                });
+                filterParts.push(`Deptos: ${deptNames.join(', ')}`);
+            }
+            
             if (currentFilters.company) filterParts.push(`Empresa: ${currentFilters.company}`);
             if (currentFilters.authorizer) filterParts.push(`Autorizador: ${currentFilters.authorizer}`);
             if (currentFilters.dateStart && currentFilters.dateEnd) {
@@ -4005,7 +4366,6 @@
         toggleViewBtn.addEventListener('click', toggleView);
 
         filterName.addEventListener('input', debounce(applyFilters, 300));
-        filterDepartment.addEventListener('change', applyFilters);
         filterCompany.addEventListener('change', applyFilters);
         filterAuthorizer.addEventListener('change', applyFilters);
 
@@ -4336,6 +4696,9 @@
             
             // Inicializar cálculo de costo total
             calculateTotalCost();
+            
+            // Inicializar contadores de departamentos
+            updateDepartmentCounts();
         });
 
         window.addEventListener('beforeunload', () => {
@@ -4350,6 +4713,9 @@
         window.updateSelectedCount = updateSelectedCount;
         window.calculateTotalCost = calculateTotalCost;
         window.toggleWaitingTimeFields = toggleWaitingTimeFields;
+        window.toggleDepartmentGroup = toggleDepartmentGroup;
+        window.handleDepartmentGroupChange = handleDepartmentGroupChange;
+        window.handleSubDepartmentChange = handleSubDepartmentChange;
     </script>
 </body>
 </html>
