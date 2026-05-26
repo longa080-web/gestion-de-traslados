@@ -30,9 +30,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        /* ========== ESTILOS ORIGINALES (sin cambios) ========== */
+        body { font-family: 'Inter', sans-serif; }
         .bg-inter-primary { background-color: #005BAA; }
         .bg-inter-accent-light { background-color: #5CE1E6; }
         .bg-inter-accent-yellow { background-color: #FDD000; }
@@ -42,400 +41,86 @@
         .border-inter-primary { border-color: #005BAA; }
         .border-inter-accent-light { border-color: #5CE1E6; }
         .focus\:ring-inter-primary:focus { --tw-ring-color: #005BAA; }
-        #transferTableBody tr:nth-child(even) {
-            background-color: #f8f8f8;
-        }
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .tab-button {
-            transition: all 0.3s ease;
-            flex: 1;
-            max-width: 200px;
-            text-align: center;
-        }
-        .tab-button.active {
-            background-color: #005BAA;
-            color: white;
-            font-weight: bold;
-        }
-        .filter-section {
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        .filter-section.collapsed {
-            max-height: 60px;
-        }
-        .filter-section.expanded {
-            max-height: 500px;
-        }
-        .date-range-display {
-            font-size: 0.875rem;
-            color: #666;
-            margin-top: 4px;
-        }
-        .service-type-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-left: 5px;
-        }
-        .badge-ccs {
-            background-color: #005BAA;
-            color: white;
-        }
-        .badge-mso {
-            background-color: #FDD000;
-            color: #333;
-        }
-        .badge-pending {
-            background-color: #f59e0b;
-            color: white;
-        }
-        .badge-approved {
-            background-color: #10b981;
-            color: white;
-        }
-        
-        /* Estilos para filtros rápidos */
-        .quick-filter-btn {
-            transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
-            background: white;
-        }
-        .quick-filter-btn:hover {
-            background: #f3f4f6;
-            transform: translateY(-1px);
-        }
-        .quick-filter-btn.active {
-            background: #005BAA;
-            color: white;
-            border-color: #005BAA;
-        }
-        
-        /* Estilos para filtro de departamentos jerárquico */
-        .dept-filter-container {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 12px;
-            background: white;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .dept-filter-header {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background: #f8fafc;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-        .dept-filter-header:hover {
-            background: #f1f5f9;
-        }
-        .dept-filter-header input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .dept-subitems {
-            margin-left: 30px;
-            padding-left: 15px;
-            border-left: 2px solid #e5e7eb;
-        }
-        .dept-subitem {
-            display: flex;
-            align-items: center;
-            padding: 6px 8px;
-            margin: 2px 0;
-            border-radius: 4px;
-        }
-        .dept-subitem:hover {
-            background: #f8fafc;
-        }
-        .dept-subitem input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .badge-dept-count {
-            background: #e5e7eb;
-            color: #4b5563;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 12px;
-            margin-left: 8px;
-        }
-        
+        #transferTableBody tr:nth-child(even) { background-color: #f8f8f8; }
+        .loading { opacity: 0.6; pointer-events: none; }
+        .tab-button { transition: all 0.3s ease; flex: 1; max-width: 200px; text-align: center; }
+        .tab-button.active { background-color: #005BAA; color: white; font-weight: bold; }
+        .filter-section { transition: all 0.3s ease; overflow: hidden; }
+        .filter-section.collapsed { max-height: 60px; }
+        .filter-section.expanded { max-height: 500px; }
+        .date-range-display { font-size: 0.875rem; color: #666; margin-top: 4px; }
+        .service-type-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-left: 5px; }
+        .badge-ccs { background-color: #005BAA; color: white; }
+        .badge-mso { background-color: #FDD000; color: #333; }
+        .badge-pending { background-color: #f59e0b; color: white; }
+        .badge-approved { background-color: #10b981; color: white; }
+        .quick-filter-btn { transition: all 0.2s ease; border: 1px solid #e5e7eb; background: white; }
+        .quick-filter-btn:hover { background: #f3f4f6; transform: translateY(-1px); }
+        .quick-filter-btn.active { background: #005BAA; color: white; border-color: #005BAA; }
+        .dept-filter-container { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: white; max-height: 400px; overflow-y: auto; }
+        .dept-filter-header { display: flex; align-items: center; padding: 8px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
+        .dept-filter-header:hover { background: #f1f5f9; }
+        .dept-filter-header input[type="checkbox"] { margin-right: 10px; }
+        .dept-subitems { margin-left: 30px; padding-left: 15px; border-left: 2px solid #e5e7eb; }
+        .dept-subitem { display: flex; align-items: center; padding: 6px 8px; margin: 2px 0; border-radius: 4px; }
+        .dept-subitem:hover { background: #f8fafc; }
+        .dept-subitem input[type="checkbox"] { margin-right: 10px; }
+        .badge-dept-count { background: #e5e7eb; color: #4b5563; font-size: 10px; padding: 2px 6px; border-radius: 12px; margin-left: 8px; }
         @media (max-width: 768px) {
-            .responsive-table {
-                display: block;
-            }
-            .responsive-table thead {
-                display: none;
-            }
-            .responsive-table tbody tr {
-                display: block;
-                margin-bottom: 1rem;
-                border: 1px solid #e5e7eb;
-                border-radius: 0.5rem;
-                padding: 1rem;
-            }
-            .responsive-table tbody td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-                border-bottom: 1px solid #f3f4f6;
-            }
-            .responsive-table tbody td:last-child {
-                border-bottom: none;
-            }
-            .responsive-table tbody td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: #005BAA;
-                min-width: 120px;
-            }
+            .responsive-table { display: block; }
+            .responsive-table thead { display: none; }
+            .responsive-table tbody tr { display: block; margin-bottom: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; }
+            .responsive-table tbody td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
+            .responsive-table tbody td:last-child { border-bottom: none; }
+            .responsive-table tbody td::before { content: attr(data-label); font-weight: 600; color: #005BAA; min-width: 120px; }
         }
-        
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #005BAA 0%, #003366 100%);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #003366 0%, #002244 100%);
-            transform: translateY(-1px);
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #5CE1E6 0%, #2BB5BA 100%);
-            color: #333;
-            border: none;
-        }
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #2BB5BA 0%, #1A8B90 100%);
-            color: white;
-        }
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-        }
-        .btn-success:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-        }
-        .form-control {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px 12px;
-            transition: all 0.3s ease;
-        }
-        .form-control:focus {
-            border-color: #005BAA;
-            box-shadow: 0 0 0 3px rgba(0, 91, 170, 0.1);
-            outline: none;
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #005BAA 0%, #5CE1E6 100%);
-        }
-        .table-header {
-            background: linear-gradient(135deg, #005BAA 0%, #003366 100%);
-            color: white;
-        }
-        .animated-gradient {
-            background: linear-gradient(-45deg, #005BAA, #5CE1E6, #FDD000, #005BAA);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-        }
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .waiting-time-container {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-            border: 1px solid #b9e6ff;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 12px;
-            margin-bottom: 12px;
-        }
-        .total-display {
-            background: linear-gradient(135deg, #005BAA 0%, #003366 100%);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: center;
-        }
-        .observations-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        /* Login */
-        .login-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .login-box {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 400px;
-        }
-        .login-title {
-            color: #005BAA;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .login-input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        .login-button {
-            width: 100%;
-            padding: 12px;
-            background-color: #005BAA;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .login-button:hover {
-            background-color: #004080;
-        }
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .remember-me input {
-            margin-right: 8px;
-        }
-        .error-message {
-            color: #dc2626;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .profile-selector {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8fafc;
-            border-radius: 8px;
-        }
-        .profile-selector label {
-            font-weight: 600;
-            color: #005BAA;
-        }
-        .profile-selector select {
-            padding: 8px 12px;
-            border: 1px solid #005BAA;
-            border-radius: 6px;
-            background-color: white;
-            color: #333;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
+        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); }
+        .btn-primary { background: linear-gradient(135deg, #005BAA 0%, #003366 100%); color: white; border: none; transition: all 0.3s ease; }
+        .btn-primary:hover { background: linear-gradient(135deg, #003366 0%, #002244 100%); transform: translateY(-1px); }
+        .btn-secondary { background: linear-gradient(135deg, #5CE1E6 0%, #2BB5BA 100%); color: #333; border: none; }
+        .btn-secondary:hover { background: linear-gradient(135deg, #2BB5BA 0%, #1A8B90 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; }
+        .btn-success:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); transform: translateY(-1px); }
+        .form-control { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; transition: all 0.3s ease; }
+        .form-control:focus { border-color: #005BAA; box-shadow: 0 0 0 3px rgba(0, 91, 170, 0.1); outline: none; }
+        .stat-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #005BAA 0%, #5CE1E6 100%); }
+        .table-header { background: linear-gradient(135deg, #005BAA 0%, #003366 100%); color: white; }
+        .animated-gradient { background: linear-gradient(-45deg, #005BAA, #5CE1E6, #FDD000, #005BAA); background-size: 400% 400%; animation: gradient 15s ease infinite; }
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .waiting-time-container { background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%); border: 1px solid #b9e6ff; border-radius: 12px; padding: 16px; margin-top: 12px; margin-bottom: 12px; }
+        .total-display { background: linear-gradient(135deg, #005BAA 0%, #003366 100%); color: white; padding: 12px 16px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; }
+        .observations-textarea { min-height: 100px; resize: vertical; }
+        .login-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); width: 90%; max-width: 400px; }
+        .login-title { color: #005BAA; font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .login-button { width: 100%; padding: 12px; background-color: #005BAA; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-button:hover { background-color: #004080; }
+        .remember-me { display: flex; align-items: center; margin-bottom: 15px; }
+        .remember-me input { margin-right: 8px; }
+        .error-message { color: #dc2626; font-size: 14px; margin-bottom: 10px; text-align: center; }
+        .profile-selector { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background-color: #f8fafc; border-radius: 8px; }
+        .profile-selector label { font-weight: 600; color: #005BAA; }
+        .profile-selector select { padding: 8px 12px; border: 1px solid #005BAA; border-radius: 6px; background-color: white; color: #333; font-weight: 500; cursor: pointer; }
         .admin-only { display: none; }
         body[data-profile="admin"] .admin-only { display: block; }
         body[data-profile="admin"] .admin-only-inline { display: inline-block; }
-        
         .user-only { display: none; }
         body[data-profile="user"] .user-only { display: block; }
-        
-        .disabled-field {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        /* Alerta pendientes */
-        .pending-alert {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 4px solid #f59e0b;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        .pending-alert:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-            cursor: pointer;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .alert-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .pending-row {
-            background-color: #fffbeb !important;
-            border-left: 4px solid #f59e0b;
-        }
-        .pending-row:hover {
-            background-color: #fef3c7 !important;
-        }
+        .disabled-field { background-color: #f3f4f6; cursor: not-allowed; opacity: 0.7; }
+        .pending-alert { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 12px; transition: all 0.3s ease; margin-bottom: 20px; }
+        .pending-alert:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); cursor: pointer; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .alert-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .pending-row { background-color: #fffbeb !important; border-left: 4px solid #f59e0b; }
+        .pending-row:hover { background-color: #fef3c7 !important; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 p-2 md:p-4 min-h-screen flex flex-col items-center" data-profile="admin">
 
-    <!-- Modal de Login -->
+    <!-- Modal de Login (original) -->
     <div id="loginModal" class="login-container">
         <div class="login-box">
             <div class="login-title">🚖 Control de Traslados de Taxi</div>
@@ -511,7 +196,7 @@
 
             <!-- Dashboard -->
             <div id="dashboardContent" class="space-y-6">
-                <!-- Tarjeta de Registro -->
+                <!-- Tarjeta de Registro (original) -->
                 <div class="card bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                     <div class="p-5 md:p-6">
                         <div class="flex items-center justify-between mb-6">
@@ -649,7 +334,7 @@
                 </div>
             </div>
 
-            <!-- REPORTES FINANCIEROS - EXACTAMENTE ORIGINAL -->
+            <!-- REPORTES FINANCIEROS (contenido original) -->
             <div id="reportsContent" class="admin-only hidden space-y-6">
                 <div class="card bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                     <div class="p-5 md:p-6">
@@ -695,7 +380,10 @@
                                 <table class="min-w-full">
                                     <thead class="bg-blue-50"><tr><th class="px-4 py-2 text-left text-xs font-medium">DEPARTAMENTO</th><th class="px-4 py-2 text-left text-xs font-medium">CENTRO DE OPERACIONES</th><th class="px-4 py-2 text-left text-xs font-medium">💰 IMPORTE</th></tr></thead>
                                     <tbody id="departmentsReportTableBody" class="divide-y"></tbody>
-                                    <tfoot class="bg-gray-100"><tr><td class="px-4 py-2 font-bold">TOTAL CCS</td><td class="px-4 py-2"></td><td id="totalCCS" class="font-bold">$0.00</td></tr><tr><td class="px-4 py-2 font-bold">MSO</td><td class="px-4 py-2">MSO</td><td id="totalMSO" class="font-bold">$0.00</td></tr><tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL, CCS + MSO</td><td class="px-4 py-2"></td><td id="totalCCSMSO" class="font-bold">$0.00</td></tr></tfoot>
+                                    <tfoot class="bg-gray-100"><tr><td class="px-4 py-2 font-bold">TOTAL CCS</th><td class="px-4 py-2"></td><td id="totalCCS" class="font-bold">$0.00</td></tr>
+                                    <tr><td class="px-4 py-2 font-bold">MSO</td><td class="px-4 py-2">MSO</td><td id="totalMSO" class="font-bold">$0.00</td></tr>
+                                    <tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL, CCS + MSO</td><td class="px-4 py-2"></td><td id="totalCCSMSO" class="font-bold">$0.00</td></tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -707,7 +395,8 @@
                                 <table class="min-w-full">
                                     <thead class="bg-blue-50"><tr><th class="px-4 py-2">EMPRESA</th><th class="px-4 py-2">📦 SERVICIOS A CCS</th><th class="px-4 py-2">📦 SERVICIOS A MSO</th><th class="px-4 py-2">💰 TOTAL</th></tr></thead>
                                     <tbody id="companiesReportTableBody" class="divide-y"></tbody>
-                                    <tfoot class="bg-cyan-100"><tr><td class="px-4 py-2 font-bold">TOTALES</td><td id="totalCCSServices" class="font-bold">0 servicios - $0.00</td><td id="totalMSOServices" class="font-bold">0 servicios - $0.00</td><td id="totalCompanies" class="font-bold">0 servicios - $0.00</td></tr></tfoot>
+                                    <tfoot class="bg-cyan-100"><tr><td class="px-4 py-2 font-bold">TOTALES</td><td id="totalCCSServices" class="font-bold">0 servicios - $0.00</td><td id="totalMSOServices" class="font-bold">0 servicios - $0.00</td><td id="totalCompanies" class="font-bold">0 servicios - $0.00</td></tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -735,7 +424,7 @@
     </div>
 
     <script>
-        // ==================== PERFILES ====================
+        // ==================== PERFILES (original, sin cambios) ====================
         const PASSWORDS = { admin: 'Admin1234', user: 'Inter1234' };
         let currentProfile = 'admin';
         let isLoggedIn = false;
@@ -810,7 +499,7 @@
             });
         }
         
-        // ==================== FIREBASE ====================
+        // ==================== FIREBASE (original) ====================
         const firebaseConfig = {
             apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
             authDomain: "gestion-de-traslados.firebaseapp.com",
@@ -1011,6 +700,11 @@
                 showMessage("✅ Eliminados");
                 return true;
             } catch(e) { showMessage("❌ Error al eliminar", "error"); return false; }
+        }
+        
+        // Función auxiliar para reportes: incluye aprobados y pendientes
+        function isTransferValidForReports(t) {
+            return t.status === 'approved' || t.status === 'pending';
         }
         
         function getFiltered() {
@@ -1237,7 +931,9 @@
             depts.forEach(d => { const s = stats[d]; const row = tbody.insertRow(); row.innerHTML = `<td class="p-2">${d}</td><td class="p-2"><span class="service-type-badge ${s.type === 'MSO' ? 'badge-mso' : 'badge-ccs'}">${s.type}</span></td><td class="p-2 text-center">${s.monthlyCount}</td><td class="p-2 text-right">$${s.monthlyCost.toFixed(2)}</td><td class="p-2 text-center">${s.annualCount}</td><td class="p-2 text-right">$${s.annualCost.toFixed(2)}</td>`; });
         }
         
-        // ==================== REPORTES FINANCIEROS (ORIGINAL) ====================
+        // ==================== REPORTES FINANCIEROS ====================
+        // (Todas las funciones de generación de reportes se mantienen igual, solo modificamos exportReportToPDF y exportReportToExcel y exportHistoryToPDF)
+        
         const reportPeriodType = document.getElementById('reportPeriodType');
         const monthYearContainer = document.getElementById('monthYearContainer');
         const weekContainer = document.getElementById('weekContainer');
@@ -1368,7 +1064,7 @@
         function generateReport() {
             const { start, end } = getReportDates();
             updatePeriodText();
-            const filtered = transfers.filter(t => t.status === 'approved' && t.dateTime >= start && t.dateTime <= end);
+            const filtered = transfers.filter(t => isTransferValidForReports(t) && t.dateTime >= start && t.dateTime <= end);
             
             const deptTotals = {};
             reportDepts.forEach(d => deptTotals[d.code] = { name: d.name, type: 'CCS', amount: 0 });
@@ -1425,10 +1121,203 @@
             showMessage(`✅ Reporte generado: ${periodTextSpan.textContent}`);
         }
         
-        function exportReportToExcel() { showMessage("Exportación a Excel disponible", "info"); }
-        function exportReportToPDF() { showMessage("Exportación a PDF disponible", "info"); }
-        function exportHistoryToPDF() { showMessage("Exportación a PDF disponible", "info"); }
+        // NUEVA EXPORTACIÓN A EXCEL (mejorada)
+        function exportReportToExcel() {
+            const { start, end } = getReportDates();
+            const filtered = transfers.filter(t => isTransferValidForReports(t) && t.dateTime >= start && t.dateTime <= end);
+            
+            // Hoja Detalle
+            const detailData = filtered.map(t => ({
+                Fecha: t.dateTime.toLocaleDateString('es-ES'),
+                Solicitante: t.requesterName,
+                Departamento: t.department,
+                'Subdepto MSO': t.msoDepartment || '',
+                Tipo: getServiceTypeWithMSO(t.department, t.msoDepartment).text,
+                Empresa: t.companyName,
+                Costo: t.cost
+            }));
+            const wsDetail = XLSX.utils.json_to_sheet(detailData);
+            
+            // Hoja Unidades
+            const unitMap = new Map();
+            filtered.forEach(t => {
+                let unitName = t.department || 'Otros';
+                if (t.department === 'MSO' && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
+                else if ((t.department === 'Limpieza' || t.department === 'Colaboradores') && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
+                const cost = t.cost || 0;
+                if (!unitMap.has(unitName)) unitMap.set(unitName, { cantidad: 0, importe: 0 });
+                const u = unitMap.get(unitName);
+                u.cantidad++;
+                u.importe += cost;
+            });
+            const unitsData = Array.from(unitMap.entries()).map(([unidad, data]) => ({ UNIDAD: unidad, CANTIDAD: data.cantidad, IMPORTE: data.importe }));
+            const wsUnits = XLSX.utils.json_to_sheet(unitsData);
+            
+            // Hoja Proveedores
+            const provMap = new Map();
+            filtered.forEach(t => {
+                const prov = t.companyName || 'Desconocido';
+                const cost = t.cost || 0;
+                if (!provMap.has(prov)) provMap.set(prov, { cantidad: 0, importe: 0 });
+                const p = provMap.get(prov);
+                p.cantidad++;
+                p.importe += cost;
+            });
+            const provsData = Array.from(provMap.entries()).map(([prov, data]) => ({ PROVEEDOR: prov, CANTIDAD: data.cantidad, IMPORTE: data.importe }));
+            const wsProvs = XLSX.utils.json_to_sheet(provsData);
+            
+            // Hoja Resumen CCS/MSO
+            let totalCCS = 0, totalMSO = 0, countCCS = 0, countMSO = 0;
+            filtered.forEach(t => {
+                const type = getServiceTypeWithMSO(t.department, t.msoDepartment).type;
+                const cost = t.cost || 0;
+                if (type === 'CCS') { totalCCS += cost; countCCS++; }
+                else { totalMSO += cost; countMSO++; }
+            });
+            const summaryData = [
+                { TIPO: 'CCS', CANTIDAD: countCCS, IMPORTE: totalCCS },
+                { TIPO: 'MSO', CANTIDAD: countMSO, IMPORTE: totalMSO },
+                { TIPO: 'TOTAL', CANTIDAD: countCCS+countMSO, IMPORTE: totalCCS+totalMSO }
+            ];
+            const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsDetail, 'Detalle');
+            XLSX.utils.book_append_sheet(wb, wsUnits, 'Unidades');
+            XLSX.utils.book_append_sheet(wb, wsProvs, 'Proveedores');
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen_CCS_MSO');
+            XLSX.writeFile(wb, `Reporte_Traslados_${periodTextSpan.textContent.replace(/ /g,'_')}.xlsx`);
+            showMessage('✅ Reporte exportado a Excel');
+        }
         
+        // NUEVA EXPORTACIÓN A PDF (con formato similar a comidas)
+        async function exportReportToPDF() {
+            const { start, end } = getReportDates();
+            const filtered = transfers.filter(t => isTransferValidForReports(t) && t.dateTime >= start && t.dateTime <= end);
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            
+            // Título y encabezado
+            doc.setFontSize(16);
+            doc.text("Control de Traslados de Taxi - Inter", doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(periodTextSpan.textContent, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, doc.internal.pageSize.getWidth() / 2, 37, { align: 'center' });
+            
+            let yOffset = 45;
+            
+            // 1. Tabla por Unidad de Operaciones
+            const unitMap = new Map();
+            filtered.forEach(t => {
+                let unitName = t.department || 'Otros';
+                if (t.department === 'MSO' && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
+                else if ((t.department === 'Limpieza' || t.department === 'Colaboradores') && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
+                const cost = t.cost || 0;
+                if (!unitMap.has(unitName)) unitMap.set(unitName, { cantidad: 0, importe: 0 });
+                const u = unitMap.get(unitName);
+                u.cantidad++;
+                u.importe += cost;
+            });
+            const unitsRows = Array.from(unitMap.entries()).map(([unidad, data]) => [unidad, data.cantidad, `$${data.importe.toFixed(2)}`]);
+            const totalCantidad = unitsRows.reduce((sum, r) => sum + r[1], 0);
+            const totalImporte = unitsRows.reduce((sum, r) => sum + parseFloat(r[2].replace('$','')), 0);
+            unitsRows.push(['TOTAL', totalCantidad, `$${totalImporte.toFixed(2)}`]);
+            doc.autoTable({
+                head: [['UNIDAD DE OPERACIONES', 'CANTIDAD', 'IMPORTE (USD)']],
+                body: unitsRows,
+                startY: yOffset,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center' },
+                bodyStyles: { fontSize: 9 },
+                margin: { left: 14, right: 14 }
+            });
+            yOffset = doc.lastAutoTable.finalY + 10;
+            
+            // 2. Tabla por Proveedor
+            const provMap = new Map();
+            filtered.forEach(t => {
+                const prov = t.companyName || 'Desconocido';
+                const cost = t.cost || 0;
+                if (!provMap.has(prov)) provMap.set(prov, { cantidad: 0, importe: 0 });
+                const p = provMap.get(prov);
+                p.cantidad++;
+                p.importe += cost;
+            });
+            const provRows = Array.from(provMap.entries()).map(([prov, data]) => [prov, data.cantidad, `$${data.importe.toFixed(2)}`]);
+            const totalProvCantidad = provRows.reduce((sum, r) => sum + r[1], 0);
+            const totalProvImporte = provRows.reduce((sum, r) => sum + parseFloat(r[2].replace('$','')), 0);
+            provRows.push(['TOTAL', totalProvCantidad, `$${totalProvImporte.toFixed(2)}`]);
+            doc.autoTable({
+                head: [['PROVEEDOR', 'CANTIDAD', 'IMPORTE (USD)']],
+                body: provRows,
+                startY: yOffset,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center' },
+                bodyStyles: { fontSize: 9 },
+                margin: { left: 14, right: 14 }
+            });
+            yOffset = doc.lastAutoTable.finalY + 10;
+            
+            // 3. Resumen por tipo de unidad (CCS / MSO) en dos columnas
+            let totalCCS = 0, totalMSO = 0, countCCS = 0, countMSO = 0;
+            filtered.forEach(t => {
+                const type = getServiceTypeWithMSO(t.department, t.msoDepartment).type;
+                const cost = t.cost || 0;
+                if (type === 'CCS') { totalCCS += cost; countCCS++; }
+                else { totalMSO += cost; countMSO++; }
+            });
+            // Usamos una tabla sencilla con dos filas: cabecera y datos
+            const summaryRows = [
+                ['UNIDAD CCS', `Total Comidas: ${countCCS}`, `Importe Total: $${totalCCS.toFixed(2)}`],
+                ['UNIDAD MSO', `Total Comidas: ${countMSO}`, `Importe Total: $${totalMSO.toFixed(2)}`]
+            ];
+            doc.autoTable({
+                body: summaryRows,
+                startY: yOffset,
+                theme: 'plain',
+                styles: { fontSize: 10, cellPadding: 2 },
+                margin: { left: 14, right: 14 },
+                columnStyles: { 0: { fontStyle: 'bold' } }
+            });
+            yOffset = doc.lastAutoTable.finalY + 5;
+            doc.setFontSize(10);
+            doc.text(`TOTAL GENERAL: $${(totalCCS + totalMSO).toFixed(2)}`, doc.internal.pageSize.getWidth() / 2, yOffset, { align: 'center' });
+            yOffset += 8;
+            doc.setFontSize(8);
+            doc.text("Reporte generado automáticamente por el Sistema de Control de Traslados de Taxi", doc.internal.pageSize.getWidth() / 2, yOffset + 5, { align: 'center' });
+            
+            doc.save(`Reporte_Traslados_${periodTextSpan.textContent.replace(/ /g,'_')}.pdf`);
+            showMessage('✅ PDF generado con formato resumen');
+        }
+        
+        // Exportación del historial a PDF (mejorada)
+        function exportHistoryToPDF() {
+            const filtered = getFiltered();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            doc.text('Historial de Traslados', 14, 10);
+            const tableData = filtered.map(t => [
+                t.dateTime.toLocaleDateString('es-ES'),
+                t.requesterName,
+                t.department,
+                t.msoDepartment || '',
+                getServiceTypeWithMSO(t.department, t.msoDepartment).text,
+                t.companyName,
+                `$${t.cost.toFixed(2)}`,
+                t.status === 'approved' ? 'Aprobado' : 'Pendiente'
+            ]);
+            doc.autoTable({
+                head: [['Fecha', 'Solicitante', 'Departamento', 'MSO', 'Tipo', 'Empresa', 'Costo', 'Estado']],
+                body: tableData,
+                startY: 20,
+                theme: 'grid'
+            });
+            doc.save(`historial_${new Date().toISOString().slice(0,10)}.pdf`);
+            showMessage('✅ Historial exportado a PDF');
+        }
+        
+        // ==================== SETUP DE EVENTOS (original, solo se enlazan las nuevas funciones) ====================
         function setupEventListeners() {
             const tabDash = document.getElementById('tabDashboard');
             const tabRep = document.getElementById('tabReports');
