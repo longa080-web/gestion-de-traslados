@@ -30,7 +30,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <style>
-        /* ========== ESTILOS ORIGINALES (sin cambios) ========== */
+        /* ========== ESTILOS ORIGINALES ========== */
         body { font-family: 'Inter', sans-serif; }
         .bg-inter-primary { background-color: #005BAA; }
         .bg-inter-accent-light { background-color: #5CE1E6; }
@@ -120,7 +120,7 @@
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 p-2 md:p-4 min-h-screen flex flex-col items-center" data-profile="admin">
 
-    <!-- Modal de Login (original) -->
+    <!-- Modal de Login -->
     <div id="loginModal" class="login-container">
         <div class="login-box">
             <div class="login-title">🚖 Control de Traslados de Taxi</div>
@@ -196,7 +196,7 @@
 
             <!-- Dashboard -->
             <div id="dashboardContent" class="space-y-6">
-                <!-- Tarjeta de Registro (original) -->
+                <!-- Tarjeta de Registro -->
                 <div class="card bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                     <div class="p-5 md:p-6">
                         <div class="flex items-center justify-between mb-6">
@@ -334,7 +334,7 @@
                 </div>
             </div>
 
-            <!-- REPORTES FINANCIEROS (contenido original) -->
+            <!-- REPORTES FINANCIEROS -->
             <div id="reportsContent" class="admin-only hidden space-y-6">
                 <div class="card bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                     <div class="p-5 md:p-6">
@@ -380,22 +380,22 @@
                                 <table class="min-w-full">
                                     <thead class="bg-blue-50"><tr><th class="px-4 py-2 text-left text-xs font-medium">DEPARTAMENTO</th><th class="px-4 py-2 text-left text-xs font-medium">CENTRO DE OPERACIONES</th><th class="px-4 py-2 text-left text-xs font-medium">💰 IMPORTE</th></tr></thead>
                                     <tbody id="departmentsReportTableBody" class="divide-y"></tbody>
-                                    <tfoot class="bg-gray-100"><tr><td class="px-4 py-2 font-bold">TOTAL CCS</th><td class="px-4 py-2"></td><td id="totalCCS" class="font-bold">$0.00</td></tr>
-                                    <tr><td class="px-4 py-2 font-bold">MSO</td><td class="px-4 py-2">MSO</td><td id="totalMSO" class="font-bold">$0.00</td></tr>
-                                    <tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL, CCS + MSO</td><td class="px-4 py-2"></td><td id="totalCCSMSO" class="font-bold">$0.00</td></tr>
+                                    <tfoot class="bg-gray-100"><tr><td class="px-4 py-2 font-bold">TOTAL CCS</th><td class="px-4 py-2"></td><td id="totalCCS" class="font-bold">$0.00</span></td></tr>
+                                    <tr><td class="px-4 py-2 font-bold">MSO</span></td><td class="px-4 py-2">MSO</span></td><td id="totalMSO" class="font-bold">$0.00</span></td></tr>
+                                    <tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL, CCS + MSO</span></td><td class="px-4 py-2"></td><td id="totalCCSMSO" class="font-bold">$0.00</span></td></tr>
                                     </tfoot>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- EMPRESAS PROVEEDORAS -->
+                        <!-- EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO -->
                         <div class="mb-8">
                             <h3 class="text-xl font-bold text-inter-primary mb-4">🚗 EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO</h3>
                             <div class="overflow-x-auto rounded-xl shadow-sm border">
                                 <table class="min-w-full">
                                     <thead class="bg-blue-50"><tr><th class="px-4 py-2">EMPRESA</th><th class="px-4 py-2">📦 SERVICIOS A CCS</th><th class="px-4 py-2">📦 SERVICIOS A MSO</th><th class="px-4 py-2">💰 TOTAL</th></tr></thead>
                                     <tbody id="companiesReportTableBody" class="divide-y"></tbody>
-                                    <tfoot class="bg-cyan-100"><tr><td class="px-4 py-2 font-bold">TOTALES</td><td id="totalCCSServices" class="font-bold">0 servicios - $0.00</td><td id="totalMSOServices" class="font-bold">0 servicios - $0.00</td><td id="totalCompanies" class="font-bold">0 servicios - $0.00</td></tr>
+                                    <tfoot class="bg-cyan-100"><tr><td class="px-4 py-2 font-bold">TOTALES</span></td><td id="totalCCSServices" class="font-bold">0 servicios - $0.00</span></td><td id="totalMSOServices" class="font-bold">0 servicios - $0.00</span></td><td id="totalCompanies" class="font-bold">0 servicios - $0.00</span><tr></tr>
                                     </tfoot>
                                 </table>
                             </div>
@@ -408,9 +408,9 @@
                                 <table class="min-w-full">
                                     <thead class="bg-blue-50"><tr><th class="px-4 py-2">UNIDAD</th><th class="px-4 py-2">💰 IMPORTE</th></tr></thead>
                                     <tbody>
-                                        <tr><td class="px-4 py-2 font-medium">CCS</td><td id="unitCCS">$0.00</td></tr>
-                                        <tr><td class="px-4 py-2 font-medium">MSO</td><td id="unitMSO">$0.00</td></tr>
-                                        <tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL</td><td id="unitTotal" class="font-bold">$0.00</td></tr>
+                                        <tr><td class="px-4 py-2 font-medium">CCS</span></td><td id="unitCCS">$0.00</span></td></tr>
+                                        <tr><td class="px-4 py-2 font-medium">MSO</span></td><td id="unitMSO">$0.00</span></td></tr>
+                                        <tr class="bg-cyan-100"><td class="px-4 py-2 font-bold">TOTAL</span></td><td id="unitTotal" class="font-bold">$0.00</span></td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -424,7 +424,7 @@
     </div>
 
     <script>
-        // ==================== PERFILES (original, sin cambios) ====================
+        // ==================== PERFILES ====================
         const PASSWORDS = { admin: 'Admin1234', user: 'Inter1234' };
         let currentProfile = 'admin';
         let isLoggedIn = false;
@@ -499,7 +499,7 @@
             });
         }
         
-        // ==================== FIREBASE (original) ====================
+        // ==================== FIREBASE ====================
         const firebaseConfig = {
             apiKey: "AIzaSyCfEP2_MYdPRCb4gKnXLEV-tUNNFkQmkOo",
             authDomain: "gestion-de-traslados.firebaseapp.com",
@@ -600,11 +600,9 @@
                     if (selected.length === 2) {
                         currentFilters.dateStart = normalizeDate(selected[0]);
                         currentFilters.dateEnd = normalizeDate(selected[1]);
-                        document.getElementById('dateRangeDisplay').textContent = `${selected[0].toLocaleDateString('es-ES')} - ${selected[1].toLocaleDateString('es-ES')}`;
                         if (currentProfile === 'admin') renderTransfers();
                     } else {
                         currentFilters.dateStart = null; currentFilters.dateEnd = null;
-                        document.getElementById('dateRangeDisplay').textContent = '';
                         if (currentProfile === 'admin') renderTransfers();
                     }
                 }
@@ -702,7 +700,6 @@
             } catch(e) { showMessage("❌ Error al eliminar", "error"); return false; }
         }
         
-        // Función auxiliar para reportes: incluye aprobados y pendientes
         function isTransferValidForReports(t) {
             return t.status === 'approved' || t.status === 'pending';
         }
@@ -777,13 +774,14 @@
                     <td class="p-2"><span class="service-type-badge ${st.badgeClass}">${st.text}</span></td>
                     <td class="p-2">${t.originPlace || 'N/A'} → ${t.destinationPlace || 'N/A'}</td>
                     <td class="p-2">${t.companyName || 'N/A'}</td>
-                    <td class="p-2 text-right font-bold">$${(t.cost || 0).toFixed(2)}</td>
+                    <td class="p-2 text-right font-bold">$${(t.cost || 0).toFixed(2)}</span></td>
                     <td class="p-2 text-center">${statusBadge}</td>
                     <td class="p-2">
                         <div class="flex flex-col gap-1">
                             ${isPending ? `<button onclick="approveTransferAction('${t.id}')" class="btn-success text-xs py-1 px-2 rounded">✅ Aprobar</button>` : ''}
                             <button onclick="startEditTransfer('${t.id}')" class="btn-primary text-xs py-1 px-2 rounded">✏️ Editar</button>
                         </div>
+                    </span>
                     </td>
                 `;
             });
@@ -928,11 +926,10 @@
             if (depts.length === 0) document.getElementById('noStatsMessage')?.classList.remove('hidden');
             else document.getElementById('noStatsMessage')?.classList.add('hidden');
             tbody.innerHTML = '';
-            depts.forEach(d => { const s = stats[d]; const row = tbody.insertRow(); row.innerHTML = `<td class="p-2">${d}</td><td class="p-2"><span class="service-type-badge ${s.type === 'MSO' ? 'badge-mso' : 'badge-ccs'}">${s.type}</span></td><td class="p-2 text-center">${s.monthlyCount}</td><td class="p-2 text-right">$${s.monthlyCost.toFixed(2)}</td><td class="p-2 text-center">${s.annualCount}</td><td class="p-2 text-right">$${s.annualCost.toFixed(2)}</td>`; });
+            depts.forEach(d => { const s = stats[d]; const row = tbody.insertRow(); row.innerHTML = `<td class="p-2">${d}</td><td class="p-2"><span class="service-type-badge ${s.type === 'MSO' ? 'badge-mso' : 'badge-ccs'}">${s.type}</span></td><td class="p-2 text-center">${s.monthlyCount}</td><td class="p-2 text-right">$${s.monthlyCost.toFixed(2)}</span></td><td class="p-2 text-center">${s.annualCount}</td><td class="p-2 text-right">$${s.annualCost.toFixed(2)}</span></td>`; });
         }
         
         // ==================== REPORTES FINANCIEROS ====================
-        // (Todas las funciones de generación de reportes se mantienen igual, solo modificamos exportReportToPDF y exportReportToExcel y exportHistoryToPDF)
         
         const reportPeriodType = document.getElementById('reportPeriodType');
         const monthYearContainer = document.getElementById('monthYearContainer');
@@ -1086,7 +1083,7 @@
             Object.keys(deptTotals).sort().forEach(key => {
                 const d = deptTotals[key];
                 const row = departmentsReportTable.insertRow();
-                row.innerHTML = `<td class="px-4 py-2">${d.name}</td><td class="px-4 py-2">${d.type === 'MSO' ? 'MSO' : 'UN CCS'}</td><td class="px-4 py-2 font-medium text-inter-primary">$${d.amount.toFixed(2)}</td>`;
+                row.innerHTML = `<td class="px-4 py-2">${d.name}</span><td class="px-4 py-2">${d.type === 'MSO' ? 'MSO' : 'UN CCS'}</span><td class="px-4 py-2 font-medium text-inter-primary">$${d.amount.toFixed(2)}</span>`;
             });
             totalCCSSpan.textContent = `$${totalCCS.toFixed(2)}`;
             totalMSOSpan.textContent = `$${totalMSO.toFixed(2)}`;
@@ -1106,7 +1103,7 @@
             reportCompaniesList.forEach(c => {
                 const s = companyStats[c.code];
                 const row = companiesReportTable.insertRow();
-                row.innerHTML = `<td class="px-4 py-2 font-medium">${c.name}</td><td class="px-4 py-2">${s.ccsCount} servicio${s.ccsCount !== 1 ? 's' : ''}<br><span class="font-medium text-inter-primary">$${s.ccsAmount.toFixed(2)}</span></td><td class="px-4 py-2">${s.msoCount} servicio${s.msoCount !== 1 ? 's' : ''}<br><span class="font-medium text-inter-primary">$${s.msoAmount.toFixed(2)}</span></td><td class="px-4 py-2 font-medium">${s.totalCount} servicio${s.totalCount !== 1 ? 's' : ''}<br><span class="font-bold text-inter-primary">$${s.totalAmount.toFixed(2)}</span></td>`;
+                row.innerHTML = `<td class="px-4 py-2 font-medium">${c.name}</span><td class="px-4 py-2">${s.ccsCount} servicio${s.ccsCount !== 1 ? 's' : ''}<br><span class="font-medium text-inter-primary">$${s.ccsAmount.toFixed(2)}</span></span><td class="px-4 py-2">${s.msoCount} servicio${s.msoCount !== 1 ? 's' : ''}<br><span class="font-medium text-inter-primary">$${s.msoAmount.toFixed(2)}</span></span><td class="px-4 py-2 font-medium">${s.totalCount} servicio${s.totalCount !== 1 ? 's' : ''}<br><span class="font-bold text-inter-primary">$${s.totalAmount.toFixed(2)}</span></span>`;
             });
             const totalCCSCount = Object.values(companyStats).reduce((s,c)=>s+c.ccsCount,0);
             const totalCCSAmount = Object.values(companyStats).reduce((s,c)=>s+c.ccsAmount,0);
@@ -1121,12 +1118,11 @@
             showMessage(`✅ Reporte generado: ${periodTextSpan.textContent}`);
         }
         
-        // NUEVA EXPORTACIÓN A EXCEL (mejorada)
+        // EXPORTACIÓN A EXCEL
         function exportReportToExcel() {
             const { start, end } = getReportDates();
             const filtered = transfers.filter(t => isTransferValidForReports(t) && t.dateTime >= start && t.dateTime <= end);
             
-            // Hoja Detalle
             const detailData = filtered.map(t => ({
                 Fecha: t.dateTime.toLocaleDateString('es-ES'),
                 Solicitante: t.requesterName,
@@ -1138,7 +1134,6 @@
             }));
             const wsDetail = XLSX.utils.json_to_sheet(detailData);
             
-            // Hoja Unidades
             const unitMap = new Map();
             filtered.forEach(t => {
                 let unitName = t.department || 'Otros';
@@ -1153,7 +1148,6 @@
             const unitsData = Array.from(unitMap.entries()).map(([unidad, data]) => ({ UNIDAD: unidad, CANTIDAD: data.cantidad, IMPORTE: data.importe }));
             const wsUnits = XLSX.utils.json_to_sheet(unitsData);
             
-            // Hoja Proveedores
             const provMap = new Map();
             filtered.forEach(t => {
                 const prov = t.companyName || 'Desconocido';
@@ -1166,7 +1160,6 @@
             const provsData = Array.from(provMap.entries()).map(([prov, data]) => ({ PROVEEDOR: prov, CANTIDAD: data.cantidad, IMPORTE: data.importe }));
             const wsProvs = XLSX.utils.json_to_sheet(provsData);
             
-            // Hoja Resumen CCS/MSO
             let totalCCS = 0, totalMSO = 0, countCCS = 0, countMSO = 0;
             filtered.forEach(t => {
                 const type = getServiceTypeWithMSO(t.department, t.msoDepartment).type;
@@ -1190,108 +1183,226 @@
             showMessage('✅ Reporte exportado a Excel');
         }
         
-        // NUEVA EXPORTACIÓN A PDF (con formato similar a comidas)
+        // ==================== EXPORTACIÓN A PDF - VERSIÓN CON TABLAS CENTRADAS ====================
         async function exportReportToPDF() {
             const { start, end } = getReportDates();
             const filtered = transfers.filter(t => isTransferValidForReports(t) && t.dateTime >= start && t.dateTime <= end);
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             
-            // Título y encabezado
-            doc.setFontSize(16);
-            doc.text("Control de Traslados de Taxi - Inter", doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-            doc.setFontSize(12);
-            doc.text(periodTextSpan.textContent, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
-            doc.setFontSize(10);
-            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, doc.internal.pageSize.getWidth() / 2, 37, { align: 'center' });
+            // Calcular ancho de página para centrar
+            const pageWidth = doc.internal.pageSize.getWidth();
             
-            let yOffset = 45;
+            // Título y encabezado - CENTRADOS
+            doc.setFontSize(14);
+            doc.text("CONTROL DE TRASLADOS DE TAXI - INTER", pageWidth / 2, 15, { align: 'center' });
+            doc.setFontSize(11);
+            doc.text(periodTextSpan.textContent, pageWidth / 2, 23, { align: 'center' });
+            doc.setFontSize(9);
+            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 30, { align: 'center' });
             
-            // 1. Tabla por Unidad de Operaciones
-            const unitMap = new Map();
-            filtered.forEach(t => {
-                let unitName = t.department || 'Otros';
-                if (t.department === 'MSO' && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
-                else if ((t.department === 'Limpieza' || t.department === 'Colaboradores') && t.msoDepartment) unitName = `MSO - ${t.msoDepartment}`;
-                const cost = t.cost || 0;
-                if (!unitMap.has(unitName)) unitMap.set(unitName, { cantidad: 0, importe: 0 });
-                const u = unitMap.get(unitName);
-                u.cantidad++;
-                u.importe += cost;
-            });
-            const unitsRows = Array.from(unitMap.entries()).map(([unidad, data]) => [unidad, data.cantidad, `$${data.importe.toFixed(2)}`]);
-            const totalCantidad = unitsRows.reduce((sum, r) => sum + r[1], 0);
-            const totalImporte = unitsRows.reduce((sum, r) => sum + parseFloat(r[2].replace('$','')), 0);
-            unitsRows.push(['TOTAL', totalCantidad, `$${totalImporte.toFixed(2)}`]);
-            doc.autoTable({
-                head: [['UNIDAD DE OPERACIONES', 'CANTIDAD', 'IMPORTE (USD)']],
-                body: unitsRows,
-                startY: yOffset,
-                theme: 'grid',
-                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center' },
-                bodyStyles: { fontSize: 9 },
-                margin: { left: 14, right: 14 }
-            });
-            yOffset = doc.lastAutoTable.finalY + 10;
+            let yOffset = 38;
             
-            // 2. Tabla por Proveedor
-            const provMap = new Map();
-            filtered.forEach(t => {
-                const prov = t.companyName || 'Desconocido';
-                const cost = t.cost || 0;
-                if (!provMap.has(prov)) provMap.set(prov, { cantidad: 0, importe: 0 });
-                const p = provMap.get(prov);
-                p.cantidad++;
-                p.importe += cost;
-            });
-            const provRows = Array.from(provMap.entries()).map(([prov, data]) => [prov, data.cantidad, `$${data.importe.toFixed(2)}`]);
-            const totalProvCantidad = provRows.reduce((sum, r) => sum + r[1], 0);
-            const totalProvImporte = provRows.reduce((sum, r) => sum + parseFloat(r[2].replace('$','')), 0);
-            provRows.push(['TOTAL', totalProvCantidad, `$${totalProvImporte.toFixed(2)}`]);
-            doc.autoTable({
-                head: [['PROVEEDOR', 'CANTIDAD', 'IMPORTE (USD)']],
-                body: provRows,
-                startY: yOffset,
-                theme: 'grid',
-                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center' },
-                bodyStyles: { fontSize: 9 },
-                margin: { left: 14, right: 14 }
-            });
-            yOffset = doc.lastAutoTable.finalY + 10;
-            
-            // 3. Resumen por tipo de unidad (CCS / MSO) en dos columnas
-            let totalCCS = 0, totalMSO = 0, countCCS = 0, countMSO = 0;
-            filtered.forEach(t => {
-                const type = getServiceTypeWithMSO(t.department, t.msoDepartment).type;
-                const cost = t.cost || 0;
-                if (type === 'CCS') { totalCCS += cost; countCCS++; }
-                else { totalMSO += cost; countMSO++; }
-            });
-            // Usamos una tabla sencilla con dos filas: cabecera y datos
-            const summaryRows = [
-                ['UNIDAD CCS', `Total Comidas: ${countCCS}`, `Importe Total: $${totalCCS.toFixed(2)}`],
-                ['UNIDAD MSO', `Total Comidas: ${countMSO}`, `Importe Total: $${totalMSO.toFixed(2)}`]
+            // ==================== 1. DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS ====================
+            const deptTotals = {};
+            const reportDeptsLocal = [
+                { name: "ADMINISTRACION", code: "Administracion" },
+                { name: "AREA COMERCIAL", code: "Area Comercial" },
+                { name: "AREA TECNICA", code: "Area tecnica" },
+                { name: "DPTO DE OBRAS", code: "Obras" },
+                { name: "RRHH Y SEGURIDAD LABORAL", code: "RRHH y Seguridad Laboral" },
+                { name: "SISTEMAS", code: "Sistemas" },
+                { name: "G. SENIOR", code: "Gerencia Senior" },
+                { name: "LIMPIEZA", code: "Limpieza" },
+                { name: "COLABORADORES", code: "Colaboradores" }
             ];
+            const reportMSODepsLocal = [
+                { name: "MARKETING", code: "Marketing" },
+                { name: "PRESIDENCIA", code: "Presidencia" },
+                { name: "INTERCONEXIONES", code: "Interconexiones" },
+                { name: "IMPORTACIONES", code: "Importaciones" },
+                { name: "RRHH MSO", code: "RRHH MSO" },
+                { name: "DOCUMENTACION DE OBRAS", code: "Documentacion de obras" },
+                { name: "LIMPIEZA", code: "Limpieza" },
+                { name: "COLABORADORES", code: "Colaboradores" },
+                { name: "OPERACIONES IP", code: "Operaciones IP" },
+                { name: "MSO OTROS", code: "MSO Otros" }
+            ];
+            
+            reportDeptsLocal.forEach(d => deptTotals[d.code] = { name: d.name, type: 'CCS', amount: 0 });
+            reportMSODepsLocal.forEach(d => { const key = `MSO - ${d.code}`; deptTotals[key] = { name: `MSO - ${d.name}`, type: 'MSO', amount: 0 }; });
+            
+            let totalCCS = 0, totalMSO = 0;
+            filtered.forEach(t => {
+                const cost = t.cost || 0;
+                const st = getServiceTypeWithMSO(t.department, t.msoDepartment);
+                if (st.type === 'MSO') {
+                    const key = t.msoDepartment ? `MSO - ${t.msoDepartment}` : 'MSO - Sin especificar';
+                    if (deptTotals[key]) deptTotals[key].amount += cost;
+                    totalMSO += cost;
+                } else {
+                    if (t.department && deptTotals[t.department]) deptTotals[t.department].amount += cost;
+                    totalCCS += cost;
+                }
+            });
+            
+            const deptRows = [];
+            Object.keys(deptTotals).sort().forEach(key => {
+                const d = deptTotals[key];
+                if (d.amount !== 0) {
+                    deptRows.push([d.name, d.type === 'MSO' ? 'MSO' : 'CCS', `$${d.amount.toFixed(2)}`]);
+                }
+            });
+            deptRows.push(['TOTAL CCS', '', `$${totalCCS.toFixed(2)}`]);
+            deptRows.push(['TOTAL MSO', '', `$${totalMSO.toFixed(2)}`]);
+            deptRows.push(['TOTAL GENERAL', '', `$${(totalCCS + totalMSO).toFixed(2)}`]);
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text("DEPARTAMENTOS QUE UTILIZAN SERVICIO DE TRASLADOS", pageWidth / 2, yOffset, { align: 'center' });
+            yOffset += 4;
+            doc.setFont(undefined, 'normal');
+            
+            // Calcular ancho de la tabla y centrarla
+            const deptTableWidth = 135;
+            const deptMarginLeft = (pageWidth - deptTableWidth) / 2;
+            
             doc.autoTable({
+                head: [['DEPARTAMENTO', 'CENTRO DE OPERACIONES', 'IMPORTE (USD)']],
+                body: deptRows,
+                startY: yOffset,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center', fontSize: 8 },
+                bodyStyles: { fontSize: 7, cellPadding: 2, halign: 'center' },
+                margin: { left: deptMarginLeft, right: deptMarginLeft },
+                columnStyles: { 0: { cellWidth: 70, halign: 'left' }, 1: { cellWidth: 35, halign: 'center' }, 2: { cellWidth: 30, halign: 'right' } },
+                tableWidth: deptTableWidth
+            });
+            yOffset = doc.lastAutoTable.finalY + 6;
+            
+            // ==================== 2. EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO ====================
+            const reportCompaniesListLocal = [
+                { name: "ANDREW", code: "Andrew" },
+                { name: "JOSE", code: "Jose" },
+                { name: "NEOMAR", code: "Neomar" },
+                { name: "OSCAR", code: "Oscar" },
+                { name: "YUMMY", code: "Yummy" }
+            ];
+            
+            const companyStats = {};
+            reportCompaniesListLocal.forEach(c => companyStats[c.code] = { 
+                name: c.name, 
+                ccsCount: 0, ccsAmount: 0, 
+                msoCount: 0, msoAmount: 0, 
+                totalCount: 0, totalAmount: 0 
+            });
+            
+            filtered.forEach(t => {
+                const comp = t.companyName;
+                const cost = t.cost || 0;
+                const st = getServiceTypeWithMSO(t.department, t.msoDepartment);
+                if (comp && companyStats[comp]) {
+                    if (st.type === 'MSO') { 
+                        companyStats[comp].msoCount++; 
+                        companyStats[comp].msoAmount += cost; 
+                    } else { 
+                        companyStats[comp].ccsCount++; 
+                        companyStats[comp].ccsAmount += cost; 
+                    }
+                    companyStats[comp].totalCount++; 
+                    companyStats[comp].totalAmount += cost;
+                }
+            });
+            
+            const companyRows = [];
+            reportCompaniesListLocal.forEach(c => {
+                const s = companyStats[c.code];
+                companyRows.push([
+                    c.name,
+                    `${s.ccsCount} serv\n$${s.ccsAmount.toFixed(2)}`,
+                    `${s.msoCount} serv\n$${s.msoAmount.toFixed(2)}`,
+                    `${s.totalCount} serv\n$${s.totalAmount.toFixed(2)}`
+                ]);
+            });
+            
+            const totalCCSCount = Object.values(companyStats).reduce((s,c) => s + c.ccsCount, 0);
+            const totalCCSAmount = Object.values(companyStats).reduce((s,c) => s + c.ccsAmount, 0);
+            const totalMSOCount = Object.values(companyStats).reduce((s,c) => s + c.msoCount, 0);
+            const totalMSOAmount = Object.values(companyStats).reduce((s,c) => s + c.msoAmount, 0);
+            
+            companyRows.push([
+                'TOTALES',
+                `${totalCCSCount} serv\n$${totalCCSAmount.toFixed(2)}`,
+                `${totalMSOCount} serv\n$${totalMSOAmount.toFixed(2)}`,
+                `${totalCCSCount + totalMSOCount} serv\n$${(totalCCSAmount + totalMSOAmount).toFixed(2)}`
+            ]);
+            
+            doc.setFont(undefined, 'bold');
+            doc.text("EMPRESAS PROVEEDORAS DE SERVICIO CCS Y MSO", pageWidth / 2, yOffset, { align: 'center' });
+            yOffset += 4;
+            doc.setFont(undefined, 'normal');
+            
+            const companyTableWidth = 160;
+            const companyMarginLeft = (pageWidth - companyTableWidth) / 2;
+            
+            doc.autoTable({
+                head: [['EMPRESA', 'SERVICIOS A CCS', 'SERVICIOS A MSO', 'TOTAL']],
+                body: companyRows,
+                startY: yOffset,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center', fontSize: 8 },
+                bodyStyles: { fontSize: 7, cellPadding: 2, valign: 'middle', halign: 'center' },
+                margin: { left: companyMarginLeft, right: companyMarginLeft },
+                columnStyles: { 0: { cellWidth: 30, halign: 'left' }, 1: { cellWidth: 40, halign: 'center' }, 2: { cellWidth: 40, halign: 'center' }, 3: { cellWidth: 40, halign: 'center' } },
+                tableWidth: companyTableWidth
+            });
+            yOffset = doc.lastAutoTable.finalY + 6;
+            
+            // ==================== 3. RESUMEN POR UNIDAD ====================
+            const countCCS = filtered.filter(t => getServiceTypeWithMSO(t.department, t.msoDepartment).type === 'CCS').length;
+            const countMSO = filtered.filter(t => getServiceTypeWithMSO(t.department, t.msoDepartment).type === 'MSO').length;
+            
+            const summaryRows = [
+                ['UNIDAD CCS', `${countCCS} servicios`, `$${totalCCS.toFixed(2)}`],
+                ['UNIDAD MSO', `${countMSO} servicios`, `$${totalMSO.toFixed(2)}`]
+            ];
+            
+            doc.setFont(undefined, 'bold');
+            doc.text("RESUMEN POR UNIDAD", pageWidth / 2, yOffset, { align: 'center' });
+            yOffset += 4;
+            doc.setFont(undefined, 'normal');
+            
+            const summaryTableWidth = 140;
+            const summaryMarginLeft = (pageWidth - summaryTableWidth) / 2;
+            
+            doc.autoTable({
+                head: [['UNIDAD', 'CANTIDAD', 'IMPORTE TOTAL']],
                 body: summaryRows,
                 startY: yOffset,
-                theme: 'plain',
-                styles: { fontSize: 10, cellPadding: 2 },
-                margin: { left: 14, right: 14 },
-                columnStyles: { 0: { fontStyle: 'bold' } }
+                theme: 'grid',
+                headStyles: { fillColor: [0, 91, 170], textColor: 255, halign: 'center', fontSize: 8 },
+                bodyStyles: { fontSize: 8, cellPadding: 3, halign: 'center' },
+                margin: { left: summaryMarginLeft, right: summaryMarginLeft },
+                columnStyles: { 0: { cellWidth: 55, halign: 'left', fontStyle: 'bold' }, 1: { cellWidth: 40, halign: 'center' }, 2: { cellWidth: 45, halign: 'right' } },
+                tableWidth: summaryTableWidth
             });
             yOffset = doc.lastAutoTable.finalY + 5;
+            
+            // Total General destacado y CENTRADO
             doc.setFontSize(10);
-            doc.text(`TOTAL GENERAL: $${(totalCCS + totalMSO).toFixed(2)}`, doc.internal.pageSize.getWidth() / 2, yOffset, { align: 'center' });
-            yOffset += 8;
-            doc.setFontSize(8);
-            doc.text("Reporte generado automáticamente por el Sistema de Control de Traslados de Taxi", doc.internal.pageSize.getWidth() / 2, yOffset + 5, { align: 'center' });
+            doc.setFont(undefined, 'bold');
+            doc.text(`TOTAL GENERAL: $${(totalCCS + totalMSO).toFixed(2)}`, pageWidth / 2, yOffset + 3, { align: 'center' });
+            
+            // Pie de página CENTRADO
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'italic');
+            doc.text("Reporte generado automáticamente por el Sistema de Control de Traslados de Taxi", pageWidth / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
             
             doc.save(`Reporte_Traslados_${periodTextSpan.textContent.replace(/ /g,'_')}.pdf`);
-            showMessage('✅ PDF generado con formato resumen');
+            showMessage('✅ PDF generado en una sola hoja vertical con todas las tablas centradas');
         }
         
-        // Exportación del historial a PDF (mejorada)
+        // Exportación del historial a PDF
         function exportHistoryToPDF() {
             const filtered = getFiltered();
             const { jsPDF } = window.jspdf;
@@ -1317,7 +1428,7 @@
             showMessage('✅ Historial exportado a PDF');
         }
         
-        // ==================== SETUP DE EVENTOS (original, solo se enlazan las nuevas funciones) ====================
+        // ==================== SETUP DE EVENTOS ====================
         function setupEventListeners() {
             const tabDash = document.getElementById('tabDashboard');
             const tabRep = document.getElementById('tabReports');
@@ -1368,7 +1479,6 @@
                 const data = getFiltered().filter(t => t.status === 'approved').map(t => ({ Fecha: t.dateTime.toLocaleDateString('es-ES'), Solicitante: t.requesterName, Departamento: t.department, 'Tipo': getServiceTypeWithMSO(t.department, t.msoDepartment).text, Empresa: t.companyName, 'Costo': t.cost }));
                 const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Traslados'); XLSX.writeFile(wb, `traslados_${new Date().toISOString().slice(0,10)}.xlsx`); showMessage('✅ Exportado');
             });
-            document.getElementById('importExcelBtn')?.addEventListener('click', () => document.getElementById('fileInput').click());
             document.getElementById('deleteSelectedBtn')?.addEventListener('click', async () => {
                 const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.dataset.id);
                 if (!ids.length) { showMessage('Seleccione al menos uno', 'error'); return; }
